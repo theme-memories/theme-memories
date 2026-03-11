@@ -157,3 +157,40 @@ hr {
   /* added line to stop words getting smushed together (as they go onto separate lines and some screen readers do not understand line feeds as a space */
   white-space: nowrap;
 }
+
+.weather-widget {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 100;
+  width: 280px;
+  padding: 1.25rem;
+  background: #111827;
+  border: #1f2937;
+  border-radius: 1rem;
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 10%);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.weather-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #f9fafb;
+}
+
+.weather-header h2 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+}
+
+.weather-content p {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: #9ca3af;
+}
