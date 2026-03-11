@@ -8,12 +8,11 @@
  */
 
 :root {
-  --accent: #ff9800;
+  --accent: #58a6ff;
   --accent-dark: #f57c00;
-  --black: 15, 18, 25;
+  --black: 13, 17, 23;
   --gray: 96, 115, 159;
-  --gray-light: 229, 233, 240;
-  --gray-dark: 34, 41, 57;
+  --gray-light: 230, 237, 243;
   --gray-gradient: rgb(var(--gray-light), 50%), #fff;
   --box-shadow:
     0 2px 6px rgb(var(--gray), 25%), 0 8px 24px rgb(var(--gray), 33%),
@@ -112,15 +111,12 @@ img {
   border-radius: 8px;
 }
 
-pre {
-  padding: 1.5em;
-  border-radius: 8px;
-  background-color: rgb(var(--black));
-  color: rgb(var(--gray-light));
-}
-
-pre > code {
-  all: unset;
+code {
+  padding: 0.2em 0.4em;
+  margin: 0;
+  font-size: 85%;
+  background-color: rgb(var(--gray-dark));
+  border-radius: 6px;
 }
 
 blockquote {
