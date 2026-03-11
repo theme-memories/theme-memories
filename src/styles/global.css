@@ -112,13 +112,6 @@ img {
   border-radius: 8px;
 }
 
-code {
-  padding: 2px 5px;
-  background-color: rgb(var(--black));
-  color: rgb(var(--gray-light));
-  border-radius: 2px;
-}
-
 pre {
   padding: 1.5em;
   border-radius: 8px;

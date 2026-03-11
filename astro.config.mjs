@@ -11,7 +11,7 @@ import expressiveCode from "astro-expressive-code";
 export default defineConfig({
   site: "https://astro.amia.work",
   output: "server",
-  integrations: [sitemap(), expressiveCode()],
+  integrations: [sitemap(), expressiveCode({ themes: ["github-dark"] })],
   adapter: cloudflare(),
   vite: {
     plugins: [tailwindcss()],
