@@ -23,7 +23,7 @@
     "!(*.{js,mjs,cjs,ts,mts,cts,css})": "prettier --write --ignore-unknown"
   },
   "dependencies": {
-    "@astrojs/cloudflare": "^13.0.2",
+    "@astrojs/cloudflare": "^13.1.0",
     "@astrojs/rss": "^4.0.17",
     "@astrojs/sitemap": "^3.7.1",
     "@expressive-code/plugin-collapsible-sections": "^0.41.7",
