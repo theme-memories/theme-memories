@@ -55,7 +55,8 @@ export function updateWeatherWidget(widget, data) {
   let html = `
     <div class="weather-header">
       <img src="https://openweathermap.org/payload/api/media/file/${weather.icon}.png" alt="${weather.description}">
-      <h2><span>${weather.description}</span><span>${temperature.current}°C</span></h2>
+      <span>${weather.description}</span>
+      <span>${temperature.current}°C</span>
     </div>
     
   `;
