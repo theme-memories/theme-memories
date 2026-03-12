@@ -11,16 +11,18 @@ const posts = (await getCollection("blog")).sort(
   (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
 );
 
-// Group posts by month
+// Group posts by month using the Japanese calendar
 const groupedPosts = posts.reduce((acc, post) => {
-  const year = post.data.pubDate.getFullYear();
-  const month = post.data.pubDate.toLocaleString("default", { month: "long" });
-  const key = `${year} ${month}`;
+  const pubDate = post.data.pubDate;
+  const key = new Intl.DateTimeFormat("ja-JP-u-ca-japanese", {
+    era: "long",
+    year: "numeric",
+    month: "long",
+  }).format(pubDate);
 
   if (!acc[key]) {
     acc[key] = [];
   }
-
   acc[key].push(post);
   return acc;
 }, {});
@@ -38,26 +40,28 @@ const groupedPosts = posts.reduce((acc, post) => {
       }
 
       .month-group {
-        position: relative;
-        padding-left: 120px; /* Space for the date */
+        display: flex;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
       }
 
       .month-header {
-        position: absolute;
-        top: 1rem; /* Adjust as needed */
-        left: 0;
-        width: 100px; /* Width of the date */
+        flex: 0 0 120px;
+        position: sticky;
+        top: 1rem;
+        align-self: flex-start;
         font-size: 1.25rem;
         font-weight: bold;
         color: rgb(var(--accent));
         text-align: right;
-        padding-right: 20px;
       }
 
       .post-list {
         list-style: none;
         padding: 0;
         margin: 0;
+        flex: 1;
+        min-width: 0;
       }
 
       .post-item {
