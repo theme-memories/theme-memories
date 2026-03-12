@@ -1,5 +1,4 @@
 ---
-import { Image } from "astro:assets";
 import { getCollection } from "astro:content";
 import BaseHead from "../../components/BaseHead.astro";
 import Footer from "../../components/Footer.astro";
@@ -9,8 +8,21 @@ import { SITE_DESCRIPTION, SITE_TITLE } from "../../consts";
 import Weather from "../../components/Weather.astro";
 
 const posts = (await getCollection("blog")).sort(
-  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
 );
+
+// Group posts by year and month
+const groupedPosts: Record<string, typeof posts> = {};
+posts.forEach((post) => {
+  const yearMonth = post.data.pubDate.toLocaleDateString("ja-JP-u-ca-japanese", {
+    year: "numeric",
+    month: "long",
+  });
+  if (!groupedPosts[yearMonth]) {
+    groupedPosts[yearMonth] = [];
+  }
+  groupedPosts[yearMonth].push(post);
+});
 ---
 
 <!doctype html>
@@ -18,102 +30,85 @@ const posts = (await getCollection("blog")).sort(
   <head>
     <BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
     <style>
-      main {
+      .timeline {
         width: 960px;
+        margin: auto;
+        padding: 2rem 0;
       }
-      ul {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 2rem;
-        list-style-type: none;
-        margin: 0;
-        padding: 0;
+
+      .month-group {
+        position: relative;
+        padding-left: 120px; /* Space for the sticky date */
       }
-      ul li {
-        width: calc(50% - 1rem);
-      }
-      ul li * {
-        text-decoration: none;
-        transition: 0.2s ease;
-      }
-      ul li:first-child {
-        width: 100%;
-        margin-bottom: 1rem;
-        text-align: center;
-      }
-      ul li:first-child img {
-        width: 100%;
-      }
-      ul li:first-child .title {
-        font-size: 2.369rem;
-      }
-      ul li img {
-        margin-bottom: 0.5rem;
-        border-radius: 12px;
-      }
-      ul li a {
-        display: block;
-      }
-      .title {
-        margin: 0;
-        color: rgb(var(--gray-light));
-        line-height: 1;
-      }
-      .date {
-        margin: 0;
-        color: rgb(var(--gray-light));
-      }
-      ul li a:hover h4,
-      ul li a:hover .date {
+
+      .month-header {
+        position: -webkit-sticky; /* For Safari */
+        position: sticky;
+        top: 2rem; /* Adjust as needed */
+        left: 0;
+        width: 100px; /* Width of the sticky date */
+        font-size: 1.25rem;
+        font-weight: bold;
         color: rgb(var(--accent));
+        text-align: right;
+        padding-right: 20px;
       }
-      ul a:hover img {
-        box-shadow: var(--box-shadow);
+
+      .post-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
       }
-      @media (max-width: 720px) {
-        ul {
-          gap: 0.5em;
-        }
-        ul li {
-          width: 100%;
-          text-align: center;
-        }
-        ul li:first-child {
-          margin-bottom: 0;
-        }
-        ul li:first-child .title {
-          font-size: 1.563em;
-        }
+
+      .post-item {
+        display: flex;
+        align-items: baseline;
+        padding: 1rem 0;
+        border-bottom: 1px solid rgb(var(--gray-light) / 20%);
+      }
+
+      .post-date {
+        width: 80px;
+        text-align: right;
+        color: rgb(var(--gray-light));
+        font-size: 0.9rem;
+        padding-right: 20px;
+      }
+
+      .post-title a {
+        font-size: 1.1rem;
+        color: rgb(var(--gray-light));
+        text-decoration: none;
+        transition: color 0.2s ease;
+      }
+
+      .post-title a:hover {
+        color: rgb(var(--accent));
       }
     </style>
   </head>
   <body>
     <Header />
-    <main>
-      <section>
-        <ul>
-          {
-            posts.map((post) => (
-              <li>
-                <a href={`/blog/${post.id}/`}>
-                  {post.data.heroImage && (
-                    <Image
-                      width={720}
-                      height={360}
-                      src={post.data.heroImage}
-                      alt=""
-                    />
-                  )}
-                  <h4 class="title">{post.data.title}</h4>
-                  <p class="date">
-                    <FormattedDate date={post.data.pubDate} />
-                  </p>
-                </a>
-              </li>
-            ))
-          }
-        </ul>
-      </section>
+    <main class="timeline">
+      {
+        Object.entries(groupedPosts).map(([month, posts]) => (
+          <div class="month-group">
+            <div class="month-header">{month}</div>
+            <ul class="post-list">
+              {posts.map((post) => (
+                <li class="post-item">
+                  <div class="post-date">
+                    <FormattedDate date={post.data.pubDate} format="day" />
+                  </div>
+                  <div class="post-title">
+                    <a href={`/blog/${post.id}/`}>{post.data.title}</a>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))
+      }
     </main>
     <Footer />
     <Weather size="big" />
