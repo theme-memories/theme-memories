@@ -215,5 +215,6 @@ hr {
   border-bottom: 10px solid #fff;
   display: inline-block;
   margin-left: 10px;
+  margin-right: 10px;
   transition: transform 0.5s ease;
 }
