@@ -164,8 +164,11 @@ hr {
   right: 1.5rem;
   z-index: 100;
   padding: 1.25rem;
-  background: #111827;
-  border: #1f2937;
+
+  /* Acrylic background styles */
+  background: rgb(17 24 39 / 75%);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgb(255 255 255 / 10%);
   border-radius: 1rem;
   box-shadow: 0 10px 15px -3px rgb(0 0 0 / 10%);
   display: flex;
@@ -196,7 +199,7 @@ hr {
   margin: 0;
   font-size: 0.875rem;
   line-height: 1.5;
-  color: #9ca3af;
+  color: #cbd5e1; /* Lighter gray for better contrast */
 }
 
 .weather-widget[data-size="small"] {
