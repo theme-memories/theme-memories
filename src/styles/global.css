@@ -181,6 +181,11 @@ hr {
   color: #f9fafb;
 }
 
+.weather-header img {
+  width: 1.2rem;
+  height: 1.2rem;
+}
+
 .weather-header h2 {
   margin: 0;
   font-size: 1rem;
