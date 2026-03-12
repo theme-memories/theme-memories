@@ -3,6 +3,7 @@
 @theme inline {
   --font-sans: var(--font-mincho);
   --font-serif: var(--font-mincho);
+  --font-display: var(--font-mincho);
   --font-mono: var(--font-code);
 }
 
