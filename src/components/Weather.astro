@@ -1,41 +1,22 @@
 ---
-/* src/components/Weather.astro */
+interface Props {
+  size: "small" | "big";
+}
+
+const { size } = Astro.props;
 ---
 
-<div id="weather" class="weather-widget">
-  <div class="weather-header">
-    <svg
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <path
-        d="M12 2L2 7L12 12L22 7L12 2Z"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"></path>
-      <path
-        d="M2 17L12 22L22 17"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"></path>
-      <path
-        d="M2 12L12 17L22 12"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"></path>
-    </svg>
-    <h2>weather</h2>
-  </div>
-  <div class="weather-content">
-    <p>
-      Welcome to my workspace. This board stays pinned as I navigate through the
-      site.
-    </p>
-  </div>
+<div id="weather-widget" class="weather-widget" data-size={size}>
+  <!-- Content will be loaded by client-side script -->
+  <p>Loading weather...</p>
 </div>
+
+<script>
+  import { getWeatherData, updateWeatherWidget } from "../script/weather";
+
+  document.addEventListener("DOMContentLoaded", async () => {
+    const widget = document.getElementById("weather-widget");
+    const weatherData = await getWeatherData();
+    updateWeatherWidget(widget, weatherData);
+  });
+</script>
