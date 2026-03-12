@@ -1,28 +1,29 @@
 ---
 import { getCollection } from "astro:content";
-import BaseHead from "../../components/BaseHead.astro";
-import Footer from "../../components/Footer.astro";
 import FormattedDate from "../../components/FormattedDate.astro";
+import { SITE_TITLE, SITE_DESCRIPTION } from "../../consts";
+import BaseHead from "../../components/BaseHead.astro";
 import Header from "../../components/Header.astro";
-import { SITE_DESCRIPTION, SITE_TITLE } from "../../consts";
+import Footer from "../../components/Footer.astro";
 import Weather from "../../components/Weather.astro";
 
 const posts = (await getCollection("blog")).sort(
-  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
 );
 
-// Group posts by year and month
-const groupedPosts: Record<string, typeof posts> = {};
-posts.forEach((post) => {
-  const yearMonth = post.data.pubDate.toLocaleDateString("ja-JP-u-ca-japanese", {
-    year: "numeric",
-    month: "long",
-  });
-  if (!groupedPosts[yearMonth]) {
-    groupedPosts[yearMonth] = [];
+// Group posts by month
+const groupedPosts = posts.reduce((acc, post) => {
+  const year = post.data.pubDate.getFullYear();
+  const month = post.data.pubDate.toLocaleString("default", { month: "long" });
+  const key = `${year} ${month}`;
+
+  if (!acc[key]) {
+    acc[key] = [];
   }
-  groupedPosts[yearMonth].push(post);
-});
+
+  acc[key].push(post);
+  return acc;
+}, {});
 ---
 
 <!doctype html>
@@ -38,15 +39,14 @@ posts.forEach((post) => {
 
       .month-group {
         position: relative;
-        padding-left: 120px; /* Space for the sticky date */
+        padding-left: 120px; /* Space for the date */
       }
 
       .month-header {
-        position: -webkit-sticky; /* For Safari */
-        position: sticky;
-        top: 2rem; /* Adjust as needed */
+        position: absolute;
+        top: 1rem; /* Adjust as needed */
         left: 0;
-        width: 100px; /* Width of the sticky date */
+        width: 100px; /* Width of the date */
         font-size: 1.25rem;
         font-weight: bold;
         color: rgb(var(--accent));
@@ -101,7 +101,7 @@ posts.forEach((post) => {
                     <FormattedDate date={post.data.pubDate} format="day" />
                   </div>
                   <div class="post-title">
-                    <a href={`/blog/${post.id}/`}>{post.data.title}</a>
+                    <a href={`/blog/${post.slug}/`}>{post.data.title}</a>
                   </div>
                 </li>
               ))}
