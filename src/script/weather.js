@@ -74,15 +74,15 @@ export function updateWeatherWidget(widget, data) {
   if (widgetSize === "big") {
     html += `
       <div class="weather-content">
-        <p>体感温度: ${temperature.feelsLike}°C</p>
-        <p>最低/最高温度: ${temperature.min}°C / ${temperature.max}°C</p>
-        <p>湿度: ${atmospheric.humidity}%&nbsp;&nbsp;気圧: ${atmospheric.pressure} hPa</p>
-        <p>視程: ${atmospheric.visibility} m&nbsp;&nbsp;雲量: ${clouds}%</p>
+        <p>体感温度: ${temperature.feelsLike} °C</p>
+        <p>最低/最高温度: ${temperature.min} °C/${temperature.max} °C</p>
+        <p>湿度: ${atmospheric.humidity} %&nbsp;&nbsp;気圧: ${atmospheric.pressure} hPa</p>
+        <p>視程: ${atmospheric.visibility} m&nbsp;&nbsp;雲量: ${clouds} %</p>
         <p>風: <span class="wind-arrow"></span> ${wind.speed} m/s&nbsp;&nbsp;瞬時: ${wind.gust} m/s</p>
-        <p>日の出/日の入り: ${sunriseTime} / ${sunsetTime}</p>
+        <p>日の出/日の入り: ${sunriseTime}/${sunsetTime}</p>
         ${rain ? `<p>雨量 (1h): ${rain} mm</p>` : ""}
         ${snow ? `<p>雪量 (1h): ${snow} mm</p>` : ""}
-        <p class="last-updated">最終更新: ${updatedTime}</p>
+        <p>${updatedTime} 発表</p>
       </div>
     `;
   }
