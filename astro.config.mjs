@@ -1,7 +1,7 @@
 // @ts-check
 
 import sitemap from "@astrojs/sitemap";
-import { defineConfig } from "astro/config";
+import { defineConfig, fontProviders } from "astro/config";
 import cloudflare from "@astrojs/cloudflare";
 import tailwindcss from "@tailwindcss/vite";
 
@@ -19,4 +19,16 @@ export default defineConfig({
       external: ["node:fs/promises", "node:path", "node:url", "node:crypto"],
     },
   },
+  fonts: [
+    {
+      provider: fontProviders.fontsource(),
+      name: "Shippori Mincho",
+      cssVariable: "--font-mincho",
+    },
+    {
+      provider: fontProviders.fontsource(),
+      name: "M PLUS 1 Code",
+      cssVariable: "--font-code",
+    },
+  ],
 });
