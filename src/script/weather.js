@@ -23,7 +23,17 @@ export function updateWeatherWidget(widget, data) {
     return;
   }
 
-  const { weather, temperature, atmospheric, wind, sun, lastUpdated } = data;
+  const {
+    weather,
+    temperature,
+    atmospheric,
+    wind,
+    clouds,
+    sun,
+    lastUpdated,
+    rain,
+    snow,
+  } = data;
   const widgetSize = widget.dataset.size || "small";
 
   const locale = "ja-JP-u-ca-japanese";
@@ -64,16 +74,24 @@ export function updateWeatherWidget(widget, data) {
   if (widgetSize === "big") {
     html += `
       <div class="weather-content">
-        <p>体感温度: ${temperature.feelsLike}°C</p>
-        <p>最低: ${temperature.min}°C, 最高: ${temperature.max}°C</p>
-        <p>湿度: ${atmospheric.humidity}%</p>
-        <p>風速: ${wind.speed} m/s</p>
-        <p>日の出: ${sunriseTime}</p>
-        <p>日の入り: ${sunsetTime}</p>
+        <p>体感温度: ${temperature.feelsLike}°C&nbsp;&nbsp;湿度: ${atmospheric.humidity}%</p>
+        <p>最低/最高温度: ${temperature.min}°C / ${temperature.max}°C</p>
+        <p>気圧: ${atmospheric.pressure} hPa&nbsp;&nbsp;視程: ${atmospheric.visibility} m&nbsp;&nbsp;雲量: ${clouds}%</p>
+        <p>風: <span class="wind-arrow"></span>${wind.speed} m/s&nbsp;&nbsp;瞬時: ${wind.gust} m/s</p>
+        <p>日の出/日の入り: ${sunriseTime} / ${sunsetTime}</p>
+        ${rain ? `<p>雨量 (1h): ${rain} mm</p>` : ""}
+        ${snow ? `<p>雪量 (1h): ${snow} mm</p>` : ""}
         <p class="last-updated">最終更新: ${updatedTime}</p>
       </div>
     `;
   }
 
   widget.innerHTML = html;
+
+  if (widgetSize === "big") {
+    const windArrow = widget.querySelector(".wind-arrow");
+    if (windArrow) {
+      windArrow.style.transform = `rotate(${wind.direction}deg)`;
+    }
+  }
 }

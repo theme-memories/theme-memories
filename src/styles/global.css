@@ -163,7 +163,6 @@ hr {
   bottom: 1.5rem;
   right: 1.5rem;
   z-index: 100;
-  width: 280px;
   padding: 1.25rem;
   background: #111827;
   border: #1f2937;
@@ -198,4 +197,23 @@ hr {
   font-size: 0.875rem;
   line-height: 1.5;
   color: #9ca3af;
+}
+
+.weather-widget[data-size="small"] {
+  width: 220px;
+}
+
+.weather-widget[data-size="big"] {
+  width: 280px;
+}
+
+.wind-arrow {
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-bottom: 10px solid #fff;
+  display: inline-block;
+  margin-left: 10px;
+  transition: transform 0.5s ease;
 }
