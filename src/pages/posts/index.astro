@@ -6,7 +6,10 @@ import BaseHead from "../../components/BaseHead.astro";
 import Footer from "../../components/Footer.astro";
 import Weather from "../../components/Weather.astro";
 
-const posts = (await getCollection("blog")).sort(
+const blogPosts = await getCollection("blog");
+const kanteiPosts = await getCollection("kantei");
+
+const posts = [...blogPosts, ...kanteiPosts].sort(
   (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
 );
 
@@ -103,7 +106,7 @@ const groupedPosts = posts.reduce((acc, post) => {
                     <FormattedDate date={post.data.pubDate} format="day" />
                   </div>
                   <div class="post-title">
-                    <a href={`/blog/${post.id}/`}>{post.data.title}</a>
+                    <a href={`/posts/${post.id}/`}>{post.data.title}</a>
                   </div>
                 </li>
               ))}
