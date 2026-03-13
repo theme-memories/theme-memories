@@ -14,18 +14,18 @@ import { SITE_DESCRIPTION, SITE_TITLE } from "../consts";
         <h1>
           <span id="typed"></span>
         </h1>
-        <a href="/blog">
-          <button>Entry</button>
+        <a href="/blog" class="entry-link">
+          <button>&lt; Entry / 進入 &gt;</button>
         </a>
       </div>
     </main>
     <script src="https://unpkg.com/typed.js/dist/typed.umd.js"></script>
     <script>
       var typed = new Typed("#typed", {
-        strings: ["Hello, Astronaut!", "Welcome to my blog."],
-        typeSpeed: 50,
-        loop: true,
-        showCursor: true,
+        strings: ["25時、^1000ナイトコードで。"],
+        typeSpeed: 500,
+        cursorChar: "_",
+        shouldBackspace: false,
       });
     </script>
     <style>
@@ -35,13 +35,19 @@ import { SITE_DESCRIPTION, SITE_TITLE } from "../consts";
         align-items: center;
         height: 100vh;
         text-align: center;
+        position: relative;
       }
       #typed {
         font-size: 2rem;
         font-weight: bold;
       }
+      .entry-link {
+        position: absolute;
+        bottom: 40px;
+        left: 50%;
+        transform: translateX(-50%);
+      }
       button {
-        margin-top: 20px;
         padding: 10px 20px;
         font-size: 1rem;
         cursor: pointer;
