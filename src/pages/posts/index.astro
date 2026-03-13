@@ -6,8 +6,22 @@ import BaseHead from "../../components/BaseHead.astro";
 import Footer from "../../components/Footer.astro";
 import Weather from "../../components/Weather.astro";
 
-const blogPosts = await getCollection("blog");
-const kanteiPosts = await getCollection("kantei");
+const blogPostsRaw = await getCollection("blog");
+const kanteiPostsRaw = await getCollection("kantei");
+
+const blogPosts = blogPostsRaw.map((post) => ({
+  ...post,
+  collection: "blog",
+}));
+
+const kanteiPosts = kanteiPostsRaw.map((post) => ({
+  ...post,
+  collection: "kantei",
+  data: {
+    ...post.data,
+    title: `401 - Authorization Required`,
+  },
+}));
 
 const posts = [...blogPosts, ...kanteiPosts].sort(
   (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
@@ -91,6 +105,10 @@ const groupedPosts = posts.reduce((acc, post) => {
       .post-title a:hover {
         color: rgb(var(--accent));
       }
+
+      .post-title a.kantei-title {
+        color: rgb(var(--accent-dark));
+      }
     </style>
   </head>
   <body>
@@ -106,7 +124,14 @@ const groupedPosts = posts.reduce((acc, post) => {
                     <FormattedDate date={post.data.pubDate} format="day" />
                   </div>
                   <div class="post-title">
-                    <a href={`/posts/${post.id}/`}>{post.data.title}</a>
+                    <a
+                      href={`/posts/${post.id}/`}
+                      class:list={[
+                        { "kantei-title": post.collection === "kantei" },
+                      ]}
+                    >
+                      {post.data.title}
+                    </a>
                   </div>
                 </li>
               ))}
