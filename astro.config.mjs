@@ -25,6 +25,7 @@ export default defineConfig({
       name: "Shippori Mincho",
       cssVariable: "--font-mincho",
       subsets: ["japanese", "latin"],
+      weights: [400, 700],
     },
     {
       provider: fontProviders.fontsource(),

@@ -51,13 +51,13 @@ The blockquote element represents content that is quoted from another source, op
 
 ```markdown
 > Tiam, ad mint andaepu dandae nostion secatur sequo quae.  
-> **Note** that you can use _Markdown syntax_ within a blockquote.
+> **Note** that you can use Markdown syntax within a blockquote.
 ```
 
 #### Output
 
 > Tiam, ad mint andaepu dandae nostion secatur sequo quae.  
-> **Note** that you can use _Markdown syntax_ within a blockquote.
+> **Note** that you can use Markdown syntax within a blockquote.
 
 ### Blockquote with attribution
 
@@ -80,16 +80,16 @@ The blockquote element represents content that is quoted from another source, op
 ### Syntax
 
 ```markdown
-| Italics   |   Bold   |   Code |
-| :-------- | :------: | -----: |
-| _italics_ | **bold** | `code` |
+| Normal |   Bold   |   Code |
+| :----- | :------: | -----: |
+| Normal | **bold** | `code` |
 ```
 
 ### Output
 
-| Italics   |   Bold   |   Code |
-| :-------- | :------: | -----: |
-| _italics_ | **bold** | `code` |
+| Normal |   Bold   |   Code |
+| :----- | :------: | -----: |
+| Normal | **bold** | `code` |
 
 ## Code Blocks
 
