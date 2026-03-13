@@ -103,10 +103,8 @@ const groupedPosts = posts.reduce((acc, post) => {
         transition: color 0.2s ease;
         display: inline-block;
         max-width: 25em;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        vertical-align: middle;
+        white-space: normal;
+        word-wrap: break-word;
       }
 
       .post-title a:hover {
