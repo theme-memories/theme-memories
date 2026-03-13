@@ -24,11 +24,13 @@ export default defineConfig({
       provider: fontProviders.fontsource(),
       name: "Shippori Mincho",
       cssVariable: "--font-mincho",
+      subsets: ["japanese", "latin"],
     },
     {
       provider: fontProviders.fontsource(),
       name: "M PLUS 1 Code",
       cssVariable: "--font-code",
+      subsets: ["japanese", "latin"],
     },
   ],
 });
