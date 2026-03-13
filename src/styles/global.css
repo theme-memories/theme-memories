@@ -143,6 +143,10 @@ ul {
   margin-bottom: 1rem;
 }
 
+ul ul {
+  list-style-type: circle;
+}
+
 mark {
   background-color: rgb(88 166 255 / 20%);
   color: #58a6ff;
