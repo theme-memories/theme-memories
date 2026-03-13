@@ -16,6 +16,7 @@ const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
     <style>
       .hero-image {
         width: 100%;
+        margin-bottom: 2em; /* Add space below the image */
       }
       .hero-image img {
         display: block;
@@ -24,8 +25,8 @@ const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
         box-shadow: var(--box-shadow);
       }
       .prose {
-        width: 1080px;
-        max-width: calc(100% - 2em);
+        /* removed width: 1080px; to respect max-width */
+        max-width: 68ch;
         margin: auto;
         padding: 1em;
         color: rgb(var(--gray-light));
@@ -54,14 +55,14 @@ const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
   <body>
     <main>
       <article>
-        <div class="hero-image">
-          {
-            heroImage && (
-              <Image width={1020} height={640} src={heroImage} alt="" />
-            )
-          }
-        </div>
         <div class="prose">
+          <div class="hero-image">
+            {
+              heroImage && (
+                <Image width={1020} height={640} src={heroImage} alt="" />
+              )
+            }
+          </div>
           <div class="title">
             <div class="date">
               <FormattedDate date={pubDate} />
