@@ -103,7 +103,7 @@ const groupedPosts = posts.reduce((acc, post) => {
                     <FormattedDate date={post.data.pubDate} format="day" />
                   </div>
                   <div class="post-title">
-                    <a href={`/blog/${post.slug}/`}>{post.data.title}</a>
+                    <a href={`/blog/${post.id}/`}>{post.data.title}</a>
                   </div>
                 </li>
               ))}
