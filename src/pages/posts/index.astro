@@ -101,14 +101,15 @@ const groupedPosts = posts.reduce((acc, post) => {
         color: rgb(var(--gray-light));
         text-decoration: none;
         transition: color 0.2s ease;
+        background: rgb(110 118 129 / 40%);
       }
 
       .post-title a:hover {
-        color: rgb(var(--accent));
+        color: var(--accent);
       }
 
-      .post-title a.kantei-title {
-        color: rgb(110 118 129 / 40%);
+      .post-title a.kantei-title:hover {
+        color: var(--accent-dark);
       }
     </style>
   </head>
