@@ -101,7 +101,6 @@ const groupedPosts = posts.reduce((acc, post) => {
         color: rgb(var(--gray-light));
         text-decoration: none;
         transition: color 0.2s ease;
-        background: rgb(110 118 129 / 40%);
       }
 
       .post-title a:hover {
@@ -127,7 +126,11 @@ const groupedPosts = posts.reduce((acc, post) => {
                   </div>
                   <div class="post-title">
                     <a
-                      href={`/posts/${post.id}/`}
+                      href={
+                        post.collection === "kantei"
+                          ? `/post/${post.id}/`
+                          : `/posts/${post.id}/`
+                      }
                       class:list={[
                         { "kantei-title": post.collection === "kantei" },
                       ]}
