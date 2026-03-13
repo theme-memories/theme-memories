@@ -18,10 +18,10 @@ const blogPosts = blogPostsRaw.map((post) => ({
 const kanteiPosts = kanteiPostsRaw.map((post) => ({
   ...post,
   collection: "kantei",
-  data: {
+  /* data: {
     ...post.data,
     title: `401 - Authorization Required`,
-  },
+  }, */
 }));
 
 const posts = [...blogPosts, ...kanteiPosts].sort(
@@ -94,6 +94,7 @@ const groupedPosts = posts.reduce((acc, post) => {
         color: rgb(var(--gray-light));
         font-size: 0.9rem;
         padding-right: 20px;
+        max-width: 48ch;
       }
 
       .post-title a {
