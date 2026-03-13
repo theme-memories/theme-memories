@@ -10,7 +10,7 @@ type Props = CollectionEntry<"blog">["data"];
 const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
 ---
 
-<html lang="en">
+<html lang="jp">
   <head>
     <BaseHead title={title} description={description} />
     <style>
@@ -29,6 +29,8 @@ const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
         margin: auto;
         padding: 1em;
         color: rgb(var(--gray-light));
+        line-height: 1.8;
+        text-align: justify;
       }
       .title {
         margin-bottom: 1em;
@@ -55,7 +57,7 @@ const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
         <div class="hero-image">
           {
             heroImage && (
-              <Image width={1280} height={640} src={heroImage} alt="" />
+              <Image width={1020} height={640} src={heroImage} alt="" />
             )
           }
         </div>
