@@ -18,10 +18,10 @@ const blogPosts = blogPostsRaw.map((post) => ({
 const kanteiPosts = kanteiPostsRaw.map((post) => ({
   ...post,
   collection: "kantei",
-  /* data: {
+  data: {
     ...post.data,
     title: `401 - Authorization Required`,
-  }, */
+  },
 }));
 
 const posts = [...blogPosts, ...kanteiPosts].sort(
