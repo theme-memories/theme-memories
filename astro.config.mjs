@@ -10,7 +10,6 @@ import expressiveCode from "astro-expressive-code";
 // https://astro.build/config
 export default defineConfig({
   site: "https://astro.amia.work",
-  output: "server",
   integrations: [sitemap(), expressiveCode({ themes: ["github-dark"] })],
   adapter: cloudflare(),
   vite: {
