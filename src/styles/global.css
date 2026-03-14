@@ -239,11 +239,6 @@ hr {
 }
 
 .wind-arrow {
-  width: 0;
-  height: 0;
-  border-left: 5px solid transparent;
-  border-right: 5px solid transparent;
-  border-bottom: 10px solid #fff;
   display: inline-block;
   transition: transform 0.5s ease;
 }
