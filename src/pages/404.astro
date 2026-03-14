@@ -1,6 +1,5 @@
 ---
 export const prerender = true;
-import NotFoundImage from "../assets/blog-placeholder-4.jpg";
 import Layout from "../layouts/BlogPost.astro";
 ---
 
@@ -8,7 +7,7 @@ import Layout from "../layouts/BlogPost.astro";
   title="404: Not Found"
   description="The page you're looking for could not be found."
   pubDate={new Date()}
-  heroImage={NotFoundImage}
+  heroImage="https://http.cat/404"
 >
   <p>Oops! It seems you've stumbled upon a page that doesn't exist.</p>
   <p>
