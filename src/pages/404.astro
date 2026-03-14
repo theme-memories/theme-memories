@@ -1,0 +1,17 @@
+---
+import NotFoundImage from "../assets/blog-placeholder-4.jpg";
+import Layout from "../layouts/BlogPost.astro";
+---
+
+<Layout
+  title="404: Not Found"
+  description="The page you're looking for could not be found."
+  pubDate={new Date()}
+  heroImage={NotFoundImage}
+>
+  <p>Oops! It seems you've stumbled upon a page that doesn't exist.</p>
+  <p>
+    You can use the navigation above to find what you're looking for, or head
+    back to the <a href="/">homepage</a>.
+  </p>
+</Layout>

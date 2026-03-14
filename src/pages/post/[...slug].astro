@@ -5,7 +5,7 @@ import BlogPost from "../../layouts/BlogPost.astro";
 const post = await getEntry("kantei", Astro.params.slug ?? "");
 
 if (post === undefined) {
-  return new Response("Not Found", { status: 404 });
+  return Astro.redirect("/404");
 }
 
 const { Content } = await render(post);
