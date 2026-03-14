@@ -28,23 +28,7 @@
     "binding": "ASSETS",
     "directory": "./dist",
   },
-  "secrets_store_secrets": [
-    {
-      "binding": "BETTER_AUTH_SECRET",
-      "store_id": "c5b03c1fc22547d0bb1ee70629d4b6dd",
-      "secret_name": "BETTER_AUTH_SECRET",
-    },
-    {
-      "binding": "BETTER_AUTH_URL",
-      "store_id": "c5b03c1fc22547d0bb1ee70629d4b6dd",
-      "secret_name": "BETTER_AUTH_URL",
-    },
-    {
-      "binding": "MONGO_URI",
-      "store_id": "c5b03c1fc22547d0bb1ee70629d4b6dd",
-      "secret_name": "MONGO_URI",
-    },
-  ],
+  "secrets_store_secrets": [],
   "kv_namespaces": [
     {
       "binding": "SESSION",
