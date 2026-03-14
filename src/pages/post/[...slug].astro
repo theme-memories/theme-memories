@@ -1,17 +1,13 @@
 ---
-import { type CollectionEntry, getCollection, render } from "astro:content";
+import { getEntry, render } from "astro:content";
 import BlogPost from "../../layouts/BlogPost.astro";
 
-export async function getStaticPaths() {
-  const kanteiPosts = await getCollection("kantei");
-  return kanteiPosts.map((post) => ({
-    params: { slug: post.id },
-    props: post,
-  }));
-}
-type Props = CollectionEntry<"kantei">;
+const post = await getEntry("kantei", Astro.params.slug ?? "");
 
-const post = Astro.props;
+if (post === undefined) {
+  return new Response("Not Found", { status: 404 });
+}
+
 const { Content } = await render(post);
 ---
 
