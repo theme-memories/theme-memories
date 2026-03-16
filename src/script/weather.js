@@ -75,7 +75,6 @@ export function updateWeatherWidget(widget, data) {
     html += `
       <div class="weather-content">
         <p>体感温度: ${temperature.feelsLike} °C</p>
-        <p>最低/最高気温: ${temperature.min} °C / ${temperature.max} °C</p>
         <p>湿度: ${atmospheric.humidity} %&nbsp;&nbsp;気圧: ${atmospheric.pressure} hPa</p>
         <p>視程: ${atmospheric.visibility} m&nbsp;&nbsp;雲量: ${clouds} %</p>
         <p>風: <span class="wind-arrow">↑</span> ${wind.speed} m/s&nbsp;&nbsp;突風: ${wind.gust} m/s</p>
