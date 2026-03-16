@@ -37,7 +37,12 @@ export function updateWeatherWidget(widget, data) {
   const widgetSize = widget.dataset.size || "small";
 
   const locale = "ja-JP-u-ca-japanese";
-  const timeOptions = { hour: "2-digit", minute: "2-digit", second: "2-digit" };
+  const timeOptions = {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    timeZone: "Asia/Tokyo",
+  };
   const dateTimeOptions = {
     era: "long",
     calendar: "japanese",
@@ -47,6 +52,7 @@ export function updateWeatherWidget(widget, data) {
     hour: "2-digit",
     minute: "2-digit",
     second: "2-digit",
+    timeZone: "Asia/Tokyo",
   };
 
   const sunriseTime = new Date(sun.sunrise * 1000).toLocaleTimeString(
