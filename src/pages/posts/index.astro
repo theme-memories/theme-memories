@@ -12,15 +12,15 @@ const kanteiPostsRaw = await getCollection("kantei");
 const blogPosts = blogPostsRaw.map((post) => ({
   ...post,
   collection: "blog",
+  data: {
+    ...post.data,
+    title: `401 - Authorization Required`,
+  },
 }));
 
 const kanteiPosts = kanteiPostsRaw.map((post) => ({
   ...post,
   collection: "kantei",
-  data: {
-    ...post.data,
-    title: `401 - Authorization Required`,
-  },
 }));
 
 const posts = [...blogPosts, ...kanteiPosts].sort(
@@ -110,7 +110,7 @@ const groupedPosts = posts.reduce((acc, post) => {
         color: var(--accent);
       }
 
-      .post-title a.kantei-title:hover {
+      .post-title a.blog-title:hover {
         color: var(--accent-dark);
       }
     </style>
@@ -130,12 +130,12 @@ const groupedPosts = posts.reduce((acc, post) => {
                   <div class="post-title">
                     <a
                       href={
-                        post.collection === "kantei"
+                        post.collection === "blog"
                           ? `/post/${post.id}/`
                           : `/posts/${post.id}/`
                       }
                       class:list={[
-                        { "kantei-title": post.collection === "kantei" },
+                        { "blog-title": post.collection === "blog" },
                       ]}
                     >
                       {post.data.title}

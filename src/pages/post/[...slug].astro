@@ -3,7 +3,7 @@ export const prerender = false;
 import { getEntry, render } from "astro:content";
 import BlogPost from "../../layouts/BlogPost.astro";
 
-const post = await getEntry("kantei", Astro.params.slug ?? "");
+const post = await getEntry("blog", Astro.params.slug ?? "");
 
 if (post === undefined) {
   return Astro.redirect("/404");
