@@ -40,8 +40,4 @@ export default defineConfig({
       sameSite: "strict",
     },
   },
-  prefetch: {
-    defaultStrategy: "viewport",
-    prefetchAll: true,
-  },
 });

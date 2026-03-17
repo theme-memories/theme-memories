@@ -137,9 +137,6 @@ const groupedPosts = posts.reduce((acc, post) => {
                       class:list={[
                         { "blog-title": post.collection === "blog" },
                       ]}
-                      data-astro-prefetch={
-                        post.collection === "blog" ? "false" : undefined
-                      }
                     >
                       {post.data.title}
                     </a>
