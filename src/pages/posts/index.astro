@@ -24,7 +24,7 @@ const kanteiPosts = kanteiPostsRaw.map((post) => ({
 }));
 
 const posts = [...blogPosts, ...kanteiPosts].sort(
-  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
 );
 
 // Group posts by month using the Japanese calendar
@@ -137,6 +137,9 @@ const groupedPosts = posts.reduce((acc, post) => {
                       class:list={[
                         { "blog-title": post.collection === "blog" },
                       ]}
+                      data-astro-prefetch={
+                        post.collection === "blog" ? "false" : undefined
+                      }
                     >
                       {post.data.title}
                     </a>

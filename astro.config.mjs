@@ -10,6 +10,7 @@ import expressiveCode from "astro-expressive-code";
 // https://astro.build/config
 export default defineConfig({
   site: "https://astro.amia.work",
+  trailingSlash: "never",
   integrations: [sitemap(), expressiveCode({ themes: ["github-dark"] })],
   adapter: cloudflare(),
   vite: {
@@ -33,4 +34,14 @@ export default defineConfig({
       subsets: ["japanese", "latin"],
     },
   ],
+  session: {
+    cookie: {
+      name: "__amia_session",
+      sameSite: "strict",
+    },
+  },
+  prefetch: {
+    defaultStrategy: "viewport",
+    prefetchAll: true,
+  },
 });
