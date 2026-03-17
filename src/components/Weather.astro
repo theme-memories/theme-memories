@@ -11,10 +11,10 @@ const { size } = Astro.props;
   <p>天気を読み込み中...</p>
 </div>
 
-<script is:inline>
+<script>
   import { getWeatherData, updateWeatherWidget } from "../script/weather";
 
-  document.addEventListener("DOMContentLoaded", async () => {
+  document.addEventListener("astro:page-load", async () => {
     const widget = document.getElementById("weather-widget");
     const weatherData = await getWeatherData();
     updateWeatherWidget(widget, weatherData);
