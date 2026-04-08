@@ -1,0 +1,70 @@
+---
+import { getCollection, type CollectionEntry } from "astro:content";
+import BaseHead from "@components/html/Head.astro";
+import Footer from "@components/html/Footer.astro";
+import FormattedDate from "@components/helper/Date.astro";
+import { siteConfig } from "@consts";
+import Weather from "@components/widget/Weather.astro";
+
+const posts = (
+  await getCollection("cpub", ({ data }) => {
+    return data.draft !== true;
+  })
+).sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+const groupedPosts = posts.reduce<Record<string, CollectionEntry<"cpub">[]>>(
+  (acc, post) => {
+    const pubDate = post.data.pubDate;
+    const key = new Intl.DateTimeFormat("ja-JP-u-ca-japanese", {
+      era: "long",
+      year: "numeric",
+      month: "long",
+    }).format(pubDate);
+
+    if (!acc[key]) {
+      acc[key] = [];
+    }
+    acc[key].push(post);
+    return acc;
+  },
+  {},
+);
+---
+
+<!doctype html>
+<html lang="ja">
+  <head>
+    <BaseHead title={siteConfig.title} description={siteConfig.description} />
+  </head>
+  <body>
+    <main class="timeline mx-auto w-300 py-8">
+      {
+        Object.entries(groupedPosts).map(([month, posts]) => (
+          <div class="month-group mb-8 flex gap-6">
+            <div class="month-header text-accent sticky top-4 w-30 flex-none self-start text-right text-xl font-bold">
+              {month}
+            </div>
+            <ul class="post-list m-0 min-w-0 flex-1 list-none p-0">
+              {posts.map((post) => (
+                <li class="post-item border-gray-light/20 flex items-start border-b py-4">
+                  <div class="post-date text-gray-light w-20 pr-5 text-right text-[0.9rem]">
+                    <FormattedDate date={post.data.pubDate} format="day" />
+                  </div>
+                  <div class="post-title">
+                    <a
+                      href={`/posts/${post.id}`}
+                      class="text-gray-light hover:text-accent-dark inline-block max-w-[25em] text-[1.1rem] wrap-break-word no-underline transition-colors duration-200 ease-in-out"
+                    >
+                      {post.data.title}
+                    </a>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))
+      }
+    </main>
+    <Footer />
+    <Weather size="big" />
+  </body>
+</html>

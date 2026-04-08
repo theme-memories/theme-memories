@@ -1,0 +1,45 @@
+---
+export const prerender = false;
+
+import BaseHead from "@components/html/Head.astro";
+import { siteConfig } from "@consts";
+---
+
+<!doctype html>
+<html lang="ja">
+  <head>
+    <BaseHead title={siteConfig.title} description={siteConfig.description} />
+  </head>
+  <body>
+    <main
+      class="relative flex h-screen items-center justify-center text-center"
+    >
+      <div class="container">
+        <h1>
+          <span id="typed" class="text-4xl font-bold"></span>
+        </h1>
+        <a
+          href="/posts"
+          class="entry-link absolute bottom-10 left-1/2 -translate-x-1/2"
+        >
+          <button class="cursor-pointer px-5 py-2.5 text-base"
+            >&lt; Entry / 進入 &gt;</button
+          >
+        </a>
+      </div>
+    </main>
+    <script is:inline src="https://unpkg.com/typed.js/dist/typed.umd.js"
+    ></script>
+    <script is:inline>
+      function setupTyped() {
+        new Typed("#typed", {
+          strings: ["25時、ナイトコードで。"],
+          typeSpeed: 250,
+          cursorChar: "_",
+          shouldBackspace: false,
+        });
+      }
+      setupTyped();
+    </script>
+  </body>
+</html>

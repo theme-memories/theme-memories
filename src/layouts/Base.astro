@@ -1,0 +1,19 @@
+---
+import HeadTag from "@components/html/Head.astro";
+import Footer from "@components/html/Footer.astro";
+
+const { title, description, showFooter = true } = Astro.props;
+---
+
+<!doctype html>
+<html lang="jp">
+  <head>
+    <HeadTag title={title} description={description} />
+  </head>
+  <body>
+    <main>
+      <slot />
+    </main>
+    {showFooter && <Footer />}
+  </body>
+</html>

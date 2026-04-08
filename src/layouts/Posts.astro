@@ -1,0 +1,58 @@
+---
+import { Image } from "astro:assets";
+import type { CollectionEntry } from "astro:content";
+import BaseHead from "@components/html/Head.astro";
+import Footer from "@components/html/Footer.astro";
+import FormattedDate from "@components/helper/Date.astro";
+import Weather from "@components/widget/Weather.astro";
+
+type Props = CollectionEntry<"cpub">["data"];
+
+const { title, description, pubDate, updDate, banner } = Astro.props;
+---
+
+<html lang="ja">
+  <head>
+    <BaseHead title={title} description={description} />
+  </head>
+  <body>
+    <main>
+      <article class="w-240">
+        <div class="hero-image w-full">
+          {
+            banner && (
+              <Image
+                width={1020}
+                height={510}
+                src={banner}
+                alt=""
+                class="shadow-main mx-auto block rounded-xl"
+              />
+            )
+          }
+        </div>
+        <div class="title mb-[1em] py-[1em] text-center leading-none">
+          <div class="date text-gray-light mb-[0.5em]">
+            <FormattedDate date={pubDate} />
+            {
+              updDate && (
+                <div class="last-updated-on">
+                  Last updated on <FormattedDate date={updDate} />
+                </div>
+              )
+            }
+          </div>
+          <h1 class="m-0 mb-[0.5em]">{title}</h1>
+          <hr />
+        </div>
+        <div
+          class="prose text-gray-light mx-auto max-w-[72ch] p-[1em] text-justify leading-[1.8]"
+        >
+          <slot />
+        </div>
+      </article>
+    </main>
+    <Footer />
+    <Weather size="small" />
+  </body>
+</html>
