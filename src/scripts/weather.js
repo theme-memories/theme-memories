@@ -27,7 +27,6 @@ export function updateWeatherWidget(widget, data) {
     temperature,
     atmospheric,
     wind,
-    clouds,
     sun,
     lastUpdated,
     rain,
@@ -65,9 +64,17 @@ export function updateWeatherWidget(widget, data) {
     dateTimeOptions,
   );
 
+  const weatherHtml = weather
+    .map(
+      (
+        w,
+      ) => `<img src="https://openweathermap.org/payload/api/media/file/${w.icon}.png" alt="${w.description}">
+<span>${w.description}</span>`,
+    )
+    .join("");
+
   let html = `<div class="weather-header">
-<img src="https://openweathermap.org/payload/api/media/file/${weather.icon}.png" alt="${weather.description}">
-<span>${weather.description}</span>
+${weatherHtml}
 <span>${temperature.current}°C</span>
 </div>`;
 
@@ -75,11 +82,11 @@ export function updateWeatherWidget(widget, data) {
     html += `<div class="weather-content">
 <p>体感温度: ${temperature.feelsLike} °C</p>
 <p>湿度: ${atmospheric.humidity} %&nbsp;&nbsp;気圧: ${atmospheric.pressure} hPa</p>
-<p>視程: ${atmospheric.visibility} m&nbsp;&nbsp;雲量: ${clouds} %</p>
+<p>視程: ${atmospheric.visibility} m&nbsp;&nbsp;雲量: ${atmospheric.clouds} %</p>
 <p>風: <span class="wind-arrow">↑</span> ${wind.speed} m/s&nbsp;&nbsp;突風: ${wind.gust} m/s</p>
 <p>日の出/日の入り: ${sunriseTime} / ${sunsetTime}</p>
-<p>降水量 (過去1時間): ${rain} mm</p>
-<p>降雪量 (過去1時間): ${snow} mm</p>
+${rain > 0 ? `<p>降水量 (過去1時間): ${rain} mm</p>` : ""}
+${snow > 0 ? `<p>降雪量 (過去1時間): ${snow} mm</p>` : ""}
 <p>観測時刻: ${updatedTime}</p>
 </div>`;
   }
