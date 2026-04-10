@@ -34,5 +34,6 @@ export default defineConfig({
       name: "__amia_session",
       sameSite: "strict",
     },
+    ttl: 14400,
   },
 });

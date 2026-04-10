@@ -2,6 +2,7 @@ export type siteType = {
   title: string;
   description: string;
   cfAnalyticsToken?: string;
+  cfTurnstileSiteKey: string;
 };
 
 export type protectType = {
@@ -41,3 +42,13 @@ export interface TransformedWeatherData {
   rain?: number;
   snow?: number;
 }
+
+export type verifyTypes = {
+  success: boolean;
+  "error-codes"?: string[];
+};
+
+export type argon2Types = {
+  success: boolean;
+  errcode?: string;
+};

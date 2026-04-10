@@ -28,7 +28,18 @@
     "binding": "ASSETS",
     "directory": "./dist",
   },
-  "secrets_store_secrets": [],
+  "secrets_store_secrets": [
+    {
+      "binding": "TURNSTILE_SECRET",
+      "store_id": "c5b03c1fc22547d0bb1ee70629d4b6dd",
+      "secret_name": "TURNSTILE_SECRET",
+    },
+    {
+      "binding": "ARGON2_URL",
+      "store_id": "c5b03c1fc22547d0bb1ee70629d4b6dd",
+      "secret_name": "ARGON2_URL",
+    },
+  ],
   "kv_namespaces": [
     {
       "binding": "SESSION",
