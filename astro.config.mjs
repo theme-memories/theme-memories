@@ -10,6 +10,7 @@ export default defineConfig({
   trailingSlash: "never",
   integrations: [sitemap(), expressiveCode({ themes: ["github-dark"] })],
   adapter: cloudflare(),
+  output: "server",
   vite: {
     plugins: [tailwindcss()],
   },
