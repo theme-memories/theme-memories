@@ -1,0 +1,54 @@
+---
+export const prerender = false;
+
+import { type CollectionEntry, getEntry } from "astro:content";
+import markdownit from "markdown-it";
+import mdKatex from "@vscode/markdown-it-katex";
+import BaseLayout from "@layouts/Base.astro";
+import Footer from "@components/html/Footer.astro";
+import Weather from "@components/widget/Weather.astro";
+import { siteConfig } from "@consts";
+
+const { slug } = Astro.params;
+if (!slug) {
+  return Astro.redirect("/404");
+}
+
+const post = await getEntry("cpriv", slug);
+if (!post || post.data.draft) return Astro.redirect("/404");
+
+type Props = CollectionEntry<"cpriv">;
+
+const md = new markdownit().use(mdKatex);
+const questionRaw = post.data.question;
+const questionHtml = md.render(questionRaw);
+---
+
+<BaseLayout
+  title={`401: Unauthorized - ${siteConfig.title}`}
+  description={siteConfig.description}
+>
+  <main>
+    Please answer the following question to log in.
+    <div class="question-container" set:html={questionHtml} />
+    <form method="POST" action="/api/auth" class="login-form">
+      <input type="hidden" name="slug" value={slug} />
+      <input type="password" name="answer" placeholder="Required." required />
+      <div
+        class="cf-turnstile"
+        data-sitekey={siteConfig.cfTurnstileSiteKey}
+        data-theme="dark"
+        data-language="ja"
+      >
+      </div>
+      <button type="submit">Log in</button>
+    </form>
+  </main>
+  <script
+    is:inline
+    src="https://challenges.cloudflare.com/turnstile/v0/api.js"
+    async
+    defer></script>
+  <Footer />
+  <Weather size="big" />
+</BaseLayout>

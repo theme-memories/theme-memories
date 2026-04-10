@@ -1,7 +1,7 @@
 ---
 interface Props {
   date: Date;
-  format?: "full" | "year-month" | "day";
+  format?: "year-month" | "day";
 }
 
 const { date, format = "full" } = Astro.props;
@@ -21,7 +21,7 @@ const formats: Record<string, Intl.DateTimeFormatOptions> = {
     day: "numeric",
   },
 };
-const options = formats[format] || formats.full;
+const options = formats[format];
 ---
 
 <time datetime={date.toISOString()}>

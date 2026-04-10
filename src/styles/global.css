@@ -1,17 +1,7 @@
 @import "tailwindcss";
 
 @theme {
-  --color-accent: #58a6ff;
-  --color-accent-dark: #f57c00;
-  --color-black: rgb(13 17 23);
-  --color-gray: rgb(96 115 159);
-  --color-gray-light: rgb(230 237 243);
-  --spacing-main-max: 1080px;
-  --shadow-main:
-    0 2px 6px rgb(96 115 159 25%), 0 8px 24px rgb(96 115 159 33%),
-    0 16px 32px rgb(96 115 159 33%);
-  --background-image-bear-grad: linear-gradient(to bottom, #152331, #000);
-  --transition-wind: transform 0.5s ease;
+  --background-image-bear-grad: linear-gradient(to right, #000, #152331);
 }
 
 @theme inline {
@@ -21,137 +11,10 @@
 
 @layer base {
   body {
-    @apply text-gray-light bg-bear-grad m-0 min-h-svh bg-fixed p-0 text-left font-serif text-[20px] leading-[1.7] wrap-break-word;
-    @apply max-[720px]:text-[18px];
+    @apply bg-bear-grad bg-fixed font-serif text-white;
   }
 
-  main {
-    @apply max-w-main-max mx-auto px-4 py-12;
-    @apply max-[720px]:p-[1em];
-  }
-
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6 {
-    @apply text-gray-light mx-0 mb-2 leading-[1.2];
-  }
-
-  h1 {
-    @apply text-[3.052em];
-  }
-
-  h2 {
-    @apply text-[2.441em];
-  }
-
-  h3 {
-    @apply text-[1.953em];
-  }
-
-  h4 {
-    @apply text-[1.563em];
-  }
-
-  h5 {
-    @apply text-[1.25em];
-  }
-
-  a {
-    @apply text-accent hover:text-accent no-underline;
-  }
-
-  p {
-    @apply mb-[1em];
-  }
-
-  textarea,
-  input {
-    @apply text-base;
-  }
-
-  textarea {
-    @apply w-full;
-  }
-
-  table {
-    @apply w-full;
-  }
-
-  img {
-    @apply h-auto max-w-full rounded-lg;
-  }
-
-  code:not(pre code) {
-    @apply text-accent rounded bg-[rgb(110_118_129/40%)] px-[0.45em] py-[0.3em] font-mono text-[0.8em] font-semibold;
-  }
-
-  blockquote {
-    @apply border-accent m-0 border-l-4 pl-5 text-[1.333em];
-  }
-
-  ol {
-    @apply mb-4 ml-6 list-decimal;
-  }
-
-  ul {
-    @apply mb-4 ml-6 list-disc;
-  }
-
-  ul ul {
-    @apply list-[circle];
-  }
-
-  mark {
-    @apply text-accent rounded-[3px] bg-[rgb(88_166_255/20%)] px-[0.4em] py-[0.2em];
-  }
-
-  hr {
-    @apply border-gray-light border-t border-none;
-  }
-
-  @view-transition {
-    navigation: auto;
-  }
-}
-
-@layer components {
-  .prose p {
-    @apply mx-auto mb-8;
-  }
-
-  .weather-widget {
-    @apply fixed right-6 bottom-6 z-100 flex flex-col gap-3 rounded-2xl p-5;
-    @apply border border-white/10 bg-gray-900/75 shadow-lg backdrop-blur-lg;
-
-    &[data-size="small"] {
-      @apply w-60;
-    }
-
-    &[data-size="big"] {
-      @apply w-70;
-    }
-  }
-
-  .weather-header {
-    @apply flex items-center gap-2 text-gray-50;
-
-    img {
-      @apply h-12.5 w-12.5;
-    }
-
-    span {
-      @apply m-0 text-base font-bold tracking-tight;
-    }
-  }
-
-  .weather-content p {
-    @apply m-0 text-sm leading-6 text-slate-300;
-  }
-
-  .wind-arrow {
-    @apply inline-block transition-(--transition-wind);
+  code {
+    @apply font-mono;
   }
 }

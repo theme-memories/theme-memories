@@ -1,0 +1,69 @@
+---
+export const prerender = false;
+
+import { getEntry } from "astro:content";
+import { env } from "cloudflare:workers";
+import { type verifyTypes, type argon2Types } from "@ctypes/consts";
+
+if (Astro.request.method !== "POST") {
+  return Astro.redirect("/404");
+}
+
+const formData = await Astro.request.formData();
+const turnstileResponse = formData.get("cf-turnstile-response");
+const slug = formData.get("slug") as string;
+const answer = formData.get("answer");
+
+if (!slug || !answer || !turnstileResponse) {
+  return Astro.redirect(`/login/${slug || ""}`);
+}
+
+const turnstileSecret = await env.TURNSTILE_SECRET.get();
+
+const verifyResponse = await fetch(
+  "https://challenges.cloudflare.com/turnstile/v0/siteverify",
+  {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      secret: turnstileSecret,
+      response: turnstileResponse,
+    }),
+  },
+);
+
+const verifyResult: verifyTypes = await verifyResponse.json();
+
+if (!verifyResult.success) {
+  return Astro.redirect(`/login/${slug}`);
+}
+
+const post = await getEntry("cpriv", slug);
+if (!post || post.data.draft) {
+  return Astro.redirect(`/login/${slug}`);
+}
+
+const argon2Url = await env.ARGON2_URL.get();
+const argon2Response = await fetch(argon2Url, {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    slug: slug,
+    answer: answer,
+  }),
+});
+
+const argon2Result: argon2Types = await argon2Response.json();
+
+if (!argon2Result.success) {
+  return Astro.redirect(`/login/${slug}`);
+}
+
+Astro.session?.set("unlocked", post.id);
+Astro.session?.regenerate();
+return Astro.redirect(`/posts/${post.id}`);
+---

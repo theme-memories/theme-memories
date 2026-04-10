@@ -34,6 +34,9 @@ const {
 <meta name="robots" content="nosnippet" />
 <Font cssVariable="--font-shippori-mincho" preload />
 <Font cssVariable="--font-m-plus-1-code" preload />
+<link rel="preconnect" href="https://challenges.cloudflare.com" />
+<link rel="preconnect" href="https://object.amia.work" />
+<link rel="preconnect" href="https://unpkg.com" />
 
 <!-- Canonical URL -->
 <link rel="canonical" href={canonicalURL} />
@@ -57,8 +60,13 @@ const {
 <meta property="twitter:description" content={description} />
 <meta property="twitter:image" content={new URL(image.src, Astro.url)} />
 
-<script
-  is:inline
-  defer
-  src="https://static.cloudflareinsights.com/beacon.min.js"
-  data-cf-beacon=`{"token": "${siteConfig.cfAnalyticsToken}"}`></script>
+{
+  siteConfig.cfAnalyticsToken && (
+    <script
+      is:inline
+      defer
+      src="https://static.cloudflareinsights.com/beacon.min.js"
+      data-cf-beacon={`{"token": "${siteConfig.cfAnalyticsToken}"}`}
+    />
+  )
+}

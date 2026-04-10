@@ -1,20 +1,24 @@
 ---
-import { type CollectionEntry, getCollection, render } from "astro:content";
+export const prerender = false;
+
+import { type CollectionEntry, getEntry, render } from "astro:content";
 import BlogPost from "@layouts/Posts.astro";
 
-export async function getStaticPaths() {
-  const posts = await getCollection("cpub", ({ data }) => {
-    return data.draft !== true;
-  });
-  return posts.map((post) => ({
-    params: { slug: post.id },
-    props: post,
-  }));
+const { slug } = Astro.params;
+if (!slug) {
+  return Astro.redirect("/404");
 }
 
-type Props = CollectionEntry<"cpub">;
+const post = await getEntry("cpriv", slug);
+if (!post || post.data.draft) return Astro.redirect("/404");
 
-const post = Astro.props;
+const unlocked = await Astro.session?.get("unlocked");
+if (!unlocked || unlocked !== post.id) {
+  return Astro.redirect(`/login/${post.id}`);
+}
+
+type Props = CollectionEntry<"cpriv">;
+
 const { Content } = await render(post);
 ---
 

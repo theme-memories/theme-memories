@@ -1,8 +1,7 @@
 ---
 import HeadTag from "@components/html/Head.astro";
-import Footer from "@components/html/Footer.astro";
 
-const { title, description, showFooter = true } = Astro.props;
+const { title, description } = Astro.props;
 ---
 
 <!doctype html>
@@ -11,9 +10,6 @@ const { title, description, showFooter = true } = Astro.props;
     <HeadTag title={title} description={description} />
   </head>
   <body>
-    <main>
-      <slot />
-    </main>
-    {showFooter && <Footer />}
+    <slot />
   </body>
 </html>
