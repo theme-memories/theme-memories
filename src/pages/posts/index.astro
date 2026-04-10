@@ -54,7 +54,13 @@ const groupedPosts = posts.reduce<Record<string, Post[]>>((acc, post) => {
                   <FormattedDate date={post.data.pubDate} format="day" />
                 </div>
                 <div class="post-title">
-                  <a href={`/posts/${post.id}`}>{post.data.title}</a>
+                  {post.isPublic ? (
+                    <a href={`/posts/public/${post.id}`}>{post.data.title}</a>
+                  ) : (
+                    <a href={`/posts/private/${post.id}`} class="locked-link">
+                      <span class="icon">🔒</span> {post.data.title}
+                    </a>
+                  )}
                 </div>
               </li>
             ))}

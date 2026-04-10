@@ -12,7 +12,8 @@ if (!slug) {
   return Astro.redirect("/404");
 }
 
-const post = await getEntry("cpriv", slug);
+const normalizedSlug = slug.startsWith("/") ? slug.slice(1) : slug;
+const post = await getEntry("cpriv", normalizedSlug);
 if (!post || post.data.draft) return Astro.redirect("/404");
 
 type Props = CollectionEntry<"cpriv">;
@@ -30,7 +31,7 @@ const questionHtml = md.render(questionRaw);
     Please answer the following question to log in.
     <div class="question-container" set:html={questionHtml} />
     <form method="POST" action="/api/auth" class="login-form">
-      <input type="hidden" name="slug" value={slug} />
+      <input type="hidden" name="slug" value={normalizedSlug} />
       <input type="password" name="answer" placeholder="Required." required />
       <div
         class="cf-turnstile"
