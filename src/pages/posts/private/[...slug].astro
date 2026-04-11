@@ -14,12 +14,9 @@ const post = await getEntry("cpriv", normalizedSlug);
 if (!post || post.data.draft) return Astro.redirect("/404");
 
 let unlocked = await Astro.session?.get("unlocked");
-if (
-  Astro.url.searchParams.get("login") === "success" &&
-  (!unlocked || unlocked !== post.id)
-) {
-  for (let i = 0; i < 5; i++) {
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+if (Astro.url.searchParams.get("login") === "success" && unlocked !== post.id) {
+  for (let i = 0; i < 50; i++) {
+    await new Promise((resolve) => setTimeout(resolve, 200));
     unlocked = await Astro.session?.get("unlocked");
     if (unlocked && unlocked === post.id) break;
   }
