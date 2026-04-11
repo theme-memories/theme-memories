@@ -63,7 +63,7 @@ if (!argon2Result.success) {
   return Astro.redirect(`/login/${slug}`);
 }
 
-Astro.session?.regenerate();
-Astro.session?.set("unlocked", post.id);
+await Astro.session?.regenerate();
+await Astro.session?.set("unlocked", post.id);
 return Astro.redirect(`/posts/private/${post.id}?login=success`);
 ---
