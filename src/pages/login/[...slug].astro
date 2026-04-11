@@ -17,8 +17,6 @@ if (!slug) {
 const post = await getEntry("cpriv", slug);
 if (!post || post.data.draft) return Astro.redirect("/404");
 
-const sessionId = await Astro.session?.sessionID;
-
 type Props = CollectionEntry<"cpriv">;
 
 const md = new markdownit().use(mdKatex);
@@ -35,7 +33,6 @@ const questionHtml = md.render(questionRaw);
     <div class="question-container" set:html={questionHtml} />
     <form method="POST" action="/api/auth" class="login-form">
       <input type="hidden" name="slug" value={slug} />
-      <input type="hidden" name="sessionId" value={sessionId} />
       <input
         type="password"
         autocomplete="current-password"

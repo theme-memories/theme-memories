@@ -13,21 +13,18 @@ const formData = await Astro.request.formData();
 const turnstileResponse = formData.get("cf-turnstile-response") as string;
 const slug = formData.get("slug") as string;
 const answer = formData.get("answer") as string;
-const sessionId = formData.get("sessionId") as string;
 
-if (!slug || slug.trim() === "") {
+if (!slug) {
   return Astro.redirect("/404");
 }
 
-if (!answer || !turnstileResponse || !sessionId) {
-  return Astro.redirect(`/login/${slug}`);
+const sanitizedSlug = slug.replace(/[^a-zA-Z0-9-]/g, "");
+
+if (!answer || !turnstileResponse) {
+  return Astro.redirect(`/login/${sanitizedSlug}`);
 }
 
-const desiredId = await Astro.session?.sessionID;
-if (sessionId !== desiredId) {
-  return Astro.redirect(`/login/${slug}`);
-}
-
+const sessionId = await Astro.session?.sessionID;
 const turnstileSecret = await env.TURNSTILE_SECRET.get();
 
 const verifyResponse = await fetch(
@@ -62,7 +59,7 @@ const argon2Response = await fetch(argon2Url, {
     "Content-Type": "application/json",
   },
   body: JSON.stringify({
-    slug: slug,
+    slug: sanitizedSlug,
     answer: sanitizedAnswer,
   }),
 });
@@ -70,10 +67,10 @@ const argon2Response = await fetch(argon2Url, {
 const argon2Result: argon2Types = await argon2Response.json();
 
 if (!argon2Result.success) {
-  return Astro.redirect(`/login/${slug}`);
+  return Astro.redirect(`/login/${sanitizedSlug}`);
 }
 
-const post = await getEntry("cpriv", slug);
+const post = await getEntry("cpriv", sanitizedSlug);
 if (!post || post.data.draft) {
   return Astro.redirect("/404");
 }
