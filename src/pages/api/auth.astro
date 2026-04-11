@@ -2,6 +2,7 @@
 export const prerender = false;
 
 import { getEntry } from "astro:content";
+import { z } from "astro/zod";
 import { env } from "cloudflare:workers";
 import { type verifyTypes, type argon2Types } from "@ctypes/consts";
 
@@ -10,12 +11,38 @@ if (Astro.request.method !== "POST") {
 }
 
 const formData = await Astro.request.formData();
-const turnstileResponse = formData.get("cf-turnstile-response");
-const slug = formData.get("slug") as string;
-const answer = formData.get("answer");
+const data = Object.fromEntries(formData.entries());
 
-if (!slug || !answer || !turnstileResponse) {
-  return Astro.redirect(`/login/${slug || ""}`);
+const schema = z.object({
+  slug: z
+    .string()
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Format error.")
+    .min(1, "Slug cannot be empty.")
+    .max(32, "Slug cannot exceed 32 characters."),
+  answer: z.string().min(1, "Answer is required."),
+  "cf-turnstile-response": z.string().min(1, "Captcha is required."),
+  sessionId: z.string().min(1, "Session ID is required."),
+});
+
+const result = schema.safeParse(data);
+
+if (!result.success) {
+  if (!data.slug || data.slug === "") {
+    return Astro.redirect("404");
+  }
+  return Astro.redirect(`/login/${data.slug}`);
+}
+
+const {
+  slug,
+  answer,
+  "cf-turnstile-response": turnstileResponse,
+  sessionId,
+} = result.data;
+
+const desiredId = await Astro.session?.get("id");
+if (sessionId !== desiredId) {
+  return Astro.redirect(`/login/${slug}`);
 }
 
 const turnstileSecret = await env.TURNSTILE_SECRET.get();
@@ -30,6 +57,7 @@ const verifyResponse = await fetch(
     body: JSON.stringify({
       secret: turnstileSecret,
       response: turnstileResponse,
+      idempotency_key: sessionId,
     }),
   },
 );
@@ -40,12 +68,11 @@ if (!verifyResult.success) {
   return Astro.redirect(`/login/${slug}`);
 }
 
-const post = await getEntry("cpriv", slug);
-if (!post || post.data.draft) {
-  return Astro.redirect(`/login/${slug}`);
-}
-
 const argon2Url = await env.ARGON2_URL.get();
+const sanitizedAnswer = (answer as string)
+  .replace(/[^a-zA-Z0-9!@#$%^&*]/g, "")
+  .replace(/[Ili0oO]/g, "");
+
 const argon2Response = await fetch(argon2Url, {
   method: "POST",
   headers: {
@@ -53,7 +80,7 @@ const argon2Response = await fetch(argon2Url, {
   },
   body: JSON.stringify({
     slug: slug,
-    answer: answer,
+    answer: sanitizedAnswer,
   }),
 });
 
@@ -61,6 +88,11 @@ const argon2Result: argon2Types = await argon2Response.json();
 
 if (!argon2Result.success) {
   return Astro.redirect(`/login/${slug}`);
+}
+
+const post = await getEntry("cpriv", slug);
+if (!post || post.data.draft) {
+  return Astro.redirect("/404");
 }
 
 await Astro.session?.regenerate();
