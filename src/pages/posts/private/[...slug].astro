@@ -9,8 +9,7 @@ if (!slug) {
   return Astro.redirect("/404");
 }
 
-const normalizedSlug = slug.startsWith("/") ? slug.slice(1) : slug;
-const post = await getEntry("cpriv", normalizedSlug);
+const post = await getEntry("cpriv", slug);
 if (!post || post.data.draft) return Astro.redirect("/404");
 
 const unlocked = await Astro.session?.get("unlocked");
