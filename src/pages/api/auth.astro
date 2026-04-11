@@ -2,7 +2,6 @@
 export const prerender = false;
 
 import { getEntry } from "astro:content";
-import { z } from "astro/zod";
 import { env } from "cloudflare:workers";
 import { type verifyTypes, type argon2Types } from "@ctypes/consts";
 
@@ -11,34 +10,18 @@ if (Astro.request.method !== "POST") {
 }
 
 const formData = await Astro.request.formData();
-const data = Object.fromEntries(formData.entries());
+const turnstileResponse = formData.get("cf-turnstile-response") as string;
+const slug = formData.get("slug") as string;
+const answer = formData.get("answer") as string;
+const sessionId = formData.get("sessionId") as string;
 
-const schema = z.object({
-  slug: z
-    .string()
-    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Format error.")
-    .min(1, "Slug cannot be empty.")
-    .max(32, "Slug cannot exceed 32 characters."),
-  answer: z.string().min(1, "Answer is required."),
-  "cf-turnstile-response": z.string().min(1, "Captcha is required."),
-  sessionId: z.string().min(1, "Session ID is required."),
-});
-
-const result = schema.safeParse(data);
-
-if (!result.success) {
-  if (!data.slug || data.slug === "") {
-    return Astro.redirect("404");
-  }
-  return Astro.redirect(`/login/${data.slug}`);
+if (!slug || slug.trim() === "") {
+  return Astro.redirect("/404");
 }
 
-const {
-  slug,
-  answer,
-  "cf-turnstile-response": turnstileResponse,
-  sessionId,
-} = result.data;
+if (!answer || !turnstileResponse || !sessionId) {
+  return Astro.redirect(`/login/${slug}`);
+}
 
 const desiredId = await Astro.session?.sessionID;
 if (sessionId !== desiredId) {
