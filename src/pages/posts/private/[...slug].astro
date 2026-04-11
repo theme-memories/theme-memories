@@ -13,12 +13,23 @@ const normalizedSlug = slug.startsWith("/") ? slug.slice(1) : slug;
 const post = await getEntry("cpriv", normalizedSlug);
 if (!post || post.data.draft) return Astro.redirect("/404");
 
-const unlocked = await Astro.session?.get("unlocked");
+let unlocked = await Astro.session?.get("unlocked");
+if (
+  Astro.url.searchParams.get("login") === "success" &&
+  (!unlocked || unlocked !== post.id)
+) {
+  for (let i = 0; i < 5; i++) {
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    unlocked = await Astro.session?.get("unlocked");
+    if (unlocked && unlocked === post.id) break;
+  }
+}
+
 if (!unlocked || unlocked !== post.id) {
+  Astro.session?.destroy();
   return Astro.redirect(`/login/${post.id}`);
 }
 
-Astro.session?.regenerate();
 type Props = CollectionEntry<"cpriv">;
 
 const { Content } = await render(post);
