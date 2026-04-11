@@ -18,8 +18,6 @@ const normalizedSlug = slug.startsWith("/") ? slug.slice(1) : slug;
 const post = await getEntry("cpriv", normalizedSlug);
 if (!post || post.data.draft) return Astro.redirect("/404");
 
-//Astro.session?.destroy();
-
 type Props = CollectionEntry<"cpriv">;
 
 const md = new markdownit().use(mdKatex);
