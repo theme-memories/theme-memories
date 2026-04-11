@@ -40,7 +40,7 @@ const {
   sessionId,
 } = result.data;
 
-const desiredId = await Astro.session?.get("id");
+const desiredId = await Astro.session?.sessionID;
 if (sessionId !== desiredId) {
   return Astro.redirect(`/login/${slug}`);
 }

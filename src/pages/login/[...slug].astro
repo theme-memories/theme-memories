@@ -17,7 +17,7 @@ if (!slug) {
 const post = await getEntry("cpriv", slug);
 if (!post || post.data.draft) return Astro.redirect("/404");
 
-const sessionId = await Astro.session?.get("id");
+const sessionId = await Astro.session?.sessionID;
 
 type Props = CollectionEntry<"cpriv">;
 
