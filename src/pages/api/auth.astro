@@ -70,7 +70,7 @@ if (!verifyResult.success) {
 
 const argon2Url = await env.ARGON2_URL.get();
 
-if (!/[^a-zA-Z0-9!@#$%^&*]/.test(answer)) {
+if (/[^a-zA-Z0-9!@#$%^&*]/.test(answer)) {
   return Astro.redirect(`/login/${slug}`);
 }
 

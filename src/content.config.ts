@@ -61,7 +61,7 @@ const cpriv = defineCollection({
       password: z
         .string()
         .regex(
-          /[^a-zA-Z0-9!@#$%^&*]/,
+          /[a-zA-Z0-9!@#$%^&*]/,
           "Format error, see README.md in submodule.",
         )
         .min(1, "Slug cannot be empty.")
