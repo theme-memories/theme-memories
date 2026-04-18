@@ -66,9 +66,7 @@ if (!verifyResult.success) {
 }
 
 const argon2Url = await env.ARGON2_URL.get();
-const sanitizedAnswer = (answer as string)
-  .replace(/[^a-zA-Z0-9!@#$%^&*]/g, "")
-  .replace(/[Ili0oO]/g, "");
+const sanitizedAnswer = (answer as string).replace(/[^a-zA-Z0-9!@#$%^&*]/g, "");
 const hmacC2V = await env.HMAC_SECRET_C2V.get();
 const reqTimestamp = Date.now().toString();
 const payload = JSON.stringify({
