@@ -9,6 +9,23 @@ if (Astro.request.method !== "POST") {
   return Astro.redirect("/404");
 }
 
+async function hmacCalculate(key: string, message: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const keyData = encoder.encode(key);
+  const messageData = encoder.encode(message);
+
+  const cryptoKey = await crypto.subtle.importKey(
+    "raw",
+    keyData,
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"],
+  );
+
+  const signature = await crypto.subtle.sign("HMAC", cryptoKey, messageData);
+  return btoa(String.fromCharCode(...new Uint8Array(signature)));
+}
+
 const formData = await Astro.request.formData();
 const turnstileResponse = formData.get("cf-turnstile-response") as string;
 const slug = formData.get("slug") as string;
@@ -52,17 +69,33 @@ const argon2Url = await env.ARGON2_URL.get();
 const sanitizedAnswer = (answer as string)
   .replace(/[^a-zA-Z0-9!@#$%^&*]/g, "")
   .replace(/[Ili0oO]/g, "");
+const hmacC2V = await env.HMAC_SECRET_C2V.get();
+const reqTimestamp = Date.now().toString();
+const payload = JSON.stringify({
+  slug: sanitizedSlug,
+  answer: sanitizedAnswer,
+  timestamp: reqTimestamp,
+});
+const payloadHmac = await hmacCalculate(hmacC2V, payload);
 
 const argon2Response = await fetch(argon2Url, {
   method: "POST",
   headers: {
     "Content-Type": "application/json",
+    "X-Amia-HMAC": payloadHmac,
+    "X-Amia-Timestamp": reqTimestamp,
   },
-  body: JSON.stringify({
-    slug: sanitizedSlug,
-    answer: sanitizedAnswer,
-  }),
+  body: payload,
 });
+
+const responseHmac = argon2Response.headers.get("X-Amia-HMAC");
+const responseRaw = await argon2Response.clone().text();
+const hmacV2C = await env.HMAC_SECRET_V2C.get();
+const expectedHmac = await hmacCalculate(hmacV2C, responseRaw);
+
+if (responseHmac !== expectedHmac) {
+  return Astro.redirect(`/login/${sanitizedSlug}`);
+}
 
 const argon2Result: argon2Types = await argon2Response.json();
 
