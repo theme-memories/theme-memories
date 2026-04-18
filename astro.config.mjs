@@ -15,9 +15,24 @@ export default defineConfig({
   vite: {
     plugins: [tailwindcss()],
   },
+  image: {
+    responsiveStyles: true,
+    layout: "constrained",
+  },
   markdown: {
+    syntaxHighlight: {
+      type: "shiki",
+      excludeLangs: ["math"],
+    },
     remarkPlugins: [remarkMath],
     rehypePlugins: [rehypeKatex],
+    smartypants: {
+      dashes: "oldschool",
+      openingQuotes: { double: "「", single: "『" },
+      closingQuotes: { double: "」", single: "』" },
+      ellipses: "unspaced",
+      backticks: false,
+    },
   },
   fonts: [
     {

@@ -1,6 +1,8 @@
 @import "katex/dist/katex.min.css";
 @import "tailwindcss";
 
+@plugin "@tailwindcss/typography";
+
 @theme {
   --background-image-bear-grad: linear-gradient(to right, #000, #152331);
 }
@@ -17,5 +19,40 @@
 
   code {
     @apply font-mono;
+  }
+
+  .prose :where(th, td)[align="center"] {
+    text-align: center !important;
+  }
+
+  .prose :where(th, td)[align="right"] {
+    text-align: right !important;
+  }
+
+  .prose blockquote p:first-of-type::before {
+    content: "「" !important;
+  }
+
+  .prose blockquote p:last-of-type::after {
+    content: "」" !important;
+  }
+
+  .prose blockquote {
+    font-style: normal !important;
+  }
+
+  .prose :not(pre) > code {
+    background-color: #1f2428;
+    color: #e1e4e8;
+    font-weight: 400 !important;
+    padding: 0.2em 0.4em;
+    border-radius: 6px;
+    font-size: 85%;
+    border: 1px solid rgb(255 255 255 / 10%);
+  }
+
+  .prose :not(pre) > code::before,
+  .prose :not(pre) > code::after {
+    content: none !important;
   }
 }
