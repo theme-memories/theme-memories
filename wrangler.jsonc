@@ -40,6 +40,16 @@
       "store_id": "c5b03c1fc22547d0bb1ee70629d4b6dd",
       "secret_name": "ARGON2_URL",
     },
+    {
+      "binding": "HMAC_SECRET_V2C",
+      "store_id": "c5b03c1fc22547d0bb1ee70629d4b6dd",
+      "secret_name": "HMAC_SECRET_V2C",
+    },
+    {
+      "binding": "HMAC_SECRET_C2V",
+      "store_id": "c5b03c1fc22547d0bb1ee70629d4b6dd",
+      "secret_name": "HMAC_SECRET_C2V",
+    },
   ],
   "kv_namespaces": [
     {
