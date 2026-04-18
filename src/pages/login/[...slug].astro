@@ -10,12 +10,32 @@ import Weather from "@components/widget/Weather.astro";
 import { siteConfig } from "@consts";
 
 const { slug } = Astro.params;
+const error = Astro.url.searchParams.get("error");
 if (!slug || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
   return Astro.redirect("/404");
 }
 
 const post = await getEntry("cpriv", slug);
 if (!post || post.data.draft) return Astro.redirect("/404");
+
+const errorMessages: Record<string, string> = {
+  TURNSTILE_FAILED:
+    "Cloudflare Turnstile verification failed. Please try again.",
+  INVALID_ANSWER: "The answer contains invalid characters.",
+  WRONG_ANSWER: "Incorrect answer. Please try again.",
+  NOT_FOUND: "This login page was not found.",
+  TIMESTAMP_EXPIRED: "The request has expired. Please refresh the page.",
+  TIMESTAMP_MISMATCH: "Timestamp mismatch. Please try again.",
+  INVALID_INPUT: "Invalid input provided.",
+  INVALID_SLUG: "Invalid slug provided.",
+  CONFIG_ERROR: "Server configuration error.",
+  INTERNAL_ERROR: "An internal server error occurred. Please try again later.",
+  INVALID_HMAC: "Security verification failed.",
+};
+
+const errorMessage = error
+  ? errorMessages[error] || errorMessages.INTERNAL_ERROR
+  : null;
 
 type Props = CollectionEntry<"cpriv">;
 
@@ -29,6 +49,7 @@ const questionHtml = md.render(questionRaw);
   description={siteConfig.description}
 >
   <main>
+    {errorMessage && <div class="error-message">{errorMessage}</div>}
     Please answer the following question to log in.
     <div class="question-container" set:html={questionHtml} />
     <form method="POST" action="/api/auth" class="login-form">

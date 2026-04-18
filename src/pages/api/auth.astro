@@ -65,13 +65,13 @@ const verifyResponse = await fetch(
 const verifyResult: verifyTypes = await verifyResponse.json();
 
 if (!verifyResult.success) {
-  return Astro.redirect(`/login/${slug}`);
+  return Astro.redirect(`/login/${slug}?error=TURNSTILE_FAILED`);
 }
 
 const argon2Url = await env.ARGON2_URL.get();
 
 if (/[^a-zA-Z0-9!@#$%^&*]/.test(answer)) {
-  return Astro.redirect(`/login/${slug}`);
+  return Astro.redirect(`/login/${slug}?error=INVALID_ANSWER`);
 }
 
 const hmacC2V = await env.HMAC_SECRET_C2V.get();
@@ -96,7 +96,7 @@ const argon2Response = await fetch(argon2Url, {
 const responseHmac = argon2Response.headers.get("X-Amia-HMAC");
 
 if (!responseHmac) {
-  return Astro.redirect(`/login/${slug}`);
+  return Astro.redirect(`/login/${slug}?error=INTERNAL_ERROR`);
 }
 
 const responseRaw = await argon2Response.clone().text();
@@ -117,13 +117,14 @@ if (
   responseHmacUint8.length !== expectedHmacUint8.length ||
   !nodeCrypto.timingSafeEqual(responseHmacUint8, expectedHmacUint8)
 ) {
-  return Astro.redirect(`/login/${slug}`);
+  return Astro.redirect(`/login/${slug}?error=INTERNAL_ERROR`);
 }
 
 const argon2Result: argon2Types = await argon2Response.json();
 
 if (!argon2Result.success) {
-  return Astro.redirect(`/login/${slug}`);
+  const err = argon2Result.errcode || "INTERNAL_ERROR";
+  return Astro.redirect(`/login/${slug}?error=${err}`);
 }
 
 const post = await getEntry("cpriv", slug);
