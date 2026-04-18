@@ -4,6 +4,7 @@ export const prerender = false;
 import { getEntry } from "astro:content";
 import { env } from "cloudflare:workers";
 import { type verifyTypes, type argon2Types } from "@ctypes/consts";
+import nodeCrypto from "node:crypto";
 
 if (Astro.request.method !== "POST") {
   return Astro.redirect("/404");
@@ -14,7 +15,7 @@ async function hmacCalculate(key: string, message: string): Promise<string> {
   const keyData = encoder.encode(key);
   const messageData = encoder.encode(message);
 
-  const cryptoKey = await crypto.subtle.importKey(
+  const cryptoKey = await nodeCrypto.subtle.importKey(
     "raw",
     keyData,
     { name: "HMAC", hash: "SHA-256" },
@@ -22,7 +23,11 @@ async function hmacCalculate(key: string, message: string): Promise<string> {
     ["sign"],
   );
 
-  const signature = await crypto.subtle.sign("HMAC", cryptoKey, messageData);
+  const signature = await nodeCrypto.subtle.sign(
+    "HMAC",
+    cryptoKey,
+    messageData,
+  );
   return btoa(String.fromCharCode(...new Uint8Array(signature)));
 }
 
@@ -31,14 +36,12 @@ const turnstileResponse = formData.get("cf-turnstile-response") as string;
 const slug = formData.get("slug") as string;
 const answer = formData.get("answer") as string;
 
-if (!slug) {
+if (!slug || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
   return Astro.redirect("/404");
 }
 
-const sanitizedSlug = slug.replace(/[^a-zA-Z0-9-]/g, "");
-
 if (!answer || !turnstileResponse) {
-  return Astro.redirect(`/login/${sanitizedSlug}`);
+  return Astro.redirect(`/login/${slug}`);
 }
 
 const sessionId = await Astro.session?.sessionID;
@@ -66,12 +69,16 @@ if (!verifyResult.success) {
 }
 
 const argon2Url = await env.ARGON2_URL.get();
-const sanitizedAnswer = (answer as string).replace(/[^a-zA-Z0-9!@#$%^&*]/g, "");
+
+if (!/[^a-zA-Z0-9!@#$%^&*]/.test(answer)) {
+  return Astro.redirect(`/login/${slug}`);
+}
+
 const hmacC2V = await env.HMAC_SECRET_C2V.get();
 const reqTimestamp = Date.now().toString();
 const payload = JSON.stringify({
-  slug: sanitizedSlug,
-  answer: sanitizedAnswer,
+  slug: slug,
+  answer: answer,
   timestamp: reqTimestamp,
 });
 const payloadHmac = await hmacCalculate(hmacC2V, payload);
@@ -87,21 +94,40 @@ const argon2Response = await fetch(argon2Url, {
 });
 
 const responseHmac = argon2Response.headers.get("X-Amia-HMAC");
+
+if (!responseHmac) {
+  return Astro.redirect(`/login/${slug}`);
+}
+
 const responseRaw = await argon2Response.clone().text();
 const hmacV2C = await env.HMAC_SECRET_V2C.get();
 const expectedHmac = await hmacCalculate(hmacV2C, responseRaw);
+const base64ToUint8Array = (base64: string) => {
+  const binaryString = atob(base64);
+  const bytes = new Uint8Array(binaryString.length);
+  for (let i = 0; i < binaryString.length; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+  return bytes;
+};
+const responseHmacUint8 = base64ToUint8Array(responseHmac);
+const expectedHmacUint8 = base64ToUint8Array(expectedHmac);
 
-if (responseHmac !== expectedHmac) {
-  return Astro.redirect(`/login/${sanitizedSlug}`);
+if (
+  responseHmacUint8.length !== expectedHmacUint8.length ||
+  !nodeCrypto.timingSafeEqual(responseHmacUint8, expectedHmacUint8)
+) {
+  return Astro.redirect(`/login/${slug}`);
 }
 
 const argon2Result: argon2Types = await argon2Response.json();
 
 if (!argon2Result.success) {
-  return Astro.redirect(`/login/${sanitizedSlug}`);
+  return Astro.redirect(`/login/${slug}`);
 }
 
-const post = await getEntry("cpriv", sanitizedSlug);
+const post = await getEntry("cpriv", slug);
+
 if (!post || post.data.draft) {
   return Astro.redirect("/404");
 }

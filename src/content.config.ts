@@ -58,7 +58,16 @@ const cpriv = defineCollection({
         path: ["protected"],
       }),
       question: z.string().optional().default(protectConfig.question),
-      password: z.string().optional().default(protectConfig.password),
+      password: z
+        .string()
+        .regex(
+          /[^a-zA-Z0-9!@#$%^&*]/,
+          "Format error, see README.md in submodule.",
+        )
+        .min(1, "Slug cannot be empty.")
+        .max(32, "Slug cannot exceed 32 characters.")
+        .optional()
+        .default(protectConfig.password),
     }),
 });
 

@@ -5,7 +5,7 @@ import { type CollectionEntry, getEntry, render } from "astro:content";
 import BlogPost from "@layouts/Posts.astro";
 
 const { slug } = Astro.params;
-if (!slug) {
+if (!slug || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
   return Astro.redirect("/404");
 }
 

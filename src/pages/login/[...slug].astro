@@ -10,7 +10,7 @@ import Weather from "@components/widget/Weather.astro";
 import { siteConfig } from "@consts";
 
 const { slug } = Astro.params;
-if (!slug) {
+if (!slug || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
   return Astro.redirect("/404");
 }
 
