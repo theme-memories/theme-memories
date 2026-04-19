@@ -14,7 +14,7 @@
 
 @layer base {
   body {
-    @apply bg-bear-grad bg-fixed font-serif text-white;
+    @apply bg-bear-grad my-5 bg-fixed font-serif text-base leading-7 text-gray-300;
   }
 
   code {
