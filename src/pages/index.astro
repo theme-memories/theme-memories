@@ -8,13 +8,17 @@ import { siteConfig } from "@consts";
   description={siteConfig.description}
   showFooter={false}
 >
-  <main>
+  <main class="flex h-screen flex-col items-center justify-center gap-4">
     <div>
-      <h1>
+      <h1 class="text-4xl font-bold">
         <span id="typed"></span>
       </h1>
     </div>
-    <a href="/posts" class="entry-link">&lt; Entry / 進入 &gt;</a>
+    <a
+      href="/posts"
+      class="entry-link absolute bottom-8 text-lg no-underline underline-offset-4 hover:underline"
+      >&lt; Entry / 進入 &gt;</a
+    >
   </main>
   <script is:inline src="https://unpkg.com/typed.js/dist/typed.umd.js"></script>
   <script is:inline>

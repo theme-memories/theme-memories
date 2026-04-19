@@ -48,28 +48,51 @@ const questionHtml = md.render(questionRaw);
   title={`401: Unauthorized - ${siteConfig.title}`}
   description={siteConfig.description}
 >
-  <main>
-    {errorMessage && <div class="error-message">{errorMessage}</div>}
-    Please answer the following question to log in.
-    <div class="question-container" set:html={questionHtml} />
-    <form method="POST" action="/api/auth" class="login-form">
-      <input type="hidden" name="slug" value={slug} />
-      <input
-        type="password"
-        autocomplete="current-password"
-        name="answer"
-        placeholder="Required."
-        required
-      />
+  <main class="flex min-h-screen flex-col items-center justify-center p-4">
+    <div
+      class="w-full max-w-md rounded-2xl border border-white/10 bg-slate-900/50 p-8 text-center shadow-2xl backdrop-blur-sm"
+    >
+      {
+        errorMessage && (
+          <div class="mb-6 rounded-lg border border-red-500/30 bg-red-900/20 p-3 text-sm text-red-400">
+            {errorMessage}
+          </div>
+        )
+      }
+      <p class="mb-4 text-sm text-gray-400">
+        Please answer the following question to log in.
+      </p>
       <div
-        class="cf-turnstile"
-        data-sitekey={siteConfig.cfTurnstileSiteKey}
-        data-theme="dark"
-        data-language="ja"
-      >
-      </div>
-      <button type="submit">Log in</button>
-    </form>
+        class="mb-6 rounded-xl border border-white/10 bg-white/5 p-4 font-medium text-gray-200"
+        set:html={questionHtml}
+      />
+      <form method="POST" action="/api/auth" class="flex flex-col gap-4">
+        <input type="hidden" name="slug" value={slug} />
+        <input
+          type="password"
+          autocomplete="current-password"
+          name="answer"
+          placeholder="Password"
+          required
+          class="w-full rounded-lg border border-white/20 bg-white/10 px-4 py-2 text-white placeholder-gray-500 transition-all focus:ring-2 focus:ring-indigo-500/50 focus:outline-none"
+        />
+        <div class="flex justify-center">
+          <div
+            class="cf-turnstile"
+            data-sitekey={siteConfig.cfTurnstileSiteKey}
+            data-theme="dark"
+            data-language="ja"
+          >
+          </div>
+        </div>
+        <button
+          type="submit"
+          class="w-full cursor-pointer rounded-lg bg-indigo-600 py-2 font-semibold text-white shadow-lg transition-colors hover:bg-indigo-500"
+        >
+          Log in
+        </button>
+      </form>
+    </div>
   </main>
   <script
     is:inline
@@ -77,5 +100,4 @@ const questionHtml = md.render(questionRaw);
     async
     defer></script>
   <Footer />
-  <Weather size="big" />
 </BaseLayout>

@@ -5,6 +5,9 @@
 
 @theme {
   --background-image-bear-grad: linear-gradient(to right, #000, #152331);
+  --color-inline-code-bg: #1f2428;
+  --color-inline-code-text: #e1e4e8;
+  --color-locked-post: #888;
 }
 
 @theme inline {
@@ -13,46 +16,62 @@
 }
 
 @layer base {
+  html {
+    @apply scroll-smooth;
+  }
+
   body {
-    @apply bg-bear-grad my-5 bg-fixed font-serif text-base leading-7 text-gray-300;
+    @apply bg-bear-grad mx-auto max-w-4xl bg-fixed px-4 font-serif text-gray-300;
   }
 
   code {
     @apply font-mono;
   }
 
-  .prose :where(th, td)[align="center"] {
-    text-align: center !important;
+  a {
+    @apply no-underline underline-offset-4 hover:underline;
   }
+}
 
-  .prose :where(th, td)[align="right"] {
-    text-align: right !important;
-  }
+@layer utilities {
+  .prose-custom {
+    @apply prose-invert;
 
-  .prose blockquote p:first-of-type::before {
-    content: "「" !important;
-  }
+    & :where(th, td)[align="center"] {
+      @apply text-center;
+    }
 
-  .prose blockquote p:last-of-type::after {
-    content: "」" !important;
-  }
+    & :where(th, td)[align="right"] {
+      @apply text-right;
+    }
 
-  .prose blockquote {
-    font-style: normal !important;
-  }
+    & blockquote {
+      @apply not-italic;
 
-  .prose :not(pre) > code {
-    background-color: #1f2428;
-    color: #e1e4e8;
-    font-weight: 400 !important;
-    padding: 0.2em 0.4em;
-    border-radius: 6px;
-    font-size: 85%;
-    border: 1px solid rgb(255 255 255 / 10%);
-  }
+      p:first-of-type::before {
+        content: "";
+      }
 
-  .prose :not(pre) > code::before,
-  .prose :not(pre) > code::after {
-    content: none !important;
+      p:last-of-type::after {
+        content: "";
+      }
+    }
+
+    & :not(pre) > code {
+      @apply bg-inline-code-bg text-inline-code-text rounded-md border border-white/10 px-1 py-1.5 text-sm font-normal;
+
+      &::before,
+      &::after {
+        content: "";
+      }
+    }
+
+    & img {
+      @apply rounded-lg border border-white/10 shadow-md;
+    }
+
+    & a {
+      @apply no-underline underline-offset-4 hover:underline;
+    }
   }
 }

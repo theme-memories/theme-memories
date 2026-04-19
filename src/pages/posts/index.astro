@@ -17,7 +17,6 @@ const posts: Post[] = [
   ...cpriv.map((p) => ({
     ...p,
     isPublic: false,
-    data: { ...p.data, title: "This post is locked." },
   })),
 ].sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
 const groupedPosts = posts.reduce<Record<string, Post[]>>((acc, post) => {
@@ -40,23 +39,28 @@ const groupedPosts = posts.reduce<Record<string, Post[]>>((acc, post) => {
   title={`Archive - ${siteConfig.title}`}
   description={siteConfig.description}
 >
-  <main class="timeline">
+  <main class="timeline mt-16 mb-16 flex flex-col gap-12">
     {
       Object.entries(groupedPosts).map(([month, posts]) => (
-        <div class="month-group">
-          <div class="month-header">{month}</div>
-          <ul class="post-list">
+        <div class="month-group flex gap-8">
+          <div class="month-header sticky top-8 min-w-40 shrink-0 text-right text-sm font-bold opacity-60">
+            {month}
+          </div>
+          <ul class="post-list m-0 grow list-none p-0">
             {posts.map((post) => (
-              <li class="post-item">
-                <div class="post-date">
+              <li class="post-item g-6 mb-3 flex align-baseline">
+                <div class="post-date w-12 shrink-0 text-center text-sm opacity-50">
                   <FormattedDate date={post.data.pubDate} format="day" />
                 </div>
-                <div class="post-title">
+                <div class="post-title grow">
                   {post.isPublic ? (
                     <a href={`/posts/public/${post.id}`}>{post.data.title}</a>
                   ) : (
-                    <a href={`/posts/private/${post.id}`} class="locked-link">
-                      <span class="icon">🔒</span> {post.data.title}
+                    <a
+                      href={`/posts/private/${post.id}`}
+                      class="locked-link text-locked-post"
+                    >
+                      <span class="icon">🔒</span> This post is locked.
                     </a>
                   )}
                 </div>

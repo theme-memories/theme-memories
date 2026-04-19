@@ -12,8 +12,8 @@ const { title, description, pubDate, updDate, banner } = Astro.props;
 ---
 
 <BaseLayout title={title} description={description}>
-  <main>
-    <article>
+  <main class="flex flex-col items-center justify-center gap-4">
+    <article class="prose prose-custom">
       <div class="hero-image">
         {
           banner && (
@@ -26,7 +26,7 @@ const { title, description, pubDate, updDate, banner } = Astro.props;
           )
         }
       </div>
-      <div class="title">
+      <div class="title text-center">
         <div class="date">
           <FormattedDate date={pubDate} />
           {
@@ -40,7 +40,7 @@ const { title, description, pubDate, updDate, banner } = Astro.props;
         <h1>{title}</h1>
         <hr />
       </div>
-      <div class="prose prose-invert max-w-none">
+      <div>
         <slot />
       </div>
     </article>
