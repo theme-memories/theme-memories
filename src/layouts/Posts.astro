@@ -12,7 +12,7 @@ const { title, description, pubDate, updDate, banner } = Astro.props;
 ---
 
 <BaseLayout title={title} description={description}>
-  <main class="flex flex-col items-center justify-center gap-8">
+  <main class="flex flex-col items-center gap-8 py-8">
     <article class="prose prose-custom">
       <div class="hero-image mb-8">
         {
@@ -32,7 +32,7 @@ const { title, description, pubDate, updDate, banner } = Astro.props;
           {
             updDate && (
               <div class="last-updated-on">
-                Last updated on <FormattedDate date={updDate} />
+                最終更新 <FormattedDate date={updDate} />
               </div>
             )
           }

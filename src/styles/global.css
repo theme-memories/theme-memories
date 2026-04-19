@@ -5,6 +5,8 @@
 
 @theme {
   --background-image-bear-grad: linear-gradient(to right, #000, #152331);
+  --color-primary: #dac;
+  --color-primary-foreground: #fff;
   --color-inline-code-bg: #1f2428;
   --color-inline-code-text: #e1e4e8;
   --color-locked-post: #888;
@@ -21,7 +23,7 @@
   }
 
   body {
-    @apply bg-bear-grad mx-auto max-w-5xl bg-fixed px-6 font-serif text-gray-300;
+    @apply bg-bear-grad mx-auto max-w-5xl bg-fixed px-6 font-serif text-zinc-300;
   }
 
   code {
@@ -35,7 +37,7 @@
 
 @layer utilities {
   .prose-custom {
-    @apply prose-invert;
+    @apply prose-invert max-w-none text-base xl:text-lg;
 
     & :where(th, td)[align="center"] {
       @apply text-center;
@@ -71,14 +73,14 @@
     }
 
     & a {
-      @apply no-underline underline-offset-4 hover:underline;
+      @apply text-primary no-underline underline-offset-4 hover:underline;
     }
   }
 }
 
 @layer components {
   .weather-widget {
-    @apply fixed right-6 bottom-6 z-50 rounded-2xl border border-white/10 bg-black/40 p-4 text-gray-300 shadow-xl backdrop-blur-md transition-all duration-300;
+    @apply fixed right-6 bottom-6 z-50 rounded-2xl border border-white/10 bg-black/40 p-4 text-zinc-300 shadow-xl backdrop-blur-md transition-all duration-300;
   }
 
   .weather-item {

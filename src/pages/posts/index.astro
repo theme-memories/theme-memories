@@ -48,7 +48,7 @@ const groupedPosts = posts.reduce<Record<string, Post[]>>((acc, post) => {
           </div>
           <ul class="post-list m-0 grow list-none p-0">
             {posts.map((post) => (
-              <li class="post-item g-6 mb-4 flex align-baseline">
+              <li class="post-item mb-4 flex gap-6 align-baseline">
                 <div class="post-date w-12 shrink-0 text-center text-sm opacity-50">
                   <FormattedDate date={post.data.pubDate} format="day" />
                 </div>
