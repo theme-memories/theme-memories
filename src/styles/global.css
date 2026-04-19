@@ -21,7 +21,7 @@
   }
 
   body {
-    @apply bg-bear-grad mx-auto max-w-4xl bg-fixed px-4 font-serif text-gray-300;
+    @apply bg-bear-grad mx-auto max-w-5xl bg-fixed px-6 font-serif text-gray-300;
   }
 
   code {
@@ -73,5 +73,39 @@
     & a {
       @apply no-underline underline-offset-4 hover:underline;
     }
+  }
+}
+
+@layer components {
+  .weather-widget {
+    @apply fixed right-6 bottom-6 z-50 rounded-2xl border border-white/10 bg-black/40 p-4 text-gray-300 shadow-xl backdrop-blur-md transition-all duration-300;
+  }
+
+  .weather-item {
+    @apply flex items-center gap-1;
+  }
+
+  .weather-header {
+    @apply flex items-center gap-3 text-base font-bold;
+  }
+
+  .weather-header img {
+    @apply h-8 w-8 object-contain;
+  }
+
+  .weather-header span {
+    @apply align-middle;
+  }
+
+  .weather-content {
+    @apply mt-3 flex flex-col gap-1 text-xs opacity-70;
+  }
+
+  .weather-content p {
+    @apply m-0 leading-tight;
+  }
+
+  .wind-arrow {
+    @apply inline-block font-mono transition-transform duration-500;
   }
 }

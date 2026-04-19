@@ -39,16 +39,16 @@ const groupedPosts = posts.reduce<Record<string, Post[]>>((acc, post) => {
   title={`Archive - ${siteConfig.title}`}
   description={siteConfig.description}
 >
-  <main class="timeline mt-16 mb-16 flex flex-col gap-12">
+  <main class="timeline mt-16 mb-16 flex flex-col gap-16">
     {
       Object.entries(groupedPosts).map(([month, posts]) => (
-        <div class="month-group flex gap-8">
-          <div class="month-header sticky top-8 min-w-40 shrink-0 text-right text-sm font-bold opacity-60">
+        <div class="month-group flex gap-12">
+          <div class="month-header sticky top-8 min-w-48 shrink-0 text-right text-sm font-bold opacity-60">
             {month}
           </div>
           <ul class="post-list m-0 grow list-none p-0">
             {posts.map((post) => (
-              <li class="post-item g-6 mb-3 flex align-baseline">
+              <li class="post-item g-6 mb-4 flex align-baseline">
                 <div class="post-date w-12 shrink-0 text-center text-sm opacity-50">
                   <FormattedDate date={post.data.pubDate} format="day" />
                 </div>

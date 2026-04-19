@@ -66,10 +66,12 @@ export function updateWeatherWidget(widget, data) {
 
   const weatherHtml = weather
     .map(
-      (
-        w,
-      ) => `<img src="https://openweathermap.org/payload/api/media/file/${w.icon}.png" alt="${w.description}">
-<span>${w.description}</span>`,
+      (w) => `
+        <div class="weather-item">
+          <img src="https://openweathermap.org/payload/api/media/file/${w.icon}.png" alt="${w.description}">
+          <span class="text-xs font-normal opacity-80">${w.description}</span>
+        </div>
+      `,
     )
     .join("");
 
