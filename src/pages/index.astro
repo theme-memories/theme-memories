@@ -8,13 +8,16 @@ import { siteConfig } from "@consts";
   description={siteConfig.description}
   showFooter={false}
 >
-  <main class="h-screen justify-center gap-4">
-    <div>
-      <h1 class="text-primary text-4xl font-bold">
-        <span id="typed"></span>
-      </h1>
-    </div>
-    <a href="/posts" class="absolute bottom-8 text-lg">&lt; Entry / 進入 &gt;</a
+  <main class="main-center gap-12">
+    <h1
+      class="text-primary text-5xl font-bold tracking-tighter md:text-7xl lg:text-8xl"
+    >
+      <span id="typed"></span>
+    </h1>
+    <a
+      href="/posts"
+      class="absolute bottom-12 text-lg opacity-60 transition-opacity duration-500 hover:opacity-100"
+      >&lt; Entry / 進入 &gt;</a
     >
   </main>
   <script is:inline src="https://unpkg.com/typed.js/dist/typed.umd.js"></script>

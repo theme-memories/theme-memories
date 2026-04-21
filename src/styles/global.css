@@ -30,6 +30,22 @@
     @apply flex flex-col items-center gap-8 py-8;
   }
 
+  h1 {
+    @apply text-primary font-bold tracking-tight;
+  }
+
+  hr {
+    @apply border-white/10;
+  }
+
+  ul {
+    @apply m-0 list-none p-0;
+  }
+
+  footer {
+    @apply text-center;
+  }
+
   code {
     @apply font-mono;
   }
@@ -40,8 +56,16 @@
 }
 
 @layer utilities {
+  .main-center {
+    @apply flex min-h-screen flex-col items-center justify-center;
+  }
+
+  .text-subtle {
+    @apply text-sm text-zinc-400 opacity-60;
+  }
+
   .prose-custom {
-    @apply prose-invert max-w-none text-base xl:text-lg;
+    @apply prose-invert max-w-none text-lg leading-relaxed 2xl:text-xl;
 
     & :where(th, td)[align="center"] {
       @apply text-center;
@@ -83,36 +107,48 @@
 }
 
 @layer components {
+  .glass-card {
+    @apply rounded-2xl border border-white/10 bg-black/40 shadow-2xl backdrop-blur-md;
+  }
+
+  .input-primary {
+    @apply focus:ring-primary/50 w-full rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-white placeholder-gray-500 transition-all focus:ring-2 focus:outline-none;
+  }
+
+  .btn-primary {
+    @apply border-primary text-primary hover:bg-primary/10 w-full cursor-pointer rounded-xl border py-3 font-semibold shadow-lg transition-all active:scale-95;
+  }
+
   .weather-widget {
-    @apply fixed right-6 bottom-6 z-50 rounded-2xl border border-white/10 bg-black/40 p-4 text-zinc-300 shadow-xl backdrop-blur-md transition-all duration-300;
+    @apply fixed right-8 bottom-8 z-50 rounded-2xl border border-white/20 bg-black/40 p-5 text-zinc-300 shadow-2xl backdrop-blur-lg transition-all duration-300 hover:bg-black/60;
   }
 
   .weather-item {
-    @apply flex items-center gap-1;
+    @apply flex items-center gap-2;
   }
 
   .weather-item span {
-    @apply text-lg font-bold opacity-80;
+    @apply text-lg font-medium opacity-90;
   }
 
   .weather-header {
-    @apply flex items-center gap-3 text-lg font-bold;
+    @apply flex items-center gap-4 text-xl font-bold;
   }
 
   .weather-header img {
-    @apply h-8 w-8 object-contain;
+    @apply h-10 w-10 object-contain;
   }
 
   .weather-header span {
-    @apply align-middle;
+    @apply text-primary align-middle;
   }
 
   .weather-content {
-    @apply mt-3 flex flex-col gap-1 text-sm opacity-70;
+    @apply mt-4 flex flex-col gap-2 text-base text-zinc-400;
   }
 
   .weather-content p {
-    @apply m-0 leading-tight;
+    @apply m-0 leading-relaxed;
   }
 
   .wind-arrow {

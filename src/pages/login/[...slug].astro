@@ -48,25 +48,23 @@ const questionHtml = md.render(questionRaw);
   title={`401: Unauthorized - ${siteConfig.title}`}
   description={siteConfig.description}
 >
-  <main class="min-h-screen justify-center p-4">
-    <div
-      class="w-full max-w-2xl rounded-2xl border border-white/10 bg-slate-900/50 p-8 text-center shadow-2xl backdrop-blur-sm md:w-fit"
-    >
+  <main class="main-center p-6">
+    <div class="glass-card w-full max-w-md rounded-3xl p-10 text-center">
       {
         errorMessage && (
-          <div class="mb-6 rounded-lg border border-red-500/30 bg-red-900/20 p-3 text-sm text-red-400">
+          <div class="mb-6 rounded-xl border border-red-500/30 bg-red-900/20 p-3 text-sm text-red-400">
             {errorMessage}
           </div>
         )
       }
-      <p class="mb-4 text-sm text-gray-400">
+      <p class="text-subtle mb-6 text-base">
         Please answer the following question to log in.
       </p>
       <div
-        class="prose prose-invert mb-6 max-w-none rounded-xl border border-white/10 bg-white/5 p-4 font-medium text-gray-200"
+        class="prose prose-invert mb-8 max-w-none rounded-2xl border border-white/10 bg-white/5 p-6 font-medium text-zinc-200"
         set:html={questionHtml}
       />
-      <form method="POST" action="/api/auth" class="flex flex-col gap-4">
+      <form method="POST" action="/api/auth" class="flex flex-col gap-5">
         <input type="hidden" name="slug" value={slug} />
         <input
           type="password"
@@ -74,7 +72,7 @@ const questionHtml = md.render(questionRaw);
           name="answer"
           placeholder="Password"
           required
-          class="w-full rounded-lg border border-white/20 bg-white/10 px-4 py-2 text-white placeholder-gray-500 transition-all focus:ring-2 focus:ring-indigo-500/50 focus:outline-none"
+          class="input-primary"
         />
         <div class="flex justify-center">
           <div
@@ -85,12 +83,7 @@ const questionHtml = md.render(questionRaw);
           >
           </div>
         </div>
-        <button
-          type="submit"
-          class="border-primary text-primary hover:bg-primary/10 w-full cursor-pointer rounded-lg border py-2 font-semibold shadow-lg transition-colors"
-        >
-          Log in
-        </button>
+        <button type="submit" class="btn-primary"> Log in </button>
       </form>
     </div>
   </main>

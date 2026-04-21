@@ -14,7 +14,7 @@ const { title, description, pubDate, updDate, banner } = Astro.props;
 <BaseLayout title={title} description={description}>
   <main>
     <article class="prose prose-custom">
-      <div class="hero-image mb-8">
+      <div class="hero-image mb-12">
         {
           banner && (
             <Image
@@ -22,12 +22,13 @@ const { title, description, pubDate, updDate, banner } = Astro.props;
               height={720}
               src={banner}
               alt={description || title}
+              class="h-auto w-full rounded-2xl object-cover shadow-2xl"
             />
           )
         }
       </div>
-      <div class="title text-center">
-        <div class="date">
+      <div class="title mb-12 text-center">
+        <div class="date text-subtle mb-4 flex flex-col items-center gap-1">
           <FormattedDate date={pubDate} />
           {
             updDate && (
@@ -37,7 +38,11 @@ const { title, description, pubDate, updDate, banner } = Astro.props;
             )
           }
         </div>
-        <h1>{title}</h1>
+        <h1
+          class="mb-8 text-4xl font-bold tracking-tight md:text-5xl lg:text-6xl"
+        >
+          {title}
+        </h1>
         <hr />
       </div>
       <slot />

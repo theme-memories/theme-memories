@@ -39,26 +39,31 @@ const groupedPosts = posts.reduce<Record<string, Post[]>>((acc, post) => {
   title={`Archive - ${siteConfig.title}`}
   description={siteConfig.description}
 >
-  <main class="mt-16 mb-16 items-start gap-6">
+  <main class="items-start gap-12 py-20">
     {
       Object.entries(groupedPosts).map(([month, posts]) => (
-        <div class="month-group flex gap-6">
-          <div class="month-header sticky top-8 min-w-36 shrink-0 text-xl font-bold opacity-60">
+        <div class="month-group flex gap-8">
+          <div class="month-header sticky top-12 min-w-40 shrink-0 text-2xl font-bold tracking-wide opacity-50">
             {month}
           </div>
-          <ul class="post-list m-0 grow list-none p-0">
+          <ul class="post-list m-0 grow">
             {posts.map((post) => (
-              <li class="post-item mb-4 flex gap-6 align-baseline">
-                <div class="post-date w-12 shrink-0 text-center text-sm opacity-50">
+              <li class="post-item group mb-6 flex gap-8 align-baseline transition-transform duration-200 hover:translate-x-1">
+                <div class="post-date text-subtle w-12 shrink-0 text-center">
                   <FormattedDate date={post.data.pubDate} format="day" />
                 </div>
-                <div class="post-title grow">
+                <div class="post-title grow text-lg">
                   {post.isPublic ? (
-                    <a href={`/posts/public/${post.id}`}>{post.data.title}</a>
+                    <a
+                      href={`/posts/public/${post.id}`}
+                      class="group-hover:text-primary transition-colors duration-200"
+                    >
+                      {post.data.title}
+                    </a>
                   ) : (
                     <a
                       href={`/posts/private/${post.id}`}
-                      class="locked-link text-locked-post"
+                      class="locked-link text-locked-post transition-colors duration-200 group-hover:text-zinc-400"
                     >
                       <span class="icon">🔒</span> This post is locked.
                     </a>
