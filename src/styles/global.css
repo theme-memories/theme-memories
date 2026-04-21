@@ -92,11 +92,11 @@
   }
 
   .weather-item span {
-    @apply text-sm font-normal opacity-80;
+    @apply text-xl font-bold opacity-80;
   }
 
   .weather-header {
-    @apply flex items-center gap-3 text-base font-bold;
+    @apply flex items-center gap-3 text-xl font-bold;
   }
 
   .weather-header img {
@@ -108,7 +108,7 @@
   }
 
   .weather-content {
-    @apply mt-3 flex flex-col gap-1 text-sm opacity-70;
+    @apply mt-3 flex flex-col gap-1 opacity-70;
   }
 
   .weather-content p {
