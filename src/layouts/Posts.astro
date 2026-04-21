@@ -12,14 +12,14 @@ const { title, description, pubDate, updDate, banner } = Astro.props;
 ---
 
 <BaseLayout title={title} description={description}>
-  <main class="flex flex-col items-center gap-8 py-8">
+  <main>
     <article class="prose prose-custom">
       <div class="hero-image mb-8">
         {
           banner && (
             <Image
-              width={1020}
-              height={510}
+              width={1280}
+              height={720}
               src={banner}
               alt={description || title}
             />
@@ -40,9 +40,7 @@ const { title, description, pubDate, updDate, banner } = Astro.props;
         <h1>{title}</h1>
         <hr />
       </div>
-      <div>
-        <slot />
-      </div>
+      <slot />
     </article>
   </main>
   <Footer />

@@ -26,12 +26,16 @@
     @apply bg-bear-grad mx-auto max-w-5xl bg-fixed px-6 font-serif text-zinc-300;
   }
 
+  main {
+    @apply flex flex-col items-center gap-8 py-8;
+  }
+
   code {
     @apply font-mono;
   }
 
   a {
-    @apply no-underline underline-offset-4 hover:underline;
+    @apply text-primary no-underline underline-offset-4 hover:underline;
   }
 }
 
@@ -87,6 +91,10 @@
     @apply flex items-center gap-1;
   }
 
+  .weather-item span {
+    @apply text-sm font-normal opacity-80;
+  }
+
   .weather-header {
     @apply flex items-center gap-3 text-base font-bold;
   }
@@ -100,7 +108,7 @@
   }
 
   .weather-content {
-    @apply mt-3 flex flex-col gap-1 text-xs opacity-70;
+    @apply mt-3 flex flex-col gap-1 text-sm opacity-70;
   }
 
   .weather-content p {
@@ -108,6 +116,6 @@
   }
 
   .wind-arrow {
-    @apply inline-block font-mono transition-transform duration-500;
+    @apply mx-2 inline-block font-mono transition-transform duration-500;
   }
 }

@@ -69,7 +69,7 @@ export function updateWeatherWidget(widget, data) {
       (w) => `
         <div class="weather-item">
           <img src="https://openweathermap.org/payload/api/media/file/${w.icon}.png" alt="${w.description}">
-          <span class="text-xs font-normal opacity-80">${w.description}</span>
+          <span>${w.description}</span>
         </div>
       `,
     )
