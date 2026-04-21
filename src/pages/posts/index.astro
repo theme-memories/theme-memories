@@ -39,7 +39,7 @@ const groupedPosts = posts.reduce<Record<string, Post[]>>((acc, post) => {
   title={`Archive - ${siteConfig.title}`}
   description={siteConfig.description}
 >
-  <main class="mt-16 mb-16 gap-16">
+  <main class="mt-16 mb-16 items-start gap-6">
     {
       Object.entries(groupedPosts).map(([month, posts]) => (
         <div class="month-group flex gap-6">
