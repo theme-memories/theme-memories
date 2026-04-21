@@ -31,7 +31,7 @@
     "@expressive-code/plugin-collapsible-sections": "0.41.7",
     "@expressive-code/plugin-line-numbers": "0.41.7",
     "@tailwindcss/typography": "0.5.19",
-    "@tailwindcss/vite": "4.2.2",
+    "@tailwindcss/vite": "4.2.3",
     "@vscode/markdown-it-katex": "1.1.2",
     "argon2": "0.44.0",
     "astro": "6.1.8",
