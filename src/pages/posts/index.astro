@@ -12,6 +12,9 @@ type Post = (CollectionEntry<"cpub"> | CollectionEntry<"cpriv">) & {
 
 const cpub = await getCollection("cpub", ({ data }) => !data.draft);
 const cpriv = await getCollection("cpriv", ({ data }) => !data.draft);
+const authors = await getCollection("author");
+const authorMap = new Map(authors.map((a) => [a.data.slug, a.data.name]));
+
 const posts: Post[] = [
   ...cpub.map((p) => ({ ...p, isPublic: true })),
   ...cpriv.map((p) => ({
@@ -43,7 +46,7 @@ const groupedPosts = posts.reduce<Record<string, Post[]>>((acc, post) => {
     {
       Object.entries(groupedPosts).map(([month, posts]) => (
         <div class="month-group flex gap-8">
-          <div class="month-header sticky top-12 min-w-40 shrink-0 text-2xl font-bold tracking-wide opacity-50">
+          <div class="month-header sticky top-12 min-w-40 shrink-0 text-2xl font-bold tracking-wide opacity-50 2xl:text-3xl">
             {month}
           </div>
           <ul class="post-list m-0 grow">
@@ -52,22 +55,40 @@ const groupedPosts = posts.reduce<Record<string, Post[]>>((acc, post) => {
                 <div class="post-date text-subtle w-12 shrink-0 text-center">
                   <FormattedDate date={post.data.pubDate} format="day" />
                 </div>
-                <div class="post-title grow text-lg">
-                  {post.isPublic ? (
-                    <a
-                      href={`/posts/public/${post.id}`}
-                      class="group-hover:text-primary transition-colors duration-200"
-                    >
-                      {post.data.title}
-                    </a>
-                  ) : (
-                    <a
-                      href={`/posts/private/${post.id}`}
-                      class="locked-link text-locked-post transition-colors duration-200 group-hover:text-zinc-400"
-                    >
-                      <span class="icon">🔒</span> This post is locked.
-                    </a>
+                <div class="post-title grow">
+                  <div class="text-lg 2xl:text-xl">
+                    {post.isPublic ? (
+                      <a
+                        href={`/posts/public/${post.id}`}
+                        class="group-hover:text-primary transition-colors duration-200"
+                      >
+                        {post.data.title}
+                      </a>
+                    ) : (
+                      <a
+                        href={`/posts/private/${post.id}`}
+                        class="locked-link text-locked-post transition-colors duration-200 group-hover:text-zinc-400"
+                      >
+                        <span class="icon">🔒</span> This post is locked.
+                      </a>
+                    )}
+                  </div>
+                  {post.isPublic && post.data.author && (
+                    <div class="text-subtle mt-1 text-sm 2xl:text-base">
+                      By{" "}
+                      <a
+                        href={`/authors/${post.data.author}`}
+                        class="hover:text-primary transition-colors"
+                      >
+                        {authorMap.get(post.data.author)}
+                      </a>
+                    </div>
                   )}
+                  <div class="text-subtle mt-1 text-base 2xl:text-lg">
+                    {post.isPublic
+                      ? post.data.description
+                      : "This post is locked."}
+                  </div>
                 </div>
               </li>
             ))}

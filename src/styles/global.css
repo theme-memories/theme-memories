@@ -23,7 +23,7 @@
   }
 
   body {
-    @apply bg-bear-grad mx-auto max-w-5xl bg-fixed px-6 font-serif text-zinc-300;
+    @apply bg-bear-grad mx-auto max-w-6xl bg-fixed px-6 font-serif text-base text-zinc-300 2xl:max-w-7xl 2xl:text-lg;
   }
 
   main {
@@ -61,11 +61,11 @@
   }
 
   .text-subtle {
-    @apply text-sm text-zinc-400 opacity-60;
+    @apply text-sm text-zinc-400 opacity-60 2xl:text-base;
   }
 
   .prose-custom {
-    @apply prose-invert max-w-none text-lg leading-relaxed 2xl:text-xl;
+    @apply prose-invert max-w-none text-xl leading-relaxed 2xl:text-2xl;
 
     & :where(th, td)[align="center"] {
       @apply text-center;
