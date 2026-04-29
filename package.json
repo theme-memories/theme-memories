@@ -24,8 +24,8 @@
     "!(*.{js,mjs,cjs,ts,mts,cts,css})": "prettier --write --ignore-unknown"
   },
   "dependencies": {
-    "@astrojs/check": "0.9.8",
-    "@astrojs/cloudflare": "13.1.10",
+    "@astrojs/check": "0.9.9",
+    "@astrojs/cloudflare": "13.2.2",
     "@astrojs/rss": "4.0.18",
     "@astrojs/sitemap": "3.7.2",
     "@expressive-code/plugin-collapsible-sections": "0.41.7",
@@ -34,7 +34,7 @@
     "@tailwindcss/vite": "4.2.4",
     "@vscode/markdown-it-katex": "1.1.2",
     "argon2": "0.44.0",
-    "astro": "6.1.8",
+    "astro": "6.1.10",
     "astro-expressive-code": "0.41.7",
     "glob": "^13.0.6",
     "gray-matter": "4.0.3",
@@ -58,11 +58,11 @@
     "lint-staged": "16.4.0",
     "prettier": "3.8.3",
     "prettier-plugin-astro": "0.14.1",
-    "prettier-plugin-tailwindcss": "0.7.2",
-    "stylelint": "17.8.0",
+    "prettier-plugin-tailwindcss": "0.8.0",
+    "stylelint": "17.9.1",
     "stylelint-config-standard": "40.0.0",
-    "typescript-eslint": "8.59.0",
-    "wrangler": "4.84.1"
+    "typescript-eslint": "8.59.1",
+    "wrangler": "4.86.0"
   },
   "overrides": {
     "vite": "7"
