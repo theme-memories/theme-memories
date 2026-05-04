@@ -12,9 +12,11 @@
     "logs": {
       "enabled": true,
       "invocation_logs": true,
+      "destinations": ["grafana-logs"],
     },
     "traces": {
       "enabled": true,
+      "destinations": ["grafana-traces"],
     },
   },
   "placement": {
