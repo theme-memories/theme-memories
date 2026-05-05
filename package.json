@@ -61,7 +61,7 @@
     "prettier-plugin-tailwindcss": "0.8.0",
     "stylelint": "17.9.1",
     "stylelint-config-standard": "40.0.0",
-    "typescript-eslint": "8.59.1",
+    "typescript-eslint": "8.59.2",
     "wrangler": "4.87.0"
   },
   "overrides": {
