@@ -1,0 +1,19 @@
+@import "tailwindcss";
+
+@plugin "@tailwindcss/typography";
+@plugin "@tailwindcss/forms";
+
+@theme inline {
+  --font-mincho: var(--font-shippori-mincho), sans-serif;
+  --font-mplus: var(--font-m-plus-1-code), monospace;
+}
+
+@layer base {
+  body {
+    @apply font-mincho;
+  }
+
+  code {
+    @apply font-mplus;
+  }
+}

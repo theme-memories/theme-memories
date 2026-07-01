@@ -1,0 +1,66 @@
+{
+  "name": "theme-memories",
+  "type": "module",
+  "version": "26.7.1",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro build && astro preview",
+    "astro": "astro",
+    "generate-types": "wrangler types",
+    "deploy": "astro build && wrangler deploy",
+    "cf-typegen": "wrangler types",
+    "prepare": "husky",
+    "cf-build": "tsx scripts/hashpwd.ts && wrangler types"
+  },
+  "lint-staged": {
+    "*.{js,mjs,cjs,ts,mts,cts}": [
+      "eslint",
+      "prettier --write --ignore-unknown"
+    ],
+    "*.css": [
+      "stylelint",
+      "prettier --write --ignore-unknown"
+    ],
+    "!(*.{js,mjs,cjs,ts,mts,cts,css})": "prettier --write --ignore-unknown"
+  },
+  "dependencies": {
+    "@astrojs/check": "^0.9.9",
+    "@astrojs/cloudflare": "^14.0.1",
+    "@astrojs/markdown-satteri": "^0.3.2",
+    "@astrojs/sitemap": "^3.7.3",
+    "@expressive-code/plugin-collapsible-sections": "^0.44.0",
+    "@expressive-code/plugin-line-numbers": "^0.44.0",
+    "@tailwindcss/vite": "^4.3.2",
+    "astro": "^7.0.3",
+    "astro-expressive-code": "^0.44.0",
+    "cloudflare": "^6.5.0",
+    "fast-glob": "^3.3.3",
+    "satteri": "^0.9.4",
+    "tailwindcss": "^4.3.2",
+    "typescript": "^6.0.3",
+    "yaml": "^2.9.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@tailwindcss/forms": "^0.5.11",
+    "@tailwindcss/typography": "^0.5.20",
+    "@types/node": "^24.13.2",
+    "eslint": "^10.6.0",
+    "eslint-config-prettier": "^10.1.8",
+    "globals": "^17.7.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.0.8",
+    "prettier": "^3.9.4",
+    "prettier-plugin-astro": "^0.14.1",
+    "prettier-plugin-tailwindcss": "^0.8.0",
+    "stylelint": "^17.14.0",
+    "stylelint-config-standard": "^40.0.0",
+    "tsx": "^4.22.4",
+    "typescript-eslint": "^8.62.1",
+    "wrangler": "^4.105.0"
+  }
+}
