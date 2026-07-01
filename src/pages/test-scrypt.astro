@@ -16,9 +16,9 @@ let error = "";
 try {
   const password = "test-password";
   const salt = crypto.getRandomValues(new Uint8Array(16));
-  const N = 65536;
+  const N = 32768;
   const r = 8;
-  const p = 2;
+  const p = 3;
   const dkLen = 64;
 
   const start = performance.now();
