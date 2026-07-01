@@ -31,7 +31,7 @@ async function hashPassword(password: string) {
         password,
         salt,
         keylen,
-        { N: Math.pow(2, 15), r: 8, p: 3 },
+        { N: Math.pow(2, 14), r: 8, p: 5 },
         (err, derivedKey) => {
           if (err) reject(err);
           else
