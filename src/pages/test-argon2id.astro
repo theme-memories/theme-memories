@@ -4,7 +4,7 @@
 // memoryCost: 47104 (46 MiB)
 // timeCost: 1
 // parallelism: 1
-import { argon2id } from "@awasm/noble";
+import { argon2id } from "hash-wasm";
 
 export const prerender = false;
 
@@ -16,28 +16,29 @@ try {
   const password = "test-password";
   const salt = crypto.getRandomValues(new Uint8Array(16));
 
-  // Parameters matching scripts/hashpwd.ts
-  // Note: @awasm/noble uses 'm' for memoryCost, 't' for timeCost, 'p' for parallelism
-  const opts = {
-    m: 47104,
-    t: 1,
-    p: 1,
-    maxmem: 131072,
-  };
+  // Latest hash-wasm parameter keys:
+  // memorySize: amount of memory in kibibytes
+  // iterations: number of iterations
+  const memorySize = 47104;
+  const iterations = 1;
+  const parallelism = 1;
 
   const start = performance.now();
 
-  // @awasm/noble provides both sync and async.
-  // In Workers, .async() is preferred to avoid blocking the event loop for long computations.
-  const hashUint8 = await argon2id.async(password, salt, opts);
+  // Generate Argon2id hash
+  const hash = await argon2id({
+    password: password,
+    salt: salt,
+    parallelism: parallelism,
+    iterations: iterations,
+    memorySize: memorySize,
+    hashLength: 64,
+    outputType: "hex", // Directly get hex string
+  });
 
   const end = performance.now();
   duration = end - start;
-
-  // Convert Uint8Array result to hex string
-  result = Array.from(hashUint8)
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
+  result = hash;
 } catch (e: any) {
   error = e.message;
 }
@@ -45,15 +46,15 @@ try {
 
 <html>
   <head>
-    <title>Argon2id (@awasm/noble) Test</title>
+    <title>Argon2id (hash-wasm) Test</title>
   </head>
   <body>
-    <h1>Argon2id Performance Test (@awasm/noble)</h1>
+    <h1>Argon2id Performance Test (hash-wasm)</h1>
     <p><strong>Parameters:</strong></p>
     <ul>
-      <li>Memory Cost (m): 47,104 KB (~46 MiB)</li>
-      <li>Time Cost (t): 1</li>
-      <li>Parallelism (p): 1</li>
+      <li>Memory Cost: 47,104 KB (~46 MiB)</li>
+      <li>Time Cost (Iterations): 1</li>
+      <li>Parallelism: 1</li>
       <li>Salt Length: 16 bytes</li>
     </ul>
 
