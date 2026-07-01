@@ -17,7 +17,7 @@ try {
   const keylen = 64 * 8; // bytes to bits
   const digest = "SHA-512";
 
-  const start = performance.now();
+  const start = globalThis.performance.now();
 
   // Import the password as a key
   const baseKey = await crypto.subtle.importKey(
@@ -40,11 +40,17 @@ try {
     keylen,
   );
 
-  const end = performance.now();
+  const end = globalThis.performance.now();
   duration = end - start;
   result = Array.from(new Uint8Array(derivedBits))
     .map((b) => b.toString(16).padStart(2, "0"))
     .join("");
+
+  // Debugging info
+  const debugInfo = `Start: ${start.toFixed(4)}, End: ${end.toFixed(4)}`;
+  console.log(`PBKDF2 Debug: ${debugInfo}`);
+  // We can store this in a variable to show on page if needed
+  (globalThis as any).pbkdf2Debug = debugInfo;
 } catch (e: any) {
   error = e.message;
 }

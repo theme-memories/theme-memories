@@ -21,33 +21,36 @@ const cf = new Cloudflare();
 
 // Password Hashing Utility
 async function hashPassword(password: string) {
-  const salt = crypto.randomBytes(16);
+  const saltBuffer = crypto.randomBytes(16);
+  const iterations = 100000;
   const keylen = 64;
-
-  return new Promise<{ hash: Buffer; salt: Buffer; updatedAt: string }>(
-    (resolve, reject) => {
-      // OWASP recommended parameters: N=2^16, r=8, p=2
-      crypto.scrypt(
-        password,
-        salt,
-        keylen,
-        { N: Math.pow(2, 14), r: 8, p: 5 },
-        (err, derivedKey) => {
-          if (err) reject(err);
-          else
-            resolve({
-              hash: derivedKey,
-              salt: salt,
-              updatedAt: new Date().toISOString(),
-            });
-        },
-      );
-    },
-  );
+  const digest = "sha512";
+  return new Promise<{
+    hash: Buffer;
+    salt: Buffer;
+    updatedAt: string;
+  }>((resolve, reject) => {
+    crypto.pbkdf2(
+      password,
+      saltBuffer,
+      iterations,
+      keylen,
+      digest,
+      (err, derivedKey) => {
+        if (err) reject(err);
+        else
+          resolve({
+            hash: derivedKey,
+            salt: saltBuffer,
+            updatedAt: new Date().toISOString(),
+          });
+      },
+    );
+  });
 }
 
 async function main() {
-  console.log("Starting scrypt password hashing process...");
+  console.log("Starting password hashing process...");
 
   // Initialization & Table Setup
   const files = await fg(["src/content/vault/**/*.md"]);
@@ -56,7 +59,7 @@ async function main() {
     console.log("Initializing database table...");
     await cf.d1.database.query(DATABASE_ID, {
       account_id: ACCOUNT_ID,
-      sql: `CREATE TABLE IF NOT EXISTS passwordsscrypt (
+      sql: `CREATE TABLE IF NOT EXISTS passwords (
         slug TEXT PRIMARY KEY,
         hash TEXT NOT NULL,
         salt TEXT NOT NULL,
@@ -65,14 +68,14 @@ async function main() {
     });
     console.log("Database table ready.");
   } catch (error) {
-    console.error("Failed to initialize database:", error);
+    console.error("Failed to initialize database table:", error);
     process.exit(1);
   }
 
   // Content Processing
   console.log("Processing content files...");
   const batches: D1BatchQuery[] = [];
-  const sql = `INSERT INTO passwordsscrypt (slug, hash, salt, updated_at) 
+  const sql = `INSERT INTO passwords (slug, hash, salt, updated_at) 
               VALUES (?, ?, ?, ?) 
               ON CONFLICT(slug) DO UPDATE SET 
               hash=excluded.hash, salt=excluded.salt, updated_at=excluded.updated_at`;
@@ -93,19 +96,25 @@ async function main() {
         params: [slug, hash.toString("hex"), salt.toString("hex"), updatedAt],
       });
     } catch (error) {
-      console.error(`Error processing ${file}:`, error);
+      console.error("Error processing a content file:", error);
     }
   }
 
+  // Database Update
   if (batches.length > 0) {
-    console.log(`Sending ${batches.length} records to D1...`);
-    await cf.d1.database.query(DATABASE_ID, {
-      account_id: ACCOUNT_ID,
-      batch: batches,
-    });
-    console.log("Database updated successfully.");
+    try {
+      console.log("Writing hashes to database...");
+      await cf.d1.database.query(DATABASE_ID, {
+        account_id: ACCOUNT_ID,
+        batch: batches,
+      });
+      console.log("Successfully updated passwords in database.");
+    } catch (error) {
+      console.error("Failed to save hashes to database:", error);
+      process.exit(1);
+    }
   } else {
-    console.log("No files to process.");
+    console.log("No passwords found to process.");
   }
 }
 
