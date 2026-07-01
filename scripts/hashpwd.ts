@@ -51,7 +51,7 @@ async function main() {
     console.log("Initializing database table...");
     await cf.d1.database.query(DATABASE_ID, {
       account_id: ACCOUNT_ID,
-      sql: `CREATE TABLE IF NOT EXISTS passwords-argon2id (
+      sql: `CREATE TABLE IF NOT EXISTS passwordsargon2id (
         slug TEXT PRIMARY KEY,
         hash TEXT NOT NULL,
         salt TEXT NOT NULL,
@@ -67,7 +67,7 @@ async function main() {
   // Content Processing
   console.log("Processing content files...");
   const batches: D1BatchQuery[] = [];
-  const sql = `INSERT INTO passwords-argon2id (slug, hash, salt, updated_at) 
+  const sql = `INSERT INTO passwordsargon2id (slug, hash, salt, updated_at) 
               VALUES (?, ?, ?, ?) 
               ON CONFLICT(slug) DO UPDATE SET 
               hash=excluded.hash, salt=excluded.salt, updated_at=excluded.updated_at`;
