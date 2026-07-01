@@ -50,19 +50,29 @@ async function hashPassword(password: string) {
 }
 
 async function main() {
+  console.log("Starting password hashing process...");
   // Initialization & Table Setup
   const files = await fg(["src/content/vault/**/*.md"]);
-  await cf.d1.database.query(DATABASE_ID, {
-    account_id: ACCOUNT_ID,
-    sql: `CREATE TABLE IF NOT EXISTS passwords (
-      slug TEXT PRIMARY KEY,
-      hash TEXT NOT NULL,
-      salt TEXT NOT NULL,
-      updated_at TEXT NOT NULL
-    );`,
-  });
+
+  try {
+    console.log("Initializing database table...");
+    await cf.d1.database.query(DATABASE_ID, {
+      account_id: ACCOUNT_ID,
+      sql: `CREATE TABLE IF NOT EXISTS passwords (
+        slug TEXT PRIMARY KEY,
+        hash TEXT NOT NULL,
+        salt TEXT NOT NULL,
+        updated_at TEXT NOT NULL
+      );`,
+    });
+    console.log("Database table ready.");
+  } catch (error) {
+    console.error("Failed to initialize database table:", error);
+    process.exit(1);
+  }
 
   // Content Processing
+  console.log("Processing content files...");
   const batches: D1BatchQuery[] = [];
   const sql = `INSERT INTO passwords (slug, hash, salt, updated_at) 
               VALUES (?, ?, ?, ?) 
@@ -70,28 +80,40 @@ async function main() {
               hash=excluded.hash, salt=excluded.salt, updated_at=excluded.updated_at`;
 
   for (const file of files) {
-    const content = fs.readFileSync(file, "utf8");
-    const { frontmatter } = markdownToHtml(content);
-    if (!frontmatter) {
-      continue;
+    try {
+      const content = fs.readFileSync(file, "utf8");
+      const { frontmatter } = markdownToHtml(content);
+      if (!frontmatter) {
+        continue;
+      }
+      const data: frontmatterData = YAML.parse(frontmatter.value);
+      const password = data.password || DEFAULT_PASSWORD;
+      const slug = data.slug;
+      const { hash, salt, updatedAt } = await hashPassword(password);
+      batches.push({
+        sql,
+        params: [slug, hash.toString("hex"), salt.toString("hex"), updatedAt],
+      });
+    } catch (error) {
+      console.error("Error processing a content file:", error);
     }
-    const data: frontmatterData = YAML.parse(frontmatter.value);
-    const password = data.password || DEFAULT_PASSWORD;
-    const slug = data.slug;
-    const { hash, salt, updatedAt } = await hashPassword(password);
-    batches.push({
-      sql,
-      params: [slug, hash.toString("hex"), salt.toString("hex"), updatedAt],
-    });
   }
 
   // Database Update
   if (batches.length > 0) {
-    await cf.d1.database.query(DATABASE_ID, {
-      account_id: ACCOUNT_ID,
-      batch: batches,
-    });
-    console.log("Successfully saved all hashes.");
+    try {
+      console.log("Writing hashes to database...");
+      await cf.d1.database.query(DATABASE_ID, {
+        account_id: ACCOUNT_ID,
+        batch: batches,
+      });
+      console.log("Successfully updated passwords in database.");
+    } catch (error) {
+      console.error("Failed to save hashes to database:", error);
+      process.exit(1);
+    }
+  } else {
+    console.log("No passwords found to process.");
   }
 }
 
