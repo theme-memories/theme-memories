@@ -1,6 +1,5 @@
 import fs from "node:fs";
 import crypto from "node:crypto";
-import * as argon2 from "argon2";
 import Cloudflare from "cloudflare";
 import fg from "fast-glob";
 import YAML from "yaml";
@@ -23,26 +22,32 @@ const cf = new Cloudflare();
 // Password Hashing Utility
 async function hashPassword(password: string) {
   const salt = crypto.randomBytes(16);
+  const keylen = 64;
 
-  // OWASP recommended parameters: m=19456 (19MiB), t=2, p=1
-  const hash = await argon2.hash(password, {
-    type: argon2.argon2id,
-    memoryCost: 47104,
-    timeCost: 1,
-    parallelism: 1,
-    salt: salt,
-    raw: true,
-  });
-
-  return {
-    hash,
-    salt,
-    updatedAt: new Date().toISOString(),
-  };
+  return new Promise<{ hash: Buffer; salt: Buffer; updatedAt: string }>(
+    (resolve, reject) => {
+      // OWASP recommended parameters: N=2^16, r=8, p=2
+      crypto.scrypt(
+        password,
+        salt,
+        keylen,
+        { N: Math.pow(2, 16), r: 8, p: 2 },
+        (err, derivedKey) => {
+          if (err) reject(err);
+          else
+            resolve({
+              hash: derivedKey,
+              salt: salt,
+              updatedAt: new Date().toISOString(),
+            });
+        },
+      );
+    },
+  );
 }
 
 async function main() {
-  console.log("Starting Argon2id password hashing process...");
+  console.log("Starting scrypt password hashing process...");
 
   // Initialization & Table Setup
   const files = await fg(["src/content/vault/**/*.md"]);
@@ -51,7 +56,7 @@ async function main() {
     console.log("Initializing database table...");
     await cf.d1.database.query(DATABASE_ID, {
       account_id: ACCOUNT_ID,
-      sql: `CREATE TABLE IF NOT EXISTS passwordsargon2id (
+      sql: `CREATE TABLE IF NOT EXISTS passwordsscrypt (
         slug TEXT PRIMARY KEY,
         hash TEXT NOT NULL,
         salt TEXT NOT NULL,
@@ -67,7 +72,7 @@ async function main() {
   // Content Processing
   console.log("Processing content files...");
   const batches: D1BatchQuery[] = [];
-  const sql = `INSERT INTO passwordsargon2id (slug, hash, salt, updated_at) 
+  const sql = `INSERT INTO passwordsscrypt (slug, hash, salt, updated_at) 
               VALUES (?, ?, ?, ?) 
               ON CONFLICT(slug) DO UPDATE SET 
               hash=excluded.hash, salt=excluded.salt, updated_at=excluded.updated_at`;
