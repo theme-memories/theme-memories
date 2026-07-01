@@ -1,7 +1,7 @@
 ---
 // Test PBKDF2 performance on Cloudflare Workers
 // PBKDF2 parameters from scripts/hashpwd.ts:
-// iterations: 220,000
+// iterations: 100,000
 // keylen: 64
 // digest: sha512
 export const prerender = false;
@@ -13,7 +13,7 @@ let error = "";
 try {
   const password = "test-password";
   const salt = crypto.getRandomValues(new Uint8Array(16));
-  const iterations = 220000;
+  const iterations = 100000;
   const keylen = 64 * 8; // bytes to bits
   const digest = "SHA-512";
 
@@ -58,7 +58,7 @@ try {
     <h1>PBKDF2 Performance Test</h1>
     <p><strong>Parameters:</strong></p>
     <ul>
-      <li>Iterations: 220,000</li>
+      <li>Iterations: 100,000</li>
       <li>Key Length: 64 bytes</li>
       <li>Digest: SHA-512</li>
     </ul>

@@ -22,7 +22,7 @@ const cf = new Cloudflare();
 // Password Hashing Utility
 async function hashPassword(password: string) {
   const saltBuffer = crypto.randomBytes(16);
-  const iterations = 220000;
+  const iterations = 100000;
   const keylen = 64;
   const digest = "sha512";
   return new Promise<{
@@ -51,6 +51,7 @@ async function hashPassword(password: string) {
 
 async function main() {
   console.log("Starting password hashing process...");
+
   // Initialization & Table Setup
   const files = await fg(["src/content/vault/**/*.md"]);
 
