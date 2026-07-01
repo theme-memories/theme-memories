@@ -1,0 +1,93 @@
+---
+// Test Argon2id performance on Cloudflare Workers using @awasm/noble
+// Parameters from scripts/hashpwd.ts:
+// memoryCost: 47104 (46 MiB)
+// timeCost: 1
+// parallelism: 1
+import { argon2id } from "@awasm/noble";
+
+export const prerender = false;
+
+let result = "";
+let duration = 0;
+let error = "";
+
+try {
+  const password = "test-password";
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+
+  // Parameters matching scripts/hashpwd.ts
+  // Note: @awasm/noble uses 'm' for memoryCost, 't' for timeCost, 'p' for parallelism
+  const opts = {
+    m: 47104,
+    t: 1,
+    p: 1,
+    maxmem: 131072,
+  };
+
+  const start = performance.now();
+
+  // @awasm/noble provides both sync and async.
+  // In Workers, .async() is preferred to avoid blocking the event loop for long computations.
+  const hashUint8 = await argon2id.async(password, salt, opts);
+
+  const end = performance.now();
+  duration = end - start;
+
+  // Convert Uint8Array result to hex string
+  result = Array.from(hashUint8)
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+} catch (e: any) {
+  error = e.message;
+}
+---
+
+<html>
+  <head>
+    <title>Argon2id (@awasm/noble) Test</title>
+  </head>
+  <body>
+    <h1>Argon2id Performance Test (@awasm/noble)</h1>
+    <p><strong>Parameters:</strong></p>
+    <ul>
+      <li>Memory Cost (m): 47,104 KB (~46 MiB)</li>
+      <li>Time Cost (t): 1</li>
+      <li>Parallelism (p): 1</li>
+      <li>Salt Length: 16 bytes</li>
+    </ul>
+
+    {
+      error ? (
+        <div style="color: red; border: 1px solid red; padding: 1rem; background: #fff0f0;">
+          <strong>Error:</strong> {error}
+          <p style="font-size: 0.9rem; margin-top: 0.5rem;">
+            Note: If you see "Worker exceeded resource limits", the memory cost
+            (m) might be too high for the 128MB limit.
+          </p>
+        </div>
+      ) : (
+        <div>
+          <p>
+            <strong>Duration:</strong> {duration.toFixed(2)} ms
+          </p>
+          <p>
+            <strong>Result (Hash):</strong> <code>{result}</code>
+          </p>
+          <p>
+            <strong>Status:</strong>
+            {duration > 10 ? (
+              <span style="color: red;">
+                Likely to exceed Free Plan CPU limit (10ms)
+              </span>
+            ) : (
+              <span style="color: green;">
+                Within Free Plan CPU limit (10ms)
+              </span>
+            )}
+          </p>
+        </div>
+      )
+    }
+  </body>
+</html>
