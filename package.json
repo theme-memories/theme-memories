@@ -29,19 +29,18 @@
   },
   "dependencies": {
     "@astrojs/check": "^0.9.9",
-    "@astrojs/cloudflare": "^14.0.1",
+    "@astrojs/cloudflare": "^14.0.2",
     "@astrojs/markdown-satteri": "^0.3.2",
     "@astrojs/sitemap": "^3.7.3",
     "@expressive-code/plugin-collapsible-sections": "^0.44.0",
     "@expressive-code/plugin-line-numbers": "^0.44.0",
     "@tailwindcss/vite": "^4.3.2",
-    "astro": "^7.0.3",
+    "argon2": "^0.44.0",
+    "astro": "^7.0.4",
     "astro-expressive-code": "^0.44.0",
-    "bcryptjs": "^3.0.3",
     "cloudflare": "^6.5.0",
     "fast-glob": "^3.3.3",
     "satteri": "^0.9.4",
-    "scrypt-js": "^3.0.1",
     "tailwindcss": "^4.3.2",
     "typescript": "^6.0.3",
     "yaml": "^2.9.0"
@@ -63,6 +62,6 @@
     "stylelint-config-standard": "^40.0.0",
     "tsx": "^4.22.4",
     "typescript-eslint": "^8.62.1",
-    "wrangler": "^4.105.0"
+    "wrangler": "^4.106.0"
   }
 }

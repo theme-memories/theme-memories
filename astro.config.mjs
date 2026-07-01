@@ -48,6 +48,6 @@ export default defineConfig({
       name: "__verification_session",
       sameSite: "strict",
     },
-    ttl: 14400,
+    ttl: 86400,
   },
 });

@@ -37,6 +37,26 @@
       "store_id": "c5b03c1fc22547d0bb1ee70629d4b6dd",
       "secret_name": "TURNSTILE_SECRET",
     },
+    {
+      "binding": "VERCEL_API_URL",
+      "store_id": "c5b03c1fc22547d0bb1ee70629d4b6dd",
+      "secret_name": "VERCEL_API_URL",
+    },
+    {
+      "binding": "VERCEL_MAGIC_KEY",
+      "store_id": "c5b03c1fc22547d0bb1ee70629d4b6dd",
+      "secret_name": "VERCEL_MAGIC_KEY",
+    },
+    {
+      "binding": "HMAC_C2V_SECRET",
+      "store_id": "c5b03c1fc22547d0bb1ee70629d4b6dd",
+      "secret_name": "HMAC_C2V_SECRET",
+    },
+    {
+      "binding": "HMAC_V2C_SECRET",
+      "store_id": "c5b03c1fc22547d0bb1ee70629d4b6dd",
+      "secret_name": "HMAC_V2C_SECRET",
+    },
   ],
   "kv_namespaces": [
     {

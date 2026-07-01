@@ -1,9 +1,9 @@
 import fs from "node:fs";
-import crypto from "node:crypto";
 import Cloudflare from "cloudflare";
 import fg from "fast-glob";
 import YAML from "yaml";
 import { markdownToHtml } from "satteri";
+import argon2 from "argon2";
 import { DEFAULT_PASSWORD } from "../src/content/constants.js";
 
 interface frontmatterData {
@@ -21,32 +21,14 @@ const cf = new Cloudflare();
 
 // Password Hashing Utility
 async function hashPassword(password: string) {
-  const saltBuffer = crypto.randomBytes(16);
-  const iterations = 100000;
-  const keylen = 64;
-  const digest = "sha512";
-  return new Promise<{
-    hash: Buffer;
-    salt: Buffer;
-    updatedAt: string;
-  }>((resolve, reject) => {
-    crypto.pbkdf2(
-      password,
-      saltBuffer,
-      iterations,
-      keylen,
-      digest,
-      (err, derivedKey) => {
-        if (err) reject(err);
-        else
-          resolve({
-            hash: derivedKey,
-            salt: saltBuffer,
-            updatedAt: new Date().toISOString(),
-          });
-      },
-    );
-  });
+  // OWASP recommended parameters for Argon2id:
+  // m=65536 (64 MiB), t=3 iterations, p=4 parallelism
+  const hash = await argon2.hash(password);
+
+  return {
+    hash,
+    updatedAt: new Date().toISOString(),
+  };
 }
 
 async function main() {
@@ -62,7 +44,6 @@ async function main() {
       sql: `CREATE TABLE IF NOT EXISTS passwords (
         slug TEXT PRIMARY KEY,
         hash TEXT NOT NULL,
-        salt TEXT NOT NULL,
         updated_at TEXT NOT NULL
       );`,
     });
@@ -75,10 +56,10 @@ async function main() {
   // Content Processing
   console.log("Processing content files...");
   const batches: D1BatchQuery[] = [];
-  const sql = `INSERT INTO passwords (slug, hash, salt, updated_at) 
-              VALUES (?, ?, ?, ?) 
+  const sql = `INSERT INTO passwords (slug, hash, updated_at) 
+              VALUES (?, ?, ?) 
               ON CONFLICT(slug) DO UPDATE SET 
-              hash=excluded.hash, salt=excluded.salt, updated_at=excluded.updated_at`;
+              hash=excluded.hash, updated_at=excluded.updated_at`;
 
   for (const file of files) {
     try {
@@ -90,10 +71,10 @@ async function main() {
       const data: frontmatterData = YAML.parse(frontmatter.value);
       const password = data.password || DEFAULT_PASSWORD;
       const slug = data.slug;
-      const { hash, salt, updatedAt } = await hashPassword(password);
+      const { hash, updatedAt } = await hashPassword(password);
       batches.push({
         sql,
-        params: [slug, hash.toString("hex"), salt.toString("hex"), updatedAt],
+        params: [slug, hash, updatedAt],
       });
     } catch (error) {
       console.error("Error processing a content file:", error);

@@ -1,0 +1,173 @@
+---
+// Test Argon2 Vercel API from Cloudflare Worker
+// This page simulates the Cloudflare Worker calling the Vercel verification endpoint
+export const prerender = false;
+
+import { env } from "cloudflare:workers";
+
+interface VercelResponse {
+  success: boolean;
+}
+
+async function computeHmac(secret: string, data: string) {
+  const encoder = new TextEncoder();
+  const keyData = encoder.encode(secret);
+  const msgData = encoder.encode(data);
+
+  const key = await crypto.subtle.importKey(
+    "raw",
+    keyData,
+    { name: "HMAC", hash: "SHA-512" },
+    false,
+    ["sign"],
+  );
+
+  const signature = await crypto.subtle.sign("HMAC", key, msgData);
+  return Array.from(new Uint8Array(signature))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+const VERCEL_API_URL = await env.VERCEL_API_URL.get();
+const HMAC_C2V_SECRET = await env.HMAC_C2V_SECRET.get();
+const HMAC_V2C_SECRET = await env.HMAC_V2C_SECRET.get();
+const VERCEL_MAGIC_KEY = await env.VERCEL_MAGIC_KEY.get();
+let userid = await Astro.session?.get("userid");
+
+if (!userid) {
+  userid = crypto.randomUUID(); // 生成安全的随机 UUID
+  Astro.session?.set("userid", userid);
+}
+
+let result = null;
+let duration = 0;
+let error = "";
+let debug = "";
+
+try {
+  // Test data: fetch real hash from D1 database for the 'example-vault' post
+  const testInput = "test-password";
+  const { results } = await env.DB.prepare(
+    "SELECT hash FROM passwords WHERE slug = ?",
+  )
+    .bind("example-vault")
+    .all();
+
+  if (!results || results.length === 0) {
+    throw new Error(
+      "No hash found in D1 for slug 'example-vault'. Please run scripts/hashpwd.ts first.",
+    );
+  }
+  const testHash = results[0].hash;
+
+  const bodyText = JSON.stringify({ input: testInput, hash: testHash });
+  const timestamp = Date.now().toString();
+
+  // Create Signature (C2V)
+  const baseString = `${timestamp}|${userid}|${bodyText}`;
+  const signature = await computeHmac(HMAC_C2V_SECRET, baseString);
+
+  const start = performance.now();
+
+  const response = await fetch(VERCEL_API_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-C2V-DATETIME": timestamp,
+      "X-C2V-NONCE": userid,
+      "X-C2V-SIGNATURE": signature,
+      "X-C2V-MAGIC": VERCEL_MAGIC_KEY,
+    },
+    body: bodyText,
+  });
+
+  const end = performance.now();
+  duration = end - start;
+
+  if (!response.ok) {
+    const errText = await response.text();
+    throw new Error(`HTTP ${response.status}: ${errText}`);
+  }
+
+  const data: VercelResponse = await response.json();
+
+  // Verify Response Signature (V2C)
+  const resTimestamp = response.headers.get("X-V2C-DATETIME");
+  const resNonce = response.headers.get("X-V2C-NONCE");
+  const resSignature = response.headers.get("X-V2C-SIGNATURE");
+  const resBody = JSON.stringify(data);
+
+  if (!resSignature) {
+    throw new Error("Missing response signature headers!");
+  }
+
+  const resBaseString = `${resTimestamp}|${resNonce}|${resBody}`;
+  const expectedResSignature = await computeHmac(
+    HMAC_V2C_SECRET,
+    resBaseString,
+  );
+
+  const sigA = new TextEncoder().encode(resSignature || "");
+  const sigB = new TextEncoder().encode(expectedResSignature);
+
+  // @ts-ignore
+  if (!crypto.subtle.timingSafeEqual(sigA, sigB)) {
+    throw new Error("Response signature mismatch!");
+  }
+
+  result = data.success;
+  debug = `C2V Sig: ${signature.slice(0, 10)}... | V2C Sig: ${resSignature.slice(0, 10)}...`;
+} catch (e: any) {
+  error = e.message;
+}
+---
+
+<html>
+  <head>
+    <title>Argon2 Vercel Test</title>
+  </head>
+  <body>
+    <h1>Argon2 Vercel Integration Test</h1>
+
+    <div
+      style="margin-bottom: 20px; padding: 10px; background: #f0f0f0; border-radius: 5px;"
+    >
+      <p><strong>Target URL:</strong> <code>{VERCEL_API_URL}</code></p>
+      <p><strong>Test Input:</strong> <code>test-password</code></p>
+    </div>
+
+    {
+      error ? (
+        <div style="color: red; border: 1px solid red; padding: 10px;">
+          <strong>Error:</strong> {error}
+        </div>
+      ) : (
+        <div>
+          <p>
+            <strong>Verification Result:</strong>
+            <span
+              style={
+                result
+                  ? "color: green; font-weight: bold"
+                  : "color: red; font-weight: bold"
+              }
+            >
+              {result ? "SUCCESS ✅" : "FAILED ❌"}
+            </span>
+          </p>
+          <p>
+            <strong>Network Roundtrip:</strong> {duration.toFixed(2)} ms
+          </p>
+          <p style="font-size: 0.8em; color: #666;">{debug}</p>
+        </div>
+      )
+    }
+
+    <hr />
+    <p style="font-size: 0.9em;">
+      Note: This test requires correct <code>HMAC_C2V_SECRET</code> and <code
+        >HMAC_V2C_SECRET</code
+      > matching the Vercel deployment.
+    </p>
+  </body>
+</html>
