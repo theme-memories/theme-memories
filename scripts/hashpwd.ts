@@ -18,6 +18,8 @@ interface D1BatchQuery {
 const ACCOUNT_ID = process.env.CLOUDFLARE_ACCOUNT_ID as string;
 const DATABASE_ID = process.env.HASHPWD_DATABASE_ID as string;
 const cf = new Cloudflare();
+
+// Password Hashing Utility
 async function hashPassword(password: string) {
   const saltBuffer = crypto.randomBytes(16);
   const iterations = 220000;
@@ -46,7 +48,9 @@ async function hashPassword(password: string) {
     );
   });
 }
+
 async function main() {
+  // Initialization & Table Setup
   const files = await fg(["src/content/vault/**/*.md"]);
   await cf.d1.database.query(DATABASE_ID, {
     account_id: ACCOUNT_ID,
@@ -57,11 +61,14 @@ async function main() {
       updated_at TEXT NOT NULL
     );`,
   });
+
+  // Content Processing
   const batches: D1BatchQuery[] = [];
   const sql = `INSERT INTO passwords (slug, hash, salt, updated_at) 
               VALUES (?, ?, ?, ?) 
               ON CONFLICT(slug) DO UPDATE SET 
               hash=excluded.hash, salt=excluded.salt, updated_at=excluded.updated_at`;
+
   for (const file of files) {
     const content = fs.readFileSync(file, "utf8");
     const { frontmatter } = markdownToHtml(content);
@@ -77,6 +84,8 @@ async function main() {
       params: [slug, hash.toString("hex"), salt.toString("hex"), updatedAt],
     });
   }
+
+  // Database Update
   if (batches.length > 0) {
     await cf.d1.database.query(DATABASE_ID, {
       account_id: ACCOUNT_ID,

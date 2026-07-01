@@ -10,7 +10,9 @@ import { satteri } from "@astrojs/markdown-satteri";
 export default defineConfig({
   site: "https://amia.work",
   trailingSlash: "never",
-  adapter: cloudflare(),
+  adapter: cloudflare({
+    imageService: { build: "compile", runtime: "cloudflare-binding" },
+  }),
   vite: {
     plugins: [tailwindcss()],
   },
