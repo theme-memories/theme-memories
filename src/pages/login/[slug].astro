@@ -11,7 +11,7 @@ import { TURNSTILE_SITE_KEY } from "@siteConsts";
 const { slug } = Astro.params;
 
 if (!slug) {
-  return Astro.redirect("/400");
+  return new Response("Missing slug", { status: 400 });
 }
 
 const slugRegex = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
@@ -26,9 +26,7 @@ if (!entry || entry.data.draft) {
 
 const md = new markdownit().use(mdKatex, { katex });
 const questionRaw = entry.data.question;
-console.log("RAW QUESTION:", questionRaw);
 const questionHtml = md.render(questionRaw);
-console.log("HTML QUESTION:", questionHtml);
 
 const error = Astro.url.searchParams.get("error");
 ---

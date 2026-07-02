@@ -1,0 +1,29 @@
+---
+import HeadTag from "@component/html/head.astro";
+import { getCollection, render } from "astro:content";
+
+export async function getStaticPaths() {
+  const entries = await getCollection("article", ({ data }) => !data.draft);
+  return entries.map((entry) => ({
+    params: { slug: entry.data.slug },
+    props: entry,
+  }));
+}
+
+const entry = Astro.props;
+const { Content } = await render(entry);
+---
+
+<html lang="ja">
+  <head>
+    <HeadTag title={entry.data.title} />
+  </head>
+  <body>
+    <main>
+      <article>
+        <h1>{entry.data.title}</h1>
+        <Content />
+      </article>
+    </main>
+  </body>
+</html>
