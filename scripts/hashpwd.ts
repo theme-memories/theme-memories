@@ -1,15 +1,10 @@
 import fs from "node:fs";
 import Cloudflare from "cloudflare";
 import fg from "fast-glob";
-import YAML from "yaml";
-import { markdownToHtml } from "satteri";
+import matter from "gray-matter";
 import argon2 from "argon2";
 import { DEFAULT_PASSWORD } from "../src/content/constants.js";
 
-interface frontmatterData {
-  password?: string;
-  slug: string;
-}
 interface D1BatchQuery {
   sql: string;
   params: string[];
@@ -85,11 +80,7 @@ async function main() {
   for (const file of files) {
     try {
       const content = fs.readFileSync(file, "utf8");
-      const { frontmatter } = markdownToHtml(content);
-      if (!frontmatter) {
-        continue;
-      }
-      const data: frontmatterData = YAML.parse(frontmatter.value);
+      const { data } = matter(content);
       const password = data.password || DEFAULT_PASSWORD;
       const slug = data.slug;
       const { hash, updatedAt } = await hashPassword(password);
