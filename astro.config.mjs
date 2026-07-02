@@ -5,6 +5,7 @@ import tailwindcss from "@tailwindcss/vite";
 import sitemap from "@astrojs/sitemap";
 import expressiveCode from "astro-expressive-code";
 import { satteri } from "@astrojs/markdown-satteri";
+import { temmlMath } from "./src/snippets/temml";
 
 // https://astro.build/config
 export default defineConfig({
@@ -23,6 +24,7 @@ export default defineConfig({
         math: true,
         smartPunctuation: true,
       },
+      mdastPlugins: [temmlMath],
     }),
   },
   fonts: [
