@@ -1,0 +1,79 @@
+---
+export const prerender = false;
+
+import { getCollection } from "astro:content";
+import { markdownToHtml } from "satteri";
+import { TURNSTILE_SITE_KEY } from "@siteConsts";
+
+const { slug } = Astro.params;
+
+if (!slug) {
+  return Astro.redirect("/400");
+}
+
+const slugRegex = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+if (!slugRegex.test(slug) || slug.length < 1 || slug.length > 32) {
+  return new Response("Invalid slug format", { status: 400 });
+}
+
+const entries = await getCollection("vault", ({ data }) => !data.draft);
+const entry = entries.find((e) => e.data.slug === slug);
+
+if (!entry) {
+  return Astro.redirect("/404");
+}
+
+const { html: questionHtml } = markdownToHtml(entry.data.question);
+
+const error = Astro.url.searchParams.get("error");
+---
+
+<main class="mx-auto max-w-2xl space-y-8 p-6">
+  <div class="space-y-4 text-center">
+    <h1 class="text-2xl font-bold">Password Required</h1>
+    <div class="prose prose-slate mx-auto" set:html={questionHtml} />
+  </div>
+
+  <form method="POST" action="/api/auth" class="mx-auto max-w-sm space-y-4">
+    <input type="hidden" name="slug" value={slug} />
+    <div>
+      <label for="password" class="block text-sm font-medium text-gray-700">
+        Password
+      </label>
+      <input
+        type="password"
+        id="password"
+        name="password"
+        class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+        required
+      />
+    </div>
+
+    <div class="cf-turnstile" data-sitekey={TURNSTILE_SITE_KEY}>
+      <!-- Turnstile widget will be rendered here -->
+    </div>
+
+    <button
+      type="submit"
+      class="flex w-full justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-none"
+    >
+      Verify
+    </button>
+
+    {
+      error && (
+        <p class="text-center text-sm text-red-500">
+          {error === "captcha"
+            ? "CAPTCHA verification failed."
+            : "Incorrect password."}
+        </p>
+      )
+    }
+  </form>
+</main>
+
+<script
+  is:inline
+  src="https://challenges.cloudflare.com/turnstile/v0/api.js"
+  async
+  defer></script>

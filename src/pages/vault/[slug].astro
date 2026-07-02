@@ -1,0 +1,71 @@
+---
+export const prerender = false;
+
+import { getCollection, render } from "astro:content";
+import { env } from "cloudflare:workers";
+
+const { slug } = Astro.params;
+
+if (!slug) {
+  return new Response("Missing slug", { status: 400 });
+}
+
+const slugRegex = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+if (!slugRegex.test(slug) || slug.length < 1 || slug.length > 32) {
+  return new Response("Invalid slug format", { status: 400 });
+}
+
+// 1. Filter slug, return 404 if not exist
+const entries = await getCollection("vault", ({ data }) => !data.draft);
+const entry = entries.find((e) => e.data.slug === slug);
+
+if (!entry) {
+  return new Response("Not Found", { status: 404 });
+}
+
+// 2. Filter session cookie, return /login/[slug] if not exist
+const sessionCookie = Astro.cookies.get("__verification_session");
+const sessionUuidRegex =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+if (!sessionCookie || !sessionUuidRegex.test(sessionCookie.value)) {
+  return Astro.redirect("/login/" + slug);
+}
+
+const userid = await Astro.session?.get("userid");
+if (!userid) {
+  return Astro.redirect("/login/" + slug);
+}
+
+// Check unlock status in D1 using primary key index (userid, slug)
+const result = await env.DB.prepare(
+  "SELECT 1 FROM unlocks WHERE userid = ? AND slug = ?",
+)
+  .bind(userid, slug)
+  .first();
+
+// 4. return /login/[slug] if not unlocked
+if (!result) {
+  return Astro.redirect("/login/" + slug);
+}
+
+// 5. Continue render and return rendered page to user if unlocked
+const { Content } = await render(entry);
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>{entry.data.title}</title>
+    <meta name="viewport" content="width=device-width" />
+    <link rel="stylesheet" href="/styles/global.css" />
+  </head>
+  <body>
+    <main>
+      <article>
+        <h1>{entry.data.title}</h1>
+        <Content />
+      </article>
+    </main>
+  </body>
+</html>
