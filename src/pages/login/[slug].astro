@@ -5,6 +5,7 @@ import HeadTag from "@component/html/head.astro";
 import { getEntry } from "astro:content";
 import markdownit from "markdown-it";
 import mdKatex from "@vscode/markdown-it-katex";
+import katex from "katex";
 import { TURNSTILE_SITE_KEY } from "@siteConsts";
 
 const { slug } = Astro.params;
@@ -23,7 +24,7 @@ if (!entry || entry.data.draft) {
   return Astro.redirect("/404");
 }
 
-const md = new markdownit().use(mdKatex);
+const md = new markdownit().use(mdKatex, { katex });
 const questionRaw = entry.data.question;
 console.log("RAW QUESTION:", questionRaw);
 const questionHtml = md.render(questionRaw);

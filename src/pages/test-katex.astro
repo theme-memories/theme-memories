@@ -4,8 +4,9 @@ export const prerender = false;
 import HeadTag from "@component/html/head.astro";
 import markdownit from "markdown-it";
 import mdKatex from "@vscode/markdown-it-katex";
+import katex from "katex";
 
-const md = new markdownit().use(mdKatex);
+const md = new markdownit().use(mdKatex, { katex });
 
 const testCases = [
   {
@@ -37,7 +38,7 @@ const testCases = [
   },
   {
     name: "Complex KaTeX 2",
-    content: `$$\int_{a}^{b} x^2 dx = \frac{b^3 - a^3}{3}$$`,
+    content: `$$\\left( \\sum_{k=1}^n a_k b_k \\right)^2 \\leq \\left( \\sum_{k=1}^n a_k^2 \\right) \\left( \\sum_{k=1}^n b_k^2 \\right)$$`,
     description: "Standard integral",
   },
 ];
