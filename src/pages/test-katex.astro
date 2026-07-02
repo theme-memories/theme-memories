@@ -10,16 +10,33 @@ const md = new markdownit().use(mdKatex);
 const testCases = [
   {
     name: "Problematic Case",
-    content: `$$\sqrt{3x-1}+(1+x)^2$$`,
-    description: "Testing the reported issue where \sqrt might be parsed as \s",
+    content: `$$\\sqrt{3x-1}+(1+x)^2$$`,
+    description:
+      "Testing the reported issue where \\sqrt might be parsed as \\s",
   },
   {
     name: "Simple Square Root",
-    content: `$\sqrt{x}$`,
+    content: `$\\sqrt{x}$`,
     description: "Inline square root",
   },
   {
     name: "Complex KaTeX",
+    content: `$$\\int_{a}^{b} x^2 dx = \\frac{b^3 - a^3}{3}$$`,
+    description: "Standard integral",
+  },
+  {
+    name: "Problematic Case 2",
+    content: `$$\sqrt{3x-1}+(1+x)^2$$`,
+    description:
+      "Testing the reported issue where \\sqrt might be parsed as \\s",
+  },
+  {
+    name: "Simple Square Root 2",
+    content: `$\sqrt{x}$`,
+    description: "Inline square root",
+  },
+  {
+    name: "Complex KaTeX 2",
     content: `$$\int_{a}^{b} x^2 dx = \frac{b^3 - a^3}{3}$$`,
     description: "Standard integral",
   },
