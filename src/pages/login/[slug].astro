@@ -1,7 +1,6 @@
 ---
 import HeadTag from "@component/html/head.astro";
 import { getCollection } from "astro:content";
-import { markdownToHtml } from "satteri";
 import { TURNSTILE_SITE_KEY } from "@siteConsts";
 
 export async function getStaticPaths() {
@@ -14,8 +13,6 @@ export async function getStaticPaths() {
 
 const { slug } = Astro.params;
 const { entry } = Astro.props;
-
-const { html: questionHtml } = markdownToHtml(entry.data.question);
 ---
 
 <html lang="en">
@@ -26,7 +23,7 @@ const { html: questionHtml } = markdownToHtml(entry.data.question);
     <main class="mx-auto max-w-2xl space-y-8 p-6">
       <div class="space-y-4 text-center">
         <h1 class="text-2xl font-bold">Password Required</h1>
-        <div class="prose prose-slate mx-auto" set:html={questionHtml} />
+        <div class="prose prose-slate mx-auto">{entry.data.question}</div>
       </div>
 
       <form method="POST" action="/api/auth" class="mx-auto max-w-sm space-y-4">
