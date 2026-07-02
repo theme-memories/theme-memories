@@ -1,6 +1,7 @@
 ---
 export const prerender = false;
 
+import HeadTag from "@component/html/head.astro";
 import { getEntry, render } from "astro:content";
 import { env } from "cloudflare:workers";
 
@@ -53,11 +54,9 @@ const { Content } = await render(entry);
 
 <html lang="en">
   <head>
-    <meta charset="utf-8" />
-    <title>{entry.data.title}</title>
-    <meta name="viewport" content="width=device-width" />
-    <link rel="stylesheet" href="/styles/global.css" />
+    <HeadTag title={entry.data.title} />
   </head>
+
   <body>
     <main>
       <article>

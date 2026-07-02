@@ -1,6 +1,8 @@
 ---
 import "@styles/global.css";
 import { Font } from "astro:assets";
+
+const { title = "Astro" } = Astro.props;
 ---
 
 <meta charset="utf-8" />
@@ -15,4 +17,4 @@ import { Font } from "astro:assets";
 <link rel="preconnect" href="https://static.cloudflareinsights.com" />
 <link rel="preconnect" href="https://object.amia.work" />
 <link rel="preconnect" href="https://openweathermap.org" />
-<title>Astro</title>
+<title>{title}</title>
