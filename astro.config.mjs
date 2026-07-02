@@ -20,7 +20,7 @@ export default defineConfig({
   markdown: {
     processor: satteri({
       features: {
-        math: true,
+        math: { singleDollarTextMath: false },
         superscript: true,
         subscript: true,
         smartPunctuation: true,
