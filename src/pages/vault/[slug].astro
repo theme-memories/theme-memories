@@ -1,7 +1,7 @@
 ---
 export const prerender = false;
 
-import { getCollection, render } from "astro:content";
+import { getEntry, render } from "astro:content";
 import { env } from "cloudflare:workers";
 
 const { slug } = Astro.params;
@@ -16,11 +16,9 @@ if (!slugRegex.test(slug) || slug.length < 1 || slug.length > 32) {
 }
 
 // 1. Filter slug, return 404 if not exist
-const entries = await getCollection("vault", ({ data }) => !data.draft);
-const entry = entries.find((e) => e.data.slug === slug);
-
-if (!entry) {
-  return new Response("Not Found", { status: 404 });
+const entry = await getEntry("vault", slug);
+if (!entry || entry.data.draft) {
+  return Astro.redirect("/404");
 }
 
 // 2. Filter session cookie, return /login/[slug] if not exist

@@ -1,7 +1,7 @@
 ---
 export const prerender = false;
 
-import { getCollection } from "astro:content";
+import { getEntry } from "astro:content";
 import markdownit from "markdown-it";
 import mdKatex from "@vscode/markdown-it-katex";
 import { TURNSTILE_SITE_KEY } from "@siteConsts";
@@ -18,15 +18,14 @@ if (!slugRegex.test(slug) || slug.length < 1 || slug.length > 32) {
   return new Response("Invalid slug format", { status: 400 });
 }
 
-const entries = await getCollection("vault", ({ data }) => !data.draft);
-const entry = entries.find((e) => e.data.slug === slug);
-
-if (!entry) {
+const entry = await getEntry("vault", slug);
+if (!entry || entry.data.draft) {
   return Astro.redirect("/404");
 }
 
 const md = new markdownit().use(mdKatex);
-const questionHtml = md.render(entry.data.question);
+const questionRaw = entry.data.question;
+const questionHtml = md.render(questionRaw);
 
 const error = Astro.url.searchParams.get("error");
 ---
