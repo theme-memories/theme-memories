@@ -2,7 +2,8 @@
 export const prerender = false;
 
 import { getCollection } from "astro:content";
-import { markdownToHtml } from "satteri";
+import markdownit from "markdown-it";
+import mdKatex from "@vscode/markdown-it-katex";
 import { TURNSTILE_SITE_KEY } from "@siteConsts";
 
 const { slug } = Astro.params;
@@ -23,7 +24,8 @@ if (!entry) {
   return Astro.redirect("/404");
 }
 
-const { html: questionHtml } = markdownToHtml(entry.data.question);
+const md = new markdownit().use(mdKatex);
+const questionHtml = md.render(entry.data.question);
 
 const error = Astro.url.searchParams.get("error");
 ---
