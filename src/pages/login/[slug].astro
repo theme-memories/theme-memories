@@ -5,6 +5,7 @@ import { getCollection } from "astro:content";
 import markdownit from "markdown-it";
 import mdKatex from "@vscode/markdown-it-katex";
 import { TURNSTILE_SITE_KEY } from "@siteConsts";
+import "katex/dist/katex.min.css";
 
 const { slug } = Astro.params;
 
