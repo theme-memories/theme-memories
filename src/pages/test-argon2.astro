@@ -28,6 +28,29 @@ async function computeHmac(secret: string, data: string) {
     .join("");
 }
 
+async function verifyHmac(secret: string, data: string, signatureHex: string) {
+  try {
+    const encoder = new TextEncoder();
+    const keyData = encoder.encode(secret);
+    const msgData = encoder.encode(data);
+    const sigData = new Uint8Array(
+      signatureHex.match(/.{1,2}/g)?.map((byte) => parseInt(byte, 16)) || [],
+    );
+
+    const key = await crypto.subtle.importKey(
+      "raw",
+      keyData,
+      { name: "HMAC", hash: "SHA-512" },
+      false,
+      ["verify"],
+    );
+
+    return await crypto.subtle.verify("HMAC", key, sigData, msgData);
+  } catch {
+    return false;
+  }
+}
+
 const VERCEL_API_URL = await env.VERCEL_API_URL.get();
 const HMAC_C2V_SECRET = await env.HMAC_C2V_SECRET.get();
 const HMAC_V2C_SECRET = await env.HMAC_V2C_SECRET.get();
@@ -46,7 +69,7 @@ let debug = "";
 
 try {
   // Test data: fetch real hash from D1 database for the 'example-vault' post
-  const testInput = "test-password";
+  const testInput = "password";
   const { results } = await env.DB.prepare(
     "SELECT hash FROM passwords WHERE slug = ?",
   )
@@ -102,16 +125,13 @@ try {
   }
 
   const resBaseString = `${resTimestamp}|${resNonce}|${resBody}`;
-  const expectedResSignature = await computeHmac(
+  const isValid = await verifyHmac(
     HMAC_V2C_SECRET,
     resBaseString,
+    resSignature,
   );
 
-  const sigA = new TextEncoder().encode(resSignature || "");
-  const sigB = new TextEncoder().encode(expectedResSignature);
-
-  // @ts-ignore
-  if (!crypto.subtle.timingSafeEqual(sigA, sigB)) {
+  if (!isValid) {
     throw new Error("Response signature mismatch!");
   }
 

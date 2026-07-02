@@ -6,7 +6,9 @@
     "types": ["./worker-configuration.d.ts", "node"],
     "paths": {
       "@component/*": ["./src/component/*"],
-      "@styles/*": ["./src/styles/*"]
+      "@styles/*": ["./src/styles/*"],
+      "@contentConsts": ["./src/content/constants"],
+      "@assets/*": ["./src/content/assets/*"]
     }
   }
 }

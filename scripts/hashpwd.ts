@@ -38,7 +38,7 @@ async function main() {
   const files = await fg(["src/content/vault/**/*.md"]);
 
   try {
-    console.log("Initializing database table...");
+    console.log("Initializing hash database table...");
     await cf.d1.database.query(DATABASE_ID, {
       account_id: ACCOUNT_ID,
       sql: `CREATE TABLE IF NOT EXISTS passwords (
@@ -47,9 +47,30 @@ async function main() {
         updated_at TEXT NOT NULL
       );`,
     });
-    console.log("Database table ready.");
+    console.log("Hash database table ready.");
   } catch (error) {
-    console.error("Failed to initialize database table:", error);
+    console.error("Failed to initialize hash database table:", error);
+    process.exit(1);
+  }
+
+  try {
+    console.log("Initializing unlocked database table...");
+    await cf.d1.database.query(DATABASE_ID, {
+      account_id: ACCOUNT_ID,
+      sql: `CREATE TABLE IF NOT EXISTS unlocks (
+        userid TEXT NOT NULL,
+        slug TEXT NOT NULL,
+        unlocked_at INTEGER NOT NULL,
+        PRIMARY KEY (userid, slug)
+      );`,
+    });
+    await cf.d1.database.query(DATABASE_ID, {
+      account_id: ACCOUNT_ID,
+      sql: `CREATE INDEX IF NOT EXISTS idx_unlocks_expiry ON unlocks(unlocked_at);`,
+    });
+    console.log("Unlocked database table ready.");
+  } catch (error) {
+    console.error("Failed to initialize unlocked database table:", error);
     process.exit(1);
   }
 
@@ -84,14 +105,14 @@ async function main() {
   // Database Update
   if (batches.length > 0) {
     try {
-      console.log("Writing hashes to database...");
+      console.log("Writing hashes to hash database...");
       await cf.d1.database.query(DATABASE_ID, {
         account_id: ACCOUNT_ID,
         batch: batches,
       });
-      console.log("Successfully updated passwords in database.");
+      console.log("Successfully updated hashes.");
     } catch (error) {
-      console.error("Failed to save hashes to database:", error);
+      console.error("Failed to save hashes to hash database:", error);
       process.exit(1);
     }
   } else {
