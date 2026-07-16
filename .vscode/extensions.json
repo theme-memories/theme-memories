@@ -1,0 +1,14 @@
+{
+  "recommendations": [
+    "astro-build.astro-vscode",
+    "dbaeumer.vscode-eslint",
+    "mhutchie.git-graph",
+    "oderwat.indent-rainbow",
+    "IBM.output-colorizer",
+    "esbenp.prettier-vscode",
+    "stylelint.vscode-stylelint",
+    "bradlc.vscode-tailwindcss",
+    "redhat.vscode-yaml"
+  ],
+  "unwantedRecommendations": []
+}

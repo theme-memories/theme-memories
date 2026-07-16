@@ -1,0 +1,10 @@
+@import "katex/dist/katex.min.css";
+@import "tailwindcss";
+
+@plugin "@tailwindcss/typography";
+@plugin "daisyui";
+
+@theme inline {
+  --font-sans: var(--font-mplus), sans-serif;
+  --font-mono: var(--font-mplus-code), monospace;
+}

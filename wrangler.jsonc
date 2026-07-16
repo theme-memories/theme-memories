@@ -1,0 +1,57 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "compatibility_date": "2026-06-16",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "name": "theme-memories",
+  "main": "@astrojs/cloudflare/entrypoints/server",
+  "workers_dev": false,
+  "preview_urls": false,
+  "routes": [
+    {
+      "pattern": "amia.work",
+      "custom_domain": true,
+    },
+  ],
+  "placement": {
+    "mode": "smart",
+  },
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "html_handling": "drop-trailing-slash",
+  },
+  "observability": {
+    "logs": {
+      "enabled": true,
+      "invocation_logs": true,
+      "destinations": ["grafana-logs"],
+    },
+    "traces": {
+      "enabled": true,
+      "destinations": ["grafana-traces"],
+    },
+  },
+  "secrets_store_secrets": [
+    {
+      "binding": "TURNSTILE_SECRET_KEY",
+      "store_id": "c5b03c1fc22547d0bb1ee70629d4b6dd",
+      "secret_name": "TURNSTILE_SECRET_KEY",
+    },
+  ],
+  "kv_namespaces": [
+    {
+      "binding": "SESSION",
+      "id": "1e29f358a7eb4d6ca42dfe390f99af12",
+    },
+  ],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "theme-memories",
+      "database_id": "01c44b0e-4dca-4ceb-b195-3e6e92aa5398",
+    },
+  ],
+  "images": {
+    "binding": "IMAGES",
+  },
+}
