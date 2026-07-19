@@ -5,6 +5,72 @@
 @plugin "daisyui";
 
 @theme inline {
-  --font-sans: var(--font-mplus), sans-serif;
-  --font-mono: var(--font-mplus-code), monospace;
+  --font-mp: var(--font-mpone), sans-serif;
+  --font-mpc: var(--font-mpone-code), monospace;
+  --color-accent: #557;
+  --color-accent-bg: #7ed;
+  --pc-banner-mask: linear-gradient(
+    to bottom,
+    #fff 0,
+    #fff 93%,
+    rgb(255 255 255 / 80%) 96%,
+    rgb(255 255 255 / 40%) 98%,
+    transparent 100%
+  );
+  --background-image-main: linear-gradient(
+    90deg,
+    #b3fffd 0,
+    #e3e6ff 50%,
+    #fde5f5 100%
+  );
+  --background-image-postlist-date: linear-gradient(
+    90deg,
+    #464668 0,
+    rgb(70 70 104 / 80%) 100%
+  );
+  --background-image-postlist-cateone: linear-gradient(
+    90deg,
+    #01cc96 0,
+    rgb(1 204 150 / 80%) 100%
+  );
+  --background-image-postlist-catetwo: linear-gradient(
+    90deg,
+    #ff9503 0,
+    rgb(255 149 3 / 80%) 100%
+  );
+  --background-image-postlist-catethree: linear-gradient(
+    90deg,
+    #ff5fb4 0,
+    rgb(255 95 180 / 80%) 100%
+  );
+  --background-image-postlist-catefour: linear-gradient(
+    90deg,
+    #018cff 0,
+    rgb(1 140 255 / 80%) 100%
+  );
+  --background-image-postlist-catefive: linear-gradient(
+    90deg,
+    #aa5fff 0,
+    rgb(170 95 255 / 80%) 100%
+  );
+  --background-image-postlist-catesix: linear-gradient(
+    90deg,
+    #859099 0,
+    rgb(133 144 153 / 80%) 100%
+  );
+  --background-color-footer: rgb(68 68 102 / 70%);
+}
+
+@layer base {
+  html {
+    @apply font-mp;
+  }
+
+  body {
+    @apply bg-main text-accent relative;
+  }
+
+  code {
+    @apply font-mpc;
+  }
 }

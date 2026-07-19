@@ -1,0 +1,56 @@
+---
+import RecommendedCard from "../element/recommended-card.astro";
+import CoverOne from "../../assets/sample/news_thumb_138_jypa.webp";
+import CoverTwo from "../../assets/sample/news_thumb_353_EBHhixyf8n.webp";
+import CoverThree from "../../assets/sample/news_thumb_12.webp";
+import CoverFour from "../../assets/sample/news_thumb_316_buabua.webp";
+import CoverFive from "../../assets/sample/news_thumb_240_njbaa.webp";
+import CoverSix from "../../assets/sample/news_thumb_59_dfkdksd.webp";
+---
+
+<div class="index-recommended">
+  <ul class="grid grid-cols-1 gap-4 md:mx-4 md:grid-cols-3">
+    <RecommendedCard
+      date="2022.4.6"
+      category="プロジェクトメッセージ"
+      cover={CoverOne}
+      title="プロジェクトメッセージ vol.11 サーバ負荷による通信障害と今後の対策について"
+    />
+    <RecommendedCard
+      date="2025.9.26"
+      category="アップデート"
+      cover={CoverTwo}
+      title="アップデートノート 6.0.0"
+    />
+    <RecommendedCard
+      date="2026.4.6"
+      category="重要"
+      cover={CoverThree}
+      title="プロデューサーレター「ブルームフェスティバルガチャの一連の問題について」"
+    />
+    <RecommendedCard
+      date="2025.1.28"
+      category="キャンペーン"
+      cover={CoverFour}
+      title="プロセカあんスタコラボ開催記念フォロー＆RPキャンペーン"
+    />
+    <RecommendedCard
+      date="2023.12.1"
+      category="募集・結果発表"
+      cover={CoverFive}
+      title="「一緒に作ろう！第20回楽曲コンテストプロセカNEXT」開催！"
+    />
+    <RecommendedCard
+      date="2020.12.21"
+      category="その他"
+      cover={CoverSix}
+      title="プロジェクトセカイ公式アンソロジー公開！"
+    />
+  </ul>
+  <div class="posts-button flex justify-center py-8">
+    <button
+      class="btn btn-wide bg-accent-bg hover:text-accent-bg hover:bg-accent rounded-full"
+      >MORE</button
+    >
+  </div>
+</div>

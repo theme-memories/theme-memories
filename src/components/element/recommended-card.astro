@@ -1,0 +1,40 @@
+---
+export interface Props {
+  date: string;
+  category: string;
+  cover: ImageMetadata;
+  title: string;
+}
+
+import { Image } from "astro:assets";
+
+const { date, category, cover, title } = Astro.props;
+const categoryStyles: Record<string, string> = {
+  プロジェクトメッセージ: "bg-postlist-cateone",
+  アップデート: "bg-postlist-catetwo",
+  重要: "bg-postlist-catethree",
+  キャンペーン: "bg-postlist-catefour",
+  募集・結果発表: "bg-postlist-catefive",
+  その他: "bg-postlist-catesix",
+};
+const catClass = categoryStyles[category];
+---
+
+<li class="mx-4 rounded-lg bg-white md:mx-2">
+  <div
+    class="recommended-head grid min-h-5 grid-cols-2 bg-none! font-bold text-white md:text-sm"
+  >
+    <p class="recommended-date bg-postlist-date rounded-tl-lg pl-4">
+      {date}
+    </p>
+    <p class=`recommended-category rounded-tr-lg text-center ${catClass}`>
+      {category}
+    </p>
+  </div>
+  <dl class="recommended-data grid grid-cols-2 items-start md:grid-cols-1">
+    <dt class="recommended-cover"><Image src={cover} alt="" /></dt>
+    <dd class="recommended-title p-4 text-2xl md:text-base">
+      {title}
+    </dd>
+  </dl>
+</li>

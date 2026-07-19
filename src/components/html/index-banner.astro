@@ -1,0 +1,16 @@
+---
+import { Image } from "astro:assets";
+import MobileBanner from "../../assets/index-mobile-banner.webp";
+import PcBanner from "../../assets/index-pc-banner.webp";
+---
+
+<div class="index-banner">
+  <picture>
+    <source srcset={PcBanner.src} media="(min-width: 768px)" />
+    <Image
+      src={MobileBanner}
+      alt=""
+      class="w-full md:mask-(--pc-banner-mask)"
+    />
+  </picture>
+</div>

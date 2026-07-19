@@ -34,15 +34,15 @@
     "@expressive-code/plugin-collapsible-sections": "^0.44.0",
     "@expressive-code/plugin-line-numbers": "^0.44.0",
     "@tailwindcss/typography": "^0.5.20",
-    "@tailwindcss/vite": "^4.3.2",
+    "@tailwindcss/vite": "^4.3.3",
     "@vscode/markdown-it-katex": "^1.1.2",
-    "astro": "^7.0.9",
+    "astro": "^7.1.1",
     "astro-expressive-code": "^0.44.0",
     "daisyui": "^5.6.18",
     "katex": "^0.17.0",
     "markdown-it": "^14.3.0",
     "satteri": "^0.9.5",
-    "tailwindcss": "^4.3.2"
+    "tailwindcss": "^4.3.3"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
@@ -59,11 +59,11 @@
     "lint-staged": "^17.0.8",
     "prettier": "^3.9.5",
     "prettier-plugin-astro": "^0.14.1",
-    "prettier-plugin-tailwindcss": "^0.8.0",
+    "prettier-plugin-tailwindcss": "^0.8.1",
     "stylelint": "^17.14.0",
     "stylelint-config-standard": "^40.0.0",
     "tsx": "^4.23.1",
     "typescript-eslint": "^8.64.0",
-    "wrangler": "^4.110.0"
+    "wrangler": "^4.112.0"
   }
 }
