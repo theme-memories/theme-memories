@@ -40,7 +40,7 @@
     "astro-expressive-code": "^0.44.0",
     "daisyui": "^5.6.18",
     "jquery": "^4.0.0",
-    "katex": "^0.17.0",
+    "katex": "^0.18.1",
     "markdown-it": "^14.3.0",
     "satteri": "^0.9.5",
     "tailwindcss": "^4.3.3"
