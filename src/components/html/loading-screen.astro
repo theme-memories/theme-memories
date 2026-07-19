@@ -1,0 +1,15 @@
+<div
+  id="loading-screen"
+  class="animate-loading-bg bg-main pointer-events-none fixed inset-0 z-999999 flex h-full w-full items-center justify-center bg-size-[200%_200%]"
+>
+  <div id="loading-icon" class="block w-[32vw] md:w-[10vw]"></div>
+</div>
+<script>
+  import { initLoading } from "../../scripts/loading";
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", () => initLoading());
+  } else {
+    initLoading();
+  }
+</script>

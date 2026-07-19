@@ -59,6 +59,21 @@
     rgb(133 144 153 / 80%) 100%
   );
   --background-color-footer: rgb(68 68 102 / 70%);
+  --animate-loading-bg: loading-bg-grade 10s ease infinite;
+}
+
+@keyframes loading-bg-grade {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
 @layer base {
