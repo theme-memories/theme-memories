@@ -1,0 +1,51 @@
+---
+
+---
+
+<div class="movinbg-fixed">
+  <div class="movinbg-layer movinbg-layer-1">
+    <div
+      class="movinbg-layer-inner bg-[url(/assets/bg_parallax01.webp)] md:bg-[url(/assets/bg_parallax01_pc.webp)]"
+    >
+    </div>
+  </div>
+  <div class="movinbg-layer movinbg-layer-2">
+    <div
+      class="movinbg-layer-inner bg-[url(/assets/bg_parallax02.webp)] md:bg-[url(/assets/bg_parallax02_pc.webp)]"
+    >
+    </div>
+  </div>
+  <div class="movinbg-layer movinbg-layer-3">
+    <div
+      class="movinbg-layer-inner bg-[url(/assets/bg_parallax03.webp)] md:bg-[url(/assets/bg_parallax03_pc.webp)]"
+    >
+    </div>
+  </div>
+</div>
+
+<script>
+  const SPEEDS = [-1.2, -1.0, -0.4];
+
+  const layers = SPEEDS.map((speed, i) => ({
+    el: document.querySelector<HTMLElement>(
+      `.movinbg-layer-${i + 1} > .movinbg-layer-inner`,
+    )!,
+    speed,
+  }));
+
+  let ticking = false;
+  let scrollY = 0;
+
+  window.addEventListener("scroll", () => {
+    scrollY = window.scrollY;
+    if (!ticking) {
+      requestAnimationFrame(() => {
+        for (const layer of layers) {
+          layer.el.style.transform = `translateY(${layer.speed * scrollY}px)`;
+        }
+        ticking = false;
+      });
+      ticking = true;
+    }
+  });
+</script>

@@ -67,10 +67,28 @@
   }
 
   body {
-    @apply bg-main text-accent relative;
+    @apply bg-main text-accent relative overflow-x-hidden;
+  }
+
+  main {
+    @apply relative z-1;
   }
 
   code {
     @apply font-mpc;
+  }
+}
+
+@layer components {
+  .movinbg-fixed {
+    @apply bg-main pointer-events-none fixed inset-0 z-0 overflow-hidden;
+  }
+
+  .movinbg-layer {
+    @apply absolute top-[-50%] left-0 h-[150%] w-full;
+  }
+
+  .movinbg-layer-inner {
+    @apply h-[400%] w-full bg-size-[100%_auto] bg-center bg-repeat-y transition-[transform] duration-[1.2s] ease-[cubic-bezier(.075,.82,.165,1)] will-change-transform;
   }
 }

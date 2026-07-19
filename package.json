@@ -39,6 +39,7 @@
     "astro": "^7.1.1",
     "astro-expressive-code": "^0.44.0",
     "daisyui": "^5.6.18",
+    "jquery": "^4.0.0",
     "katex": "^0.17.0",
     "markdown-it": "^14.3.0",
     "satteri": "^0.9.5",
@@ -46,6 +47,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@types/jquery": "^4.0.1",
     "@types/markdown-it": "^14.1.2",
     "@types/node": "^24.13.3",
     "argon2": "^0.44.0",

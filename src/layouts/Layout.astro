@@ -1,5 +1,6 @@
 ---
 import { Font } from "astro:assets";
+import BackgroundParallax from "../components/html/background-parallax.astro";
 import IndexFooter from "../components/html/index-footer.astro";
 import "../styles/global.css";
 ---
@@ -16,6 +17,10 @@ import "../styles/global.css";
     <Font cssVariable="--font-mpone-code" preload />
   </head>
   <body>
-    <slot />
-  </body><IndexFooter />
+    <BackgroundParallax />
+    <main>
+      <slot />
+      <IndexFooter />
+    </main>
+  </body>
 </html>
