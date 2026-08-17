@@ -1,0 +1,13 @@
+---
+import { getCollection, render } from "astro:content";
+import Post from "../layouts/Post.astro";
+
+const posts = await getCollection("article");
+const post = posts.find((post) => post.data.slug === "markdown");
+if (!post)
+  throw new Error('Markdown test entry with slug "markdown" not found');
+
+const { Content, headings } = await render(post);
+---
+
+<Post post={post} Content={Content} headings={headings} showPrevNext={false} />

@@ -1,0 +1,50 @@
+---
+import type { AstroComponentFactory } from "astro/runtime/server/index.js";
+import type { Article as ArticleEntry } from "../lib/articles";
+import Layout from "./Layout.astro";
+import Page from "../components/Page.astro";
+import StoryBanner from "../components/StoryBanner.astro";
+import Article from "../components/Article.astro";
+import PostNavigation from "../components/PostNavigation.astro";
+import Footer from "../components/Footer.astro";
+
+interface Props {
+  post: ArticleEntry;
+  Content: AstroComponentFactory;
+  headings?: Array<{ depth: number; slug: string; text: string }>;
+  showHeading?: boolean;
+  showReadingTime?: boolean;
+  prevPost?: ArticleEntry;
+  nextPost?: ArticleEntry;
+  showPrevNext?: boolean;
+}
+
+const {
+  post,
+  Content,
+  headings = [],
+  showHeading = true,
+  showReadingTime = true,
+  prevPost,
+  nextPost,
+  showPrevNext = true,
+} = Astro.props;
+---
+
+<Layout
+  title={`${post.data.title} | Theme Memories`}
+  description={post.data.description}
+>
+  <Page>
+    <StoryBanner />
+    <Article
+      post={post}
+      Content={Content}
+      headings={headings}
+      showHeading={showHeading}
+      showReadingTime={showReadingTime}
+    />
+    {showPrevNext && <PostNavigation prev={prevPost} next={nextPost} />}
+    <Footer />
+  </Page>
+</Layout>

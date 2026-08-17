@@ -1,0 +1,63 @@
+---
+import type { ImageMetadata } from "astro";
+import { cardAlts } from "../data/cards";
+
+const cardModules = import.meta.glob(
+  "../assets/character/unite05/mizuki/cards/*.{webp,jpg,jpeg,png,avif}",
+  { eager: true, import: "default" },
+);
+
+const cards = Object.entries(cardModules)
+  .map(([path, module]) => {
+    const name = path.split("/").pop() ?? "";
+    const image = module as ImageMetadata;
+    return {
+      src: image.src,
+      width: image.width,
+      height: image.height,
+      name,
+      alt: cardAlts[name] ?? name,
+    };
+  })
+  .sort((a, b) => b.name.localeCompare(a.name, "en", { numeric: true }));
+
+const slides = cards.length >= 5 ? cards : [...cards, ...cards];
+---
+
+<div class="chara-card js-scroll js-common">
+  <div class="chara-card-slide swiper md:hidden!">
+    <div class="chara-card-slide-block swiper-wrapper">
+      {
+        slides.map((card, index) => (
+          <div
+            class={`chara-card-slide-item swiper-slide${index >= cards.length ? " chara-card-slide-item-duplicate" : ""}`}
+          >
+            <a href={card.src}>
+              <img src={card.src} alt={card.alt} loading="lazy" />
+            </a>
+          </div>
+        ))
+      }
+    </div>
+    <div class="chara-card-pagination swiper-pagination"></div>
+  </div>
+
+  <div class="chara-card-grid">
+    {
+      cards.map((card) => (
+        <a
+          class="chara-card-grid-item"
+          href={card.src}
+          data-pswp-width={card.width}
+          data-pswp-height={card.height}
+        >
+          <img src={card.src} alt={card.alt} loading="lazy" />
+        </a>
+      ))
+    }
+  </div>
+</div>
+
+<script>
+  import "../scripts/card-slider.ts";
+</script>

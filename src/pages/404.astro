@@ -1,0 +1,30 @@
+---
+import type { Article as ArticleEntry } from "../lib/articles";
+import Post from "../layouts/Post.astro";
+import NotFoundContent from "../components/NotFoundContent.astro";
+import http404 from "../assets/404.jpg";
+
+const post = {
+  id: "404",
+  collection: "article",
+  body: "",
+  data: {
+    slug: "404",
+    title: "404 Not Found",
+    publishedAt: "1970-01-01 00:00:00",
+    category: "other",
+    thumb: http404.src,
+    description:
+      "The HTTP 404 Not Found response status code indicates that the server cannot find the requested resource.",
+    pinned: false,
+  },
+} as unknown as ArticleEntry;
+---
+
+<Post
+  post={post}
+  Content={NotFoundContent}
+  showHeading={false}
+  showReadingTime={false}
+  showPrevNext={false}
+/>

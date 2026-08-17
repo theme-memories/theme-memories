@@ -1,0 +1,74 @@
+---
+import type { AstroComponentFactory } from "astro/runtime/server/index.js";
+import type { Article as ArticleEntry } from "../lib/articles";
+import { formatDate, readingTimeText, thumbFor } from "../lib/articles";
+import iconTriangle from "../assets/icon-triangle.webp";
+import Toc from "./Toc.astro";
+
+interface Props {
+  post: ArticleEntry;
+  Content: AstroComponentFactory;
+  headings?: Array<{ depth: number; slug: string; text: string }>;
+  showHeading?: boolean;
+  showReadingTime?: boolean;
+}
+
+const {
+  post,
+  Content,
+  headings = [],
+  showHeading = true,
+  showReadingTime = true,
+} = Astro.props;
+const readingTime = readingTimeText(post);
+const { title, category } = post.data;
+const body = post.body ?? "";
+const hasMedia = body.includes("<video") || body.includes("<audio");
+const hasImages =
+  Boolean(post.data.thumb) || body.includes("<img") || body.includes("![");
+---
+
+<div class="page-contents">
+  <div class="news-archive-row">
+    <article
+      class="news-archive"
+      style={`--article-emtit-icon: url(${iconTriangle.src});`}
+    >
+      {
+        showHeading && (
+          <div class="news-archive-heading">
+            <p class="news-archive-heading-date">
+              {formatDate(post.data.publishedAt)}
+            </p>
+            <p class="news-archive-heading-cat" data-category={category} />
+          </div>
+        )
+      }
+      <div class="news-archive-contents">
+        <h2 class="news-archive-contents-tit">{title}</h2>
+        {
+          showReadingTime && (
+            <p class="news-archive-contents-reading">{readingTime}</p>
+          )
+        }
+        {
+          post.data.thumb && (
+            <p class="news-archive-contents-banner">
+              <img src={thumbFor(post)} alt="" />
+            </p>
+          )
+        }
+        <div class="news-archive-contents-text article-text prose max-w-none">
+          <Content />
+        </div>
+      </div>
+    </article>
+    <Toc headings={headings} />
+  </div>
+</div>
+
+{hasMedia && <script>import "../scripts/article-video.ts";</script>}
+{hasImages && <script>import "../scripts/article-lightbox.ts";</script>}
+<script>
+  import "../scripts/article-links.ts";
+</script>

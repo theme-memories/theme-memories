@@ -1,0 +1,77 @@
+---
+export const prerender = false;
+
+import { env } from "cloudflare:workers";
+
+import type { Category } from "../../lib/articles";
+import { vault } from "../../config";
+import {
+  ENVELOPE_PREFIX,
+  isUnlocked,
+  signAssetUrl,
+  signAssetUrlsInHtml,
+} from "../../lib/vault";
+import Layout from "../../layouts/Layout.astro";
+import Page from "../../components/Page.astro";
+import StoryBanner from "../../components/StoryBanner.astro";
+import VaultPost from "../../components/VaultPost.astro";
+import Footer from "../../components/Footer.astro";
+
+const slug = Astro.params.slug ?? "";
+const session = Astro.session;
+
+const userId = session ? await session.get("user_id") : undefined;
+if (!userId || !(await isUnlocked(env, userId, slug))) {
+  return Astro.redirect(`/login/${slug}`);
+}
+
+const object = await env.VAULT_BUCKET.get(`${ENVELOPE_PREFIX}/${slug}.json`);
+if (!object) {
+  return Astro.redirect("/posts");
+}
+
+let secret: string | null = null;
+try {
+  secret = await env.VAULT_SIGNING_SECRET.get();
+} catch {}
+if (!secret) {
+  return new Response("Vault is not configured", { status: 503 });
+}
+
+const envelope = (await object.json()) as {
+  html: string;
+  headings: Array<{ depth: number; slug: string; text: string }>;
+  frontmatter?: {
+    title?: string;
+    category?: Category;
+    publishedAt?: string;
+    thumb?: string;
+    description?: string;
+  };
+};
+
+const html = await signAssetUrlsInHtml(envelope.html, secret);
+const title = envelope.frontmatter?.title ?? vault.genericTitle;
+const description =
+  envelope.frontmatter?.description ?? "パスワードで保護された投稿です。";
+const thumbUrl = envelope.frontmatter?.thumb
+  ? await signAssetUrl(envelope.frontmatter.thumb, secret)
+  : undefined;
+
+Astro.response.headers.set("Cache-Control", "private, no-store");
+---
+
+<Layout title={`${title} | Theme Memories`} description={description}>
+  <Page>
+    <StoryBanner />
+    <VaultPost
+      title={title}
+      category={envelope.frontmatter?.category}
+      publishedAt={envelope.frontmatter?.publishedAt}
+      thumbUrl={thumbUrl}
+      html={html}
+      headings={envelope.headings}
+    />
+    <Footer />
+  </Page>
+</Layout>

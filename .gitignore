@@ -141,3 +141,14 @@ dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
+
+# Custom
+.astro/
+.vault-staging/
+.tools/
+pnpm-debug.log*
+.DS_Store
+.idea/
+.wrangler
+.dev.vars*
+!.dev.vars.example

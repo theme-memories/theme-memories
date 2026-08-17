@@ -1,0 +1,13 @@
+.pswp {
+  --pswp-bg: rgb(13 13 26 / 96%);
+}
+
+/* stylelint-disable-next-line selector-class-pattern */
+.pswp .pswp__dynamic-caption {
+  @apply font-mp leading-normal text-white;
+}
+
+/* stylelint-disable-next-line selector-class-pattern */
+.pswp .pswp__dynamic-caption--mobile {
+  @apply bg-black/70;
+}

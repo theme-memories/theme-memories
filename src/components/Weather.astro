@@ -1,0 +1,100 @@
+---
+
+---
+
+<div class="weather" data-weather>
+  <div class="weather-min">
+    <img
+      class="weather-min-icon"
+      data-weather-min-icon
+      alt=""
+      width="48"
+      height="48"
+    />
+    <div>
+      <p class="weather-min-temp" data-weather-min-temp></p>
+      <p class="weather-min-desc" data-weather-min-desc></p>
+    </div>
+  </div>
+  <div class="weather-full">
+    <div class="weather-full-head">
+      <img
+        class="weather-full-icon"
+        data-weather-full-icon
+        alt=""
+        width="64"
+        height="64"
+      />
+      <div>
+        <p class="weather-full-temp" data-weather-full-temp></p>
+        <p class="weather-full-desc" data-weather-full-desc></p>
+      </div>
+    </div>
+    <dl class="weather-full-grid">
+      <div>
+        <dt>体感</dt>
+        <dd data-weather-feels-like></dd>
+      </div>
+      <div>
+        <dt>湿度</dt>
+        <dd data-weather-humidity></dd>
+      </div>
+      <div>
+        <dt>風速</dt>
+        <dd data-weather-wind></dd>
+      </div>
+      <div>
+        <dt>気圧</dt>
+        <dd data-weather-pressure></dd>
+      </div>
+      <div>
+        <dt>雲量</dt>
+        <dd data-weather-clouds></dd>
+      </div>
+      <div>
+        <dt>UV</dt>
+        <dd data-weather-uvi></dd>
+      </div>
+      <div>
+        <dt>視程</dt>
+        <dd data-weather-visibility></dd>
+      </div>
+      <div>
+        <dt>日の出</dt>
+        <dd data-weather-sunrise></dd>
+      </div>
+      <div>
+        <dt>日の入り</dt>
+        <dd data-weather-sunset></dd>
+      </div>
+    </dl>
+    <dl class="weather-full-ext">
+      <div>
+        <dt>露点</dt>
+        <dd data-weather-dew-point></dd>
+      </div>
+      <div>
+        <dt>風向</dt>
+        <dd data-weather-wind-deg></dd>
+      </div>
+      <div>
+        <dt>最大風速</dt>
+        <dd data-weather-wind-gust></dd>
+      </div>
+      <div>
+        <dt>雨量</dt>
+        <dd data-weather-rain></dd>
+      </div>
+      <div>
+        <dt>雪量</dt>
+        <dd data-weather-snow></dd>
+      </div>
+    </dl>
+    <ul class="weather-alerts" data-weather-alerts hidden></ul>
+    <p class="weather-updated" data-weather-updated></p>
+  </div>
+</div>
+
+<script>
+  import "../scripts/weather.ts";
+</script>

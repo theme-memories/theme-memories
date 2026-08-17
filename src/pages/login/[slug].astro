@@ -1,0 +1,83 @@
+---
+import { getCollection } from "astro:content";
+import { site, vault } from "../../config";
+import Layout from "../../layouts/Layout.astro";
+import Page from "../../components/Page.astro";
+import SpecialBanner from "../../components/SpecialBanner.astro";
+import Footer from "../../components/Footer.astro";
+
+export async function getStaticPaths() {
+  const posts = await getCollection("vault");
+  return posts.map((post) => ({
+    params: { slug: post.data.slug },
+    props: { post },
+  }));
+}
+
+const { post } = Astro.props;
+const sitekey = import.meta.env.PUBLIC_TURNSTILE_SITEKEY ?? "";
+---
+
+<Layout
+  title={`${vault.genericTitle} | ${site.title}`}
+  description="この投稿はパスワードで保護されています。"
+>
+  <Page>
+    <SpecialBanner />
+    <div class="page-contents">
+      <div class="news-archive-row">
+        <article class="news-archive">
+          <div class="news-archive-contents">
+            <h2 class="news-archive-contents-tit">{vault.genericTitle}</h2>
+            {
+              post.data.questionHtml && (
+                <div
+                  class="vault-login-question article-text prose max-w-none"
+                  set:html={post.data.questionHtml}
+                />
+              )
+            }
+            <form id="vault-login-form" class="vault-login-form">
+              <div class="vault-login-slug" title="投稿ID">
+                <label for="vault-login-slug">投稿ID</label>
+                <input
+                  id="vault-login-slug"
+                  name="slug"
+                  value={post.data.slug}
+                  readonly
+                />
+              </div>
+              <input
+                id="vault-login-input"
+                class="vault-login-form-input"
+                name="input"
+                type="password"
+                inputmode="text"
+                autocomplete="off"
+                placeholder="パスワード"
+                required
+              />
+              {
+                sitekey && (
+                  <div
+                    id="vault-turnstile"
+                    class="vault-login-turnstile"
+                    data-sitekey={sitekey}
+                  />
+                )
+              }
+              <button type="submit" class="vault-login-form-submit">
+                ロックを解除
+              </button>
+            </form>
+          </div>
+        </article>
+      </div>
+    </div>
+    <Footer />
+  </Page>
+</Layout>
+
+<script>
+  import "../../scripts/vault-login.ts";
+</script>

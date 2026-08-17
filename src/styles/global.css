@@ -1,0 +1,14 @@
+@import "tailwindcss";
+@import "./categories.css";
+@import "katex/dist/katex.min.css";
+@import "./tokens.css";
+@import "./base.css";
+@import "./layout.css";
+@import "./home.css";
+@import "./character.css";
+@import "./article.css";
+@import "./prose.css";
+@import "./lightbox.css";
+@import "./vault.css";
+
+@plugin "@tailwindcss/typography";

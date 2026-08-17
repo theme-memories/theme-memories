@@ -1,0 +1,59 @@
+---
+interface Heading {
+  depth: number;
+  slug: string;
+  text: string;
+}
+
+interface Props {
+  headings: Heading[];
+}
+
+const { headings } = Astro.props;
+
+interface TocItem {
+  slug: string;
+  text: string;
+  children: Array<{ slug: string; text: string }>;
+}
+
+const items: TocItem[] = [];
+let current: TocItem | undefined;
+for (const heading of headings) {
+  if (heading.depth === 2) {
+    current = { slug: heading.slug, text: heading.text, children: [] };
+    items.push(current);
+  } else if (heading.depth === 3 && current) {
+    current.children.push({ slug: heading.slug, text: heading.text });
+  }
+}
+
+const showToc = items.length > 1;
+---
+
+{
+  showToc && (
+    <>
+      <nav class="article-toc" aria-label="目次">
+        <h2 class="article-toc-title">目次</h2>
+        <ul class="article-toc-list">
+          {items.map((item) => (
+            <li class="article-toc-item" data-depth="2">
+              <a href={`#${item.slug}`}>{item.text}</a>
+              {item.children.length > 0 && (
+                <ul class="article-toc-list">
+                  {item.children.map((child) => (
+                    <li class="article-toc-item" data-depth="3">
+                      <a href={`#${child.slug}`}>{child.text}</a>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </li>
+          ))}
+        </ul>
+      </nav>
+      <script>import "../scripts/article-toc.ts";</script>
+    </>
+  )
+}

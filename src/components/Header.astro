@@ -1,0 +1,76 @@
+---
+import naviText from "../assets/header/navi-text.webp";
+import naviTextPc from "../assets/header/navi-text-pc.webp";
+import bgPartsNavi from "../assets/header/bg-parts-navi.webp";
+import iconKira from "../assets/header/icon-kira.webp";
+
+interface NavLink {
+  href: string;
+  label: string;
+  small: string;
+  itemClass: string;
+}
+
+const links: NavLink[] = [
+  { href: "/", label: "TOP", small: "トップ", itemClass: "item-top" },
+  {
+    href: "/posts",
+    label: "STORY",
+    small: "ストーリー",
+    itemClass: "item-story",
+  },
+  {
+    href: "/about",
+    label: "ABOUT",
+    small: "スペシャル",
+    itemClass: "item-special",
+  },
+];
+
+const path = Astro.url.pathname;
+const isCurrent = (href: string): boolean =>
+  href === "/" ? path === "/" : path === href || path.startsWith(`${href}/`);
+---
+
+<header
+  class="header"
+  style={`--header-nav-bg: url(${bgPartsNavi.src}); --header-kira: url(${iconKira.src});`}
+>
+  <p class="header-btn js-top">
+    <span class="header-btn-line"></span>
+    <span class="header-btn-line"></span>
+    <span class="header-btn-line"></span>
+  </p>
+  <div class="header-nav">
+    <div class="header-nav-bg">
+      <p class="header-nav-bg-text">
+        <picture>
+          <source srcset={naviTextPc.src} media="(min-width: 768px)" />
+          <img src={naviText.src} alt="" />
+        </picture>
+      </p>
+    </div>
+    <nav class="header-nav-contents">
+      <ul class="header-nav-list">
+        {
+          links.map((link) => (
+            <li class="header-nav-list-item">
+              <a
+                class={link.itemClass}
+                href={link.href}
+                {...(isCurrent(link.href) ? { "aria-current": "page" } : {})}
+              >
+                {link.label}
+                <small>{link.small}</small>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<script>
+  import "../scripts/header.ts";
+</script>

@@ -1,0 +1,20 @@
+---
+import Hero from "../components/Hero.astro";
+import Pinned from "../components/Pinned.astro";
+import Footer from "../components/Footer.astro";
+import Weather from "../components/Weather.astro";
+import Page from "../components/Page.astro";
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout
+  title="Theme Memories — Project SEKAI まとめ"
+  description="プロジェクトセカイ（プロセカ）の公式ニュース・お知らせをまとめたブログです。"
+>
+  <Page>
+    <Hero />
+    <Pinned />
+    <Footer />
+    <Weather />
+  </Page>
+</Layout>

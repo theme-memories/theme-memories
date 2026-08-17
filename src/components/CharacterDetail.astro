@@ -1,0 +1,186 @@
+---
+import unitLogo from "../assets/character/unite05/logo.webp";
+import bgRightPast from "../assets/character/unite05/past-bg.webp";
+import bgRightPastPc from "../assets/character/unite05/past-bg-pc.webp";
+import bgRightNow from "../assets/character/unite05/now-bg.webp";
+import bgRightNowPc from "../assets/character/unite05/now-bg-pc.webp";
+import mizukiPast from "../assets/character/unite05/mizuki/past-img.webp";
+import mizukiPastPc from "../assets/character/unite05/mizuki/past-img-pc.webp";
+import mizukiNow from "../assets/character/unite05/mizuki/now-img.webp";
+import mizukiNowPc from "../assets/character/unite05/mizuki/now-img-pc.webp";
+import pastThumb from "../assets/character/unite05/mizuki/past-thumb.webp";
+import nowThumb from "../assets/character/unite05/mizuki/now-thumb.jpg";
+---
+
+<div
+  class="chara-root"
+  style={`--chara-bg-past-sp: url(${bgRightPast.src}); --chara-bg-past-pc: url(${bgRightPastPc.src}); --chara-bg-now-sp: url(${bgRightNow.src}); --chara-bg-now-pc: url(${bgRightNowPc.src});`}
+>
+  <div class="chara-sub">
+    <img
+      src={unitLogo.src}
+      alt="25時、ナイトコードで。"
+      class="chara-sub-unite unite05"
+    />
+    <div class="chara-sub-box">
+      <a href="" class="chara-sub-btn past" data-year="past"
+        ><span>PAST</span></a
+      >
+      <a href="" class="chara-sub-btn js-current now" data-year="now"
+        ><span>NOW</span></a
+      >
+    </div>
+  </div>
+
+  <div class="chara-detail">
+    <div class="chara-detail-main js-change-show">
+      <div class="chara-detail-main-name js-scroll js-common md:hidden">
+        <small class="chara-detail-main-name-en">AKIYAMA MIZUKI</small>
+        <h2 class="chara-detail-main-name-main">暁山 瑞希</h2>
+        <p class="chara-detail-main-name-cv">
+          <small>CV. </small>
+          佐藤 日向
+        </p>
+      </div>
+      <p class="chara-detail-main-bg unite05 bg-left"></p>
+      <p class="chara-detail-main-bg js-change-class now unite05 bg-right"></p>
+      <p
+        class="chara-detail-main-img js-change past js-scroll js-common mizuki"
+      >
+        <picture>
+          <source srcset={mizukiPastPc.src} media="(min-width: 768px)" />
+          <img src={mizukiPast.src} alt="" />
+        </picture>
+      </p>
+      <p
+        class="chara-detail-main-img js-change now js-visible js-scroll js-common mizuki"
+      >
+        <picture>
+          <source srcset={mizukiNowPc.src} media="(min-width: 768px)" />
+          <img src={mizukiNow.src} alt="" />
+        </picture>
+      </p>
+
+      <div class="chara-detail-main-message js-scroll js-common mizuki">
+        <p class="chara-detail-main-message-text js-change past">
+          カワイイものなら<b>、</b>
+        </p>
+        <p class="chara-detail-main-message-text js-change past">
+          何でもウェルカムだよ♪
+        </p>
+
+        <p class="chara-detail-main-message-text js-change now js-visible">
+          ボクは<b>、</b>ボクのままで
+        </p>
+        <p class="chara-detail-main-message-text js-change now js-visible">
+          いいのかなって<b>、</b>思えたんだ
+        </p>
+      </div>
+
+      <div class="chara-data">
+        <div class="chara-data-inner js-scroll js-common">
+          <div class="chara-data-name hidden md:block">
+            <small class="chara-data-name-en">AKIYAMA MIZUKI</small>
+            <h2 class="chara-data-name-main">暁山 瑞希</h2>
+            <p class="chara-data-name-cv">
+              <small>CV. </small>佐藤 日向
+            </p>
+          </div>
+          <h3 class="chara-data-profile">PROFILE</h3>
+          <div class="chara-data-detail">
+            <dl class="chara-data-detail-contents">
+              <dt class="chara-data-detail-tit">性別</dt>
+              <dd class="chara-data-detail-text">?</dd>
+            </dl>
+          </div>
+          <div class="chara-data-detail">
+            <dl class="chara-data-detail-contents">
+              <dt class="chara-data-detail-tit">誕生日</dt>
+              <dd class="chara-data-detail-text">8月27日</dd>
+            </dl>
+            <dl class="chara-data-detail-contents">
+              <dt class="chara-data-detail-tit">身長</dt>
+              <dd class="chara-data-detail-text js-change past">163cm</dd>
+              <dd class="chara-data-detail-text js-change js-visible now">
+                165cm
+              </dd>
+            </dl>
+          </div>
+
+          <div class="chara-data-detail">
+            <dl class="chara-data-detail-contents">
+              <dt class="chara-data-detail-tit">学校</dt>
+              <dd class="chara-data-detail-text">神山高校</dd>
+            </dl>
+            <dl class="chara-data-detail-contents">
+              <dt class="chara-data-detail-tit">学年</dt>
+              <dd class="chara-data-detail-text js-change past">1-A</dd>
+              <dd class="chara-data-detail-text js-change now js-visible">
+                2-B
+              </dd>
+            </dl>
+          </div>
+          <div class="chara-data-detail">
+            <dl class="chara-data-detail-contents">
+              <dt class="chara-data-detail-tit">趣味</dt>
+              <dd class="chara-data-detail-text">
+                動画素材集め<br />コラージュ
+              </dd>
+            </dl>
+          </div>
+          <div class="chara-data-detail">
+            <dl class="chara-data-detail-contents">
+              <dt class="chara-data-detail-tit">特技</dt>
+              <dd class="chara-data-detail-text">洋服のアレンジ</dd>
+            </dl>
+          </div>
+          <div class="chara-data-detail">
+            <dl class="chara-data-detail-contents">
+              <dt class="chara-data-detail-tit">苦手なもの・こと</dt>
+              <dd class="chara-data-detail-text">熱い食べ物</dd>
+            </dl>
+          </div>
+
+          <p class="chara-data-text js-change past">
+            可愛いものが大好きな気分屋。たまたま聴いた奏の曲に惹かれるものを感じ、MVをつくって投稿する。それが奏自身の目に留まり、動画担当として誘われた。サークルメンバーの誰も知らない秘密がある。
+          </p>
+          <p class="chara-data-text js-change now js-visible">
+            『25時、ナイトコードで。』の動画担当。母親と関係が悪化していくまふゆのことを心配していたが、瑞希自身、自分の秘密と向きあえずにいる現状から無力感を覚えていた。だが、その経験から逃げることで得られるものがあることにも気づき、まふゆに「逃げていい」と助言する。
+          </p>
+          <a
+            class="chara-data-thumb unite05 js-video js-change past"
+            href="https://object.amia.work/assets/mizuki-past.mp4"
+            data-video="https://object.amia.work/assets/mizuki-past.mp4"
+            data-poster={pastThumb.src}
+            target="_blank"
+          >
+            <img src={pastThumb.src} alt="" />
+          </a>
+          <a
+            class="chara-data-thumb unite05 js-video js-change now js-visible"
+            href="https://object.amia.work/assets/mizuki-now.mp4"
+            data-video="https://object.amia.work/assets/mizuki-now.mp4"
+            data-poster={nowThumb.src}
+            target="_blank"
+          >
+            <img src={nowThumb.src} alt="" />
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="chara-modal js-video-modal" aria-hidden="true">
+      <div class="chara-modal-bg js-video-close"></div>
+      <div class="chara-modal-box">
+        <button class="chara-modal-close js-video-close" aria-label="閉じる"
+        ></button>
+        <div class="chara-modal-player js-video-player"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  import "../scripts/character.ts";
+  import "../scripts/video-modal.ts";
+</script>

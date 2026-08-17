@@ -1,0 +1,64 @@
+---
+import type { Category } from "../lib/articles";
+import { formatDate } from "../lib/articles";
+import iconTriangle from "../assets/icon-triangle.webp";
+import Toc from "./Toc.astro";
+
+interface Props {
+  title: string;
+  category?: Category;
+  publishedAt?: string;
+  thumbUrl?: string;
+  html: string;
+  headings?: Array<{ depth: number; slug: string; text: string }>;
+}
+
+const {
+  title,
+  category,
+  publishedAt,
+  thumbUrl,
+  html,
+  headings = [],
+} = Astro.props;
+const hasMedia = html.includes("<video") || html.includes("<audio");
+const hasImages = Boolean(thumbUrl) || html.includes("<img");
+---
+
+<div class="page-contents">
+  <div class="news-archive-row">
+    <article
+      class="news-archive"
+      style={`--article-emtit-icon: url(${iconTriangle.src});`}
+    >
+      {
+        category && publishedAt && (
+          <div class="news-archive-heading">
+            <p class="news-archive-heading-date">{formatDate(publishedAt)}</p>
+            <p class="news-archive-heading-cat" data-category={category} />
+          </div>
+        )
+      }
+      <div class="news-archive-contents">
+        <h2 class="news-archive-contents-tit">{title}</h2>
+        {
+          thumbUrl && (
+            <p class="news-archive-contents-banner">
+              <img src={thumbUrl} alt="" />
+            </p>
+          )
+        }
+        <div class="news-archive-contents-text article-text prose max-w-none">
+          <Fragment set:html={html} />
+        </div>
+      </div>
+    </article>
+    <Toc headings={headings} />
+  </div>
+</div>
+
+{hasMedia && <script>import "../scripts/article-video.ts";</script>}
+{hasImages && <script>import "../scripts/article-lightbox.ts";</script>}
+<script>
+  import "../scripts/article-links.ts";
+</script>

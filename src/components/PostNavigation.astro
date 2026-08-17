@@ -1,0 +1,35 @@
+---
+import type { Article as ArticleEntry } from "../lib/articles";
+
+interface Props {
+  prev?: ArticleEntry;
+  next?: ArticleEntry;
+}
+
+const { prev, next } = Astro.props;
+---
+
+{
+  (prev || next) && (
+    <nav class="post-nav" aria-label="記事ナビゲーション">
+      {prev && (
+        <a
+          class="post-nav-item post-nav-prev"
+          href={`/article/${prev.data.slug}`}
+        >
+          <span class="post-nav-label">前の記事</span>
+          <span class="post-nav-title">{prev.data.title}</span>
+        </a>
+      )}
+      {next && (
+        <a
+          class="post-nav-item post-nav-next"
+          href={`/article/${next.data.slug}`}
+        >
+          <span class="post-nav-label">次の記事</span>
+          <span class="post-nav-title">{next.data.title}</span>
+        </a>
+      )}
+    </nav>
+  )
+}

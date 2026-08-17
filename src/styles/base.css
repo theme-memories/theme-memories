@@ -1,0 +1,27 @@
+@layer base {
+  html {
+    @apply text-accent scrollbar-thin scrollbar-gutter-stable bg-white text-[62.5%];
+
+    scrollbar-color: var(--color-pinned-item) transparent;
+  }
+
+  body {
+    @apply text-accent w-full bg-white text-[62.5%];
+  }
+
+  ::-webkit-scrollbar {
+    @apply w-1.25;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-pinned-item rounded-[9999px];
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-more-button;
+  }
+}

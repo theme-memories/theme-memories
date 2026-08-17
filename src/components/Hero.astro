@@ -1,0 +1,25 @@
+---
+import bgPc from "../assets/hero/bg-pc.webp";
+import bgSp from "../assets/hero/bg-sp.webp";
+import catchPc from "../assets/hero/catch-pc.webp";
+import catchSp from "../assets/hero/catch.webp";
+
+const isHome = Astro.url.pathname === "/";
+---
+
+<main
+  class="hero"
+  style={`--hero-bg-sp: url(${bgSp.src}); --hero-bg-pc: url(${bgPc.src});`}
+>
+  <div class="hero-bg"></div>
+  {
+    isHome && (
+      <h1 class="hero-catch js-catch">
+        <picture>
+          <source media="(min-width: 768px)" srcset={catchPc.src} />
+          <img src={catchSp.src} alt="一緒に歌おう！" />
+        </picture>
+      </h1>
+    )
+  }
+</main>

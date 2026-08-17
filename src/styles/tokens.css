@@ -1,0 +1,62 @@
+@theme inline {
+  --font-mp: var(--font-mpone), var(--font-noto-emoji), sans-serif;
+  --font-mpc: var(--font-mpone-code), var(--font-noto-emoji), monospace;
+  --font-ms: var(--font-ms-outlined);
+}
+
+@theme {
+  --spacing: 0.4rem;
+  --text-xs: 1.2rem;
+  --text-sm: 1.4rem;
+  --text-base: 1.6rem;
+  --text-lg: 1.8rem;
+  --text-2xl: 2.4rem;
+  --color-accent: #557;
+  --color-more-button: #7ed;
+  --color-more-button-md: #446;
+  --color-more-button-span: #0cd;
+  --color-pinned-item: #0cb;
+  --color-item-thumb: #ebebf2;
+  --color-footer-back: rgb(68 68 102 / 70%);
+  --color-nav-back: rgb(68 68 102 / 50%);
+  --color-chara-main-left: #849;
+  --color-mizuki: #dac;
+  --color-chara-border: rgb(68 68 102 / 20%);
+  --color-chara-thumb: rgb(255 255 255 / 90%);
+  --color-chara-pagination: #454567;
+  --color-prose-links: #f7a;
+  --color-code-bg: #eff1f5;
+  --color-code-text: #4c4f69;
+  --color-code-border: #dce0e8;
+  --color-toc-active: rgb(255 119 170 / 14%);
+  --color-toc-active-parent: rgb(255 119 170 / 8%);
+  --color-toc-current: rgb(255 119 170 / 28%);
+  --color-weather-border: rgb(255 255 255 / 20%);
+  --color-weather-alert: rgb(255 119 170 / 25%);
+  --color-login-label: #888;
+  --color-login-input: #ccc;
+  --color-login-input-bg: #f2f2f2;
+  --color-login-question: #555;
+  --color-login-submit: #3d7a4e;
+  --color-login-error: #c0392b;
+  --color-toast-bg: rgb(44 44 44 / 92%);
+  --background-image-loading: linear-gradient(
+    90deg,
+    #b3fffd 0,
+    #e3e6ff 50%,
+    #fde5f5 100%
+  );
+  --background-image-pinned-date: linear-gradient(
+    90deg,
+    #464668 0,
+    rgb(70 70 104 / 80%) 100%
+  );
+  --background-image-footer-link: linear-gradient(90deg, #fff, #fff);
+  --background-image-chara-main: linear-gradient(
+    90deg,
+    rgb(255 255 255 / 40%) 0,
+    rgb(255 255 255 / 90%) 80%,
+    #fff 90%
+  );
+  --background-image-prose-links-bg: linear-gradient(90deg, #f7a, #f7a);
+}

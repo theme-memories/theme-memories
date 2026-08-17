@@ -1,0 +1,65 @@
+---
+import bgPartsNavi from "../assets/header/bg-parts-navi.webp";
+import { getFeedPosts } from "../lib/articles";
+
+const categoryLabels: Record<string, string> = {
+  all: "すべて",
+  message: "プロジェクトメッセージ",
+  update: "アップデート",
+  important: "重要",
+  campaign: "キャンペーン",
+  announce: "募集・結果発表",
+  other: "その他",
+};
+
+const posts = await getFeedPosts();
+
+const categories = [
+  "all",
+  ...new Set(posts.map((item) => item.category)),
+] as string[];
+
+const years = [
+  "all",
+  ...[...new Set(posts.map((item) => item.year))].sort((a, b) => b - a),
+];
+---
+
+<div class="sort-btn js-sort-btn" aria-label="絞り込み検索">
+  <span class="sort-btn-line"></span>
+  <span class="sort-btn-line"></span>
+</div>
+<div
+  class="sort-menu js-sort-menu"
+  style={`--sort-menu-bg: url(${bgPartsNavi.src});`}
+>
+  <p class="sort-menu-tit">絞り込み検索</p>
+  <div class="sort-menu-contents">
+    <p class="sort-menu-contents-subtit">カテゴリ</p>
+    <ul class="sort-menu-contents-list sort-menu-category-list">
+      {
+        categories.map((cat) => (
+          <li
+            class={`sort-menu-contents-list-item sort-menu-category-item js-cat ${cat === "all" ? "is-active" : ""}`}
+            data-cat={cat === "all" ? "cat-all" : cat}
+          >
+            {categoryLabels[cat]}
+          </li>
+        ))
+      }
+    </ul>
+    <p class="sort-menu-contents-subtit">公開時期</p>
+    <ul class="sort-menu-contents-list sort-menu-year-list">
+      {
+        years.map((year) => (
+          <li
+            class={`sort-menu-contents-list-item sort-menu-year-item js-year ${year === "all" ? "is-active" : ""}`}
+            data-year={year === "all" ? "year-all" : year}
+          >
+            {year === "all" ? "すべて" : year}
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</div>

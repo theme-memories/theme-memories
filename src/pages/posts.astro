@@ -1,0 +1,20 @@
+---
+import StoryBanner from "../components/StoryBanner.astro";
+import SortMenu from "../components/SortMenu.astro";
+import NewsList from "../components/NewsList.astro";
+import Footer from "../components/Footer.astro";
+import Page from "../components/Page.astro";
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout
+  title="STORY ニュース一覧 | Theme Memories"
+  description="プロジェクトセカイのニュース一覧。カテゴリ・公開時期で絞り込みできます。"
+>
+  <Page>
+    <StoryBanner />
+    <SortMenu />
+    <NewsList />
+    <Footer />
+  </Page>
+</Layout>

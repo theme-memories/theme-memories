@@ -1,0 +1,40 @@
+---
+import { getFeedPosts } from "../lib/articles";
+
+const posts = await getFeedPosts();
+---
+
+<div class="page-contents">
+  <ul class="pinned-list js-news-list">
+    {
+      posts.map((item) => (
+        <li
+          class="pinned-list-item js-news-item"
+          data-cat={item.category}
+          data-year={item.year}
+        >
+          <a class="pinned-list-item-link" href={item.href}>
+            <div class="pinned-list-item-heading">
+              <p class="pinned-list-item-date">{item.dateLabel}</p>
+              <p
+                class="pinned-list-item-category"
+                data-category={item.category}
+              />
+            </div>
+            <dl class="pinned-list-item-body">
+              <dt
+                class="pinned-list-item-thumb"
+                style={`background-image: url(${item.thumb});`}
+              />
+              <dd class="pinned-list-item-title">{item.title}</dd>
+            </dl>
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</div>
+
+<script>
+  import "../scripts/news.ts";
+</script>

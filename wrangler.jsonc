@@ -1,0 +1,99 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "compatibility_date": "2026-08-04",
+  "compatibility_flags": ["global_fetch_strictly_public"],
+  "name": "theme-memories",
+  "main": "src/workers.ts",
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "html_handling": "drop-trailing-slash",
+  },
+  "observability": {
+    "traces": {
+      "enabled": true,
+      "destinations": ["grafana-traces"],
+      "head_sampling_rate": 1,
+      "persist": true,
+    },
+    "logs": {
+      "enabled": true,
+      "destinations": ["grafana-logs"],
+      "head_sampling_rate": 1,
+      "persist": true,
+    },
+  },
+  "workers_dev": false,
+  "preview_urls": false,
+  "kv_namespaces": [
+    {
+      "binding": "SESSION",
+      "id": "c61fc39b083b425fa9674191603fe58e",
+    },
+  ],
+  "routes": [
+    {
+      "pattern": "amia.work",
+      "custom_domain": true,
+    },
+  ],
+  "triggers": {
+    "crons": ["*/10 * * * *", "1 0 * * *"],
+  },
+  "placement": {
+    "mode": "smart",
+  },
+  "r2_buckets": [
+    {
+      "binding": "VAULT_BUCKET",
+      "bucket_name": "theme-memories",
+    },
+    {
+      "binding": "ARTICLE_BUCKET",
+      "bucket_name": "object",
+    },
+  ],
+  "secrets_store_secrets": [
+    {
+      "binding": "JWT_SECRET",
+      "store_id": "c5b03c1fc22547d0bb1ee70629d4b6dd",
+      "secret_name": "JWT_SECRET",
+    },
+    {
+      "binding": "OPENWEATHERMAP_API_KEY",
+      "store_id": "c5b03c1fc22547d0bb1ee70629d4b6dd",
+      "secret_name": "OPENWEATHERMAP_API_KEY",
+    },
+    {
+      "binding": "TURNSTILE_SECRET",
+      "store_id": "c5b03c1fc22547d0bb1ee70629d4b6dd",
+      "secret_name": "TURNSTILE_SECRET",
+    },
+    {
+      "binding": "VAULT_SIGNING_SECRET",
+      "store_id": "c5b03c1fc22547d0bb1ee70629d4b6dd",
+      "secret_name": "VAULT_SIGNING_SECRET",
+    },
+    {
+      "binding": "JWT_AUDIENCE",
+      "store_id": "c5b03c1fc22547d0bb1ee70629d4b6dd",
+      "secret_name": "JWT_AUDIENCE",
+    },
+    {
+      "binding": "VERIFY_PATH",
+      "store_id": "c5b03c1fc22547d0bb1ee70629d4b6dd",
+      "secret_name": "VERIFY_PATH",
+    },
+  ],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "theme-memories",
+      "database_id": "e4113eb0-99f4-46ef-80a7-3218e76faeb6",
+      "migrations_dir": "./migrations",
+    },
+  ],
+  "images": {
+    "binding": "IMAGES",
+  },
+}

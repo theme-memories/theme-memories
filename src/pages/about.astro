@@ -1,0 +1,20 @@
+---
+import CharacterBanner from "../components/CharacterBanner.astro";
+import CharacterCards from "../components/CharacterCards.astro";
+import CharacterDetail from "../components/CharacterDetail.astro";
+import Footer from "../components/Footer.astro";
+import Page from "../components/Page.astro";
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout
+  title="ABOUT | Theme Memories"
+  description="このサイトについて。プロジェクトセカイのキャラクターや情報を紹介します。"
+>
+  <Page>
+    <CharacterBanner />
+    <CharacterDetail />
+    <CharacterCards />
+    <Footer />
+  </Page>
+</Layout>

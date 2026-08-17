@@ -1,0 +1,44 @@
+---
+import headingRecommend from "../assets/pinned-heading.svg";
+import { formatDate, getPublishedPosts, thumbFor } from "../lib/articles";
+
+const featured = (await getPublishedPosts()).filter((post) => post.data.pinned);
+---
+
+<section class="pinned">
+  <div
+    class="pinned-header"
+    style={`--pinned-header-bg: url(${headingRecommend.src});`}
+  >
+    <h2 class="pinned-title">RECOMMEND</h2>
+  </div>
+  <ul class="pinned-list">
+    {
+      featured.map((post) => (
+        <li class="pinned-list-item">
+          <a class="pinned-list-item-link" href={`/article/${post.data.slug}`}>
+            <div class="pinned-list-item-heading">
+              <p class="pinned-list-item-date">
+                {formatDate(post.data.publishedAt)}
+              </p>
+              <p
+                class="pinned-list-item-category"
+                data-category={post.data.category}
+              />
+            </div>
+            <dl class="pinned-list-item-body">
+              <dt
+                class="pinned-list-item-thumb"
+                style={`background-image: url(${thumbFor(post)});`}
+              />
+              <dd class="pinned-list-item-title">{post.data.title}</dd>
+            </dl>
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+  <a class="pinned-more" href="/posts">
+    <span>MORE</span>
+  </a>
+</section>

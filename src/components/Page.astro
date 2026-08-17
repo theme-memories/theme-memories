@@ -1,0 +1,33 @@
+---
+import bgLottieSp from "../assets/bg/lottie.webp";
+import bgLottiePc from "../assets/bg/lottie-pc.webp";
+import bgParallax01Sp from "../assets/bg/parallax-1.webp";
+import bgParallax01Pc from "../assets/bg/parallax-1-pc.webp";
+import bgParallax02Sp from "../assets/bg/parallax-2.webp";
+import bgParallax02Pc from "../assets/bg/parallax-2-pc.webp";
+import bgParallax03Sp from "../assets/bg/parallax-3.webp";
+import bgParallax03Pc from "../assets/bg/parallax-3-pc.webp";
+---
+
+<div
+  class="page"
+  style={`--page-bg-lottie-sp: url(${bgLottieSp.src}); --page-bg-lottie-pc: url(${bgLottiePc.src}); --page-parallax-1-sp: url(${bgParallax01Sp.src}); --page-parallax-1-pc: url(${bgParallax01Pc.src}); --page-parallax-2-sp: url(${bgParallax02Sp.src}); --page-parallax-2-pc: url(${bgParallax02Pc.src}); --page-parallax-3-sp: url(${bgParallax03Sp.src}); --page-parallax-3-pc: url(${bgParallax03Pc.src});`}
+>
+  <div class="page-bg">
+    <div class="page-bg-lottie"></div>
+    <div class="page-parallax page-parallax-1">
+      <div class="page-parallax-layer"></div>
+    </div>
+    <div class="page-parallax page-parallax-2">
+      <div class="page-parallax-layer"></div>
+    </div>
+    <div class="page-parallax page-parallax-3">
+      <div class="page-parallax-layer"></div>
+    </div>
+  </div>
+  <slot />
+</div>
+
+<script>
+  import "../scripts/parallax.ts";
+</script>

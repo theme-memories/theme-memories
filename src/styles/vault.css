@@ -1,0 +1,72 @@
+@layer components {
+  .vault-login-form {
+    @apply mx-auto grid w-[min(100%,300px)] justify-center gap-[0.75rem] md:w-[min(100%,34vw)] 2xl:w-[min(100%,480px)];
+  }
+
+  .vault-login-slug,
+  .vault-login-slug label,
+  .vault-login-slug input,
+  .vault-login-form-input,
+  .vault-login-form-submit,
+  .vault-login-turnstile {
+    @apply w-full;
+  }
+
+  .vault-login-slug input,
+  .vault-login-form-input,
+  .vault-login-form-submit {
+    @apply text-[3.2vw] md:text-[1vw] 2xl:text-base;
+  }
+
+  .vault-login-slug {
+    @apply mb-[0.75rem] grid gap-y-[0.35rem];
+  }
+
+  .vault-login-slug label {
+    @apply text-login-label block text-[2.6667vw] md:text-[0.8333vw] 2xl:text-sm;
+  }
+
+  .vault-login-slug input {
+    @apply border-login-input bg-login-input-bg text-login-label font-mpc cursor-default rounded-md border border-solid px-[0.75rem] py-[0.6rem];
+  }
+
+  .vault-login-form-input {
+    @apply border-login-input rounded-md border border-solid px-[0.75rem] py-[0.6rem];
+  }
+
+  .vault-login-form-submit {
+    @apply bg-login-submit cursor-pointer rounded-md border-0 px-2.5 py-[0.65rem] text-white;
+  }
+
+  .vault-login-form-submit:disabled {
+    @apply cursor-default opacity-60;
+  }
+
+  .vault-login-turnstile {
+    @apply flex min-h-[65px] items-center justify-center;
+  }
+
+  .vault-toast {
+    @apply bg-toast-bg fixed right-2.5 bottom-2.5 z-100 rounded-md px-2.5 py-[0.75rem] text-[3.2vw] text-white md:text-[1vw] 2xl:max-w-max 2xl:text-base;
+
+    max-width: min(24rem, calc(100vw - 2rem));
+    box-shadow: 0 4px 14px rgb(0 0 0 / 25%);
+    animation: vault-toast-in 0.2s ease-out;
+  }
+
+  @keyframes vault-toast-in {
+    from {
+      opacity: 0;
+      transform: translateY(0.5rem);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+.vault-login-question {
+  @apply text-login-question mb-[1.25rem];
+}

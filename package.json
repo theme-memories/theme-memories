@@ -1,0 +1,77 @@
+{
+  "name": "theme-memories",
+  "version": "26.8.17",
+  "description": "An astro framework blog theme",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "astro dev",
+    "build": "node scripts/install-rclone.ts && node scripts/publish-vault.ts && wrangler types",
+    "preview": "astro build && astro preview",
+    "astro": "astro",
+    "deploy": "astro build && wrangler deploy",
+    "cf-typegen": "wrangler types",
+    "prepare": "husky"
+  },
+  "author": "Theme Memories",
+  "license": "Apache-2.0",
+  "type": "module",
+  "dependencies": {
+    "@astrojs/check": "^0.9.10",
+    "@astrojs/cloudflare": "^14.2.1",
+    "@astrojs/markdown-satteri": "^0.3.5",
+    "@astrojs/rss": "^4.0.19",
+    "@astrojs/sitemap": "^3.7.3",
+    "@expressive-code/plugin-collapsible-sections": "^0.44.1",
+    "@expressive-code/plugin-line-numbers": "^0.44.1",
+    "@tailwindcss/typography": "^0.5.20",
+    "@tailwindcss/vite": "^4.3.3",
+    "astro": "^7.2.2",
+    "astro-expressive-code": "^0.44.1",
+    "katex": "^0.18.4",
+    "lottie-web": "^5.13.0",
+    "pangu": "^9.1.0",
+    "photoswipe": "^5.4.4",
+    "photoswipe-dynamic-caption-plugin": "^1.2.7",
+    "plyr": "^3.8.4",
+    "reading-time": "^1.5.0",
+    "satteri": "^0.9.5",
+    "sharp": "^0.35.3",
+    "swiper": "^14.1.0",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^6.0.3"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^24.13.3",
+    "argon2": "^0.45.1",
+    "eslint": "^10.8.1",
+    "eslint-config-prettier": "^10.1.8",
+    "globals": "^17.11.0",
+    "husky": "^9.1.7",
+    "jiti": "^2.7.0",
+    "js-yaml": "^5.3.0",
+    "jsonc-parser": "^3.3.1",
+    "lint-staged": "^17.3.0",
+    "prettier": "^3.9.6",
+    "prettier-plugin-astro": "^0.14.1",
+    "prettier-plugin-tailwindcss": "^0.8.1",
+    "satteri-expressive-code": "^0.1.18",
+    "stylelint": "^17.14.1",
+    "stylelint-config-standard": "^40.0.0",
+    "typescript-eslint": "^8.67.0",
+    "wrangler": "^4.123.0"
+  },
+  "lint-staged": {
+    "*.{js,mjs,cjs,ts,mts,cts}": [
+      "eslint",
+      "prettier --write --ignore-unknown"
+    ],
+    "*.css": [
+      "stylelint",
+      "prettier --write --ignore-unknown"
+    ],
+    "!(*.{js,mjs,cjs,ts,mts,cts,css})": [
+      "prettier --write --ignore-unknown"
+    ]
+  }
+}
