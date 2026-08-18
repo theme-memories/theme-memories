@@ -24,6 +24,27 @@ const CONTENT_TYPES: Record<string, string> = {
 
 const SAFE_EXTENSIONS = new Set(Object.keys(CONTENT_TYPES));
 const MAX_KEY_LENGTH = 256;
+const MAX_SVG_SIZE = 1_048_576;
+
+function sanitizeSvg(source: string): string {
+  let svg = source;
+  svg = svg.replace(/<script[\s\S]*?<\/script>/gi, "");
+  svg = svg.replace(/<foreignObject[\s\S]*?<\/foreignObject>/gi, "");
+  svg = svg.replace(/<iframe[\s\S]*?<\/iframe>/gi, "");
+  svg = svg.replace(/<object[\s\S]*?<\/object>/gi, "");
+  svg = svg.replace(/<embed[\s\S]*?\/?>/gi, "");
+  svg = svg.replace(/\bon\w+\s*=\s*(?:"[^"]*"|'[^']*')/gi, "");
+  svg = svg.replace(/\bon\w+\s*=\s*[^\s>]+/gi, "");
+  svg = svg.replace(
+    /<use[^>]*href\s*=\s*(?:"[^"]*:[^"]*"|'[^']*:[^']*')[^>]*\/?>/gi,
+    "",
+  );
+  svg = svg.replace(
+    /<use[^>]*xlink:href\s*=\s*(?:"[^"]*:[^"]*"|'[^']*:[^']*')[^>]*\/?>/gi,
+    "",
+  );
+  return svg;
+}
 
 export const GET: APIRoute = async ({ params, url }) => {
   const key = params.key ?? "";
@@ -71,6 +92,24 @@ export const GET: APIRoute = async ({ params, url }) => {
   }
 
   const contentType = CONTENT_TYPES[ext] ?? "application/octet-stream";
+
+  if (ext === "svg") {
+    const text = await object.text();
+    if (text.length > MAX_SVG_SIZE) {
+      return new Response("Not Found", {
+        status: 404,
+        headers: { "Cache-Control": "no-store" },
+      });
+    }
+    const sanitized = sanitizeSvg(text);
+    return new Response(sanitized, {
+      headers: {
+        "Content-Type": contentType,
+        "X-Content-Type-Options": "nosniff",
+        "Cache-Control": "private, max-age=300",
+      },
+    });
+  }
 
   return new Response(object.body, {
     headers: {

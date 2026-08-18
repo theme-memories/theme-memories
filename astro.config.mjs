@@ -35,7 +35,6 @@ export default defineConfig({
     cookie: {
       name: "__Host-amia",
       sameSite: "strict",
-      path: "/",
       maxAge: 2592000,
     },
   },

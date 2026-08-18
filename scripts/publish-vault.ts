@@ -255,6 +255,7 @@ function collectAssets(fragment: string): {
 async function main() {
   rmSync(STAGING_DIR, { recursive: true, force: true });
   mkdirSync(STAGING_DIR, { recursive: true });
+  rmSync(STUB_DIR, { recursive: true, force: true });
   mkdirSync(STUB_DIR, { recursive: true });
 
   if (!existsSync(VAULT_DIR)) {
@@ -441,9 +442,15 @@ async function main() {
       },
     );
   } else {
+    if (!stubsOnly) {
+      throw new Error(
+        "rclone R2 not fully configured (access key + secret + endpoint " +
+          "required); aborting to prevent D1 advertising posts without " +
+          "uploaded assets (use --stubs-only for local development)",
+      );
+    }
     console.warn(
-      "rclone R2 not fully configured (access key + secret + endpoint " +
-        "required); skipping R2 upload",
+      "rclone R2 not fully configured; skipping R2 upload (stubs-only mode)",
     );
   }
 

@@ -143,6 +143,24 @@ export async function verifyPasswordWithRemote(
   if (!verifyPath) {
     return { ok: false, verified: false, error: "server_error" };
   }
+
+  let audienceUrl: URL;
+  try {
+    audienceUrl = new URL(jwtAudience);
+  } catch {
+    return { ok: false, verified: false, error: "server_error" };
+  }
+  if (audienceUrl.protocol !== "https:") {
+    return { ok: false, verified: false, error: "server_error" };
+  }
+  if (
+    !verifyPath.startsWith("/") ||
+    verifyPath.includes("?") ||
+    verifyPath.includes("#") ||
+    verifyPath === "/"
+  ) {
+    return { ok: false, verified: false, error: "server_error" };
+  }
   const verifyEndpoint = `${jwtAudience}${verifyPath}`;
 
   let token: string;
