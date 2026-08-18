@@ -59,43 +59,30 @@ export default defineConfig({
   },
   fonts: [
     {
-      provider: fontProviders.google(),
+      provider: fontProviders.fontsource(),
       name: "M PLUS 1",
       cssVariable: "--font-mpone",
-      subsets: ["latin", "latin-ext"],
-      weights: ["400 700"],
+      subsets: ["latin", "latin-ext", "japanese"],
+      weights: ["400", "500", "600", "700"],
     },
     {
-      provider: fontProviders.google(),
+      provider: fontProviders.fontsource(),
       name: "M PLUS 1 Code",
       cssVariable: "--font-mpone-code",
-      subsets: ["latin", "latin-ext"],
-      weights: ["400 700"],
+      subsets: ["latin", "latin-ext", "japanese"],
+      weights: ["400", "500", "600", "700"],
       fallbacks: ["monospace"],
     },
     {
-      provider: fontProviders.googleicons(),
+      provider: fontProviders.fontsource(),
       name: "Material Symbols Outlined",
       cssVariable: "--font-ms-outlined",
-      options: {
-        experimental: {
-          glyphs: [
-            "add",
-            "play_arrow",
-            "close",
-            "info",
-            "lightbulb",
-            "priority_high",
-            "warning_amber",
-            "error",
-          ],
-        },
-      },
     },
     {
-      provider: fontProviders.google(),
+      provider: fontProviders.fontsource(),
       name: "Noto Color Emoji",
       cssVariable: "--font-noto-emoji",
+      subsets: ["emoji"],
     },
   ],
   vite: {
