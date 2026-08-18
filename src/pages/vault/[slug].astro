@@ -59,6 +59,7 @@ const thumbUrl = envelope.frontmatter?.thumb
   : undefined;
 
 Astro.response.headers.set("Cache-Control", "private, no-store");
+Astro.response.headers.set("Referrer-Policy", "no-referrer");
 ---
 
 <Layout title={`${title} | Theme Memories`} description={description}>

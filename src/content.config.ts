@@ -26,7 +26,7 @@ const article = defineCollection({
     draft: z.boolean().default(true),
     protected: z.boolean().default(true),
     question: z.string().optional(),
-    password: z.string().optional(),
+    passwordHash: z.string().optional(),
   }),
 });
 

@@ -1,6 +1,6 @@
 {
   "name": "theme-memories",
-  "version": "26.8.17",
+  "version": "26.8.19",
   "description": "An astro framework blog theme",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",

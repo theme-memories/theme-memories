@@ -62,8 +62,8 @@ export async function getPublishedPosts(): Promise<Article[]> {
     if (post.data.question) {
       violations.push(`${post.data.slug}: "question" is not allowed`);
     }
-    if (post.data.password) {
-      violations.push(`${post.data.slug}: "password" is not allowed`);
+    if (post.data.passwordHash) {
+      violations.push(`${post.data.slug}: "passwordHash" is not allowed`);
     }
   }
   if (violations.length > 0) {

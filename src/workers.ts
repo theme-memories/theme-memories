@@ -9,9 +9,7 @@ export default {
     switch (controller.cron) {
       case "1 0 * * *": {
         try {
-          const removed = await cleanupExpiredUnlocks(
-            env as unknown as VaultEnv,
-          );
+          const removed = await cleanupExpiredUnlocks(env as VaultEnv);
           console.log("vault unlock cleanup ok", removed);
         } catch (error) {
           console.error("vault unlock cleanup failed", error);

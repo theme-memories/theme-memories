@@ -5,6 +5,7 @@ import {
   mkdirSync,
   readdirSync,
   readFileSync,
+  realpathSync,
   rmSync,
   statSync,
   writeFileSync,
@@ -13,7 +14,6 @@ import { dirname, join, relative, resolve, sep } from "node:path";
 import { pathToFileURL } from "node:url";
 import { load as loadYaml } from "js-yaml";
 import { parse as parseJsonc } from "jsonc-parser";
-import argon2 from "argon2";
 import { markdownToHtml } from "satteri";
 import type { Frontmatter } from "satteri";
 import expressiveCode from "satteri-expressive-code";
@@ -113,7 +113,7 @@ interface VaultFrontmatter {
   draft?: boolean;
   protected?: boolean;
   question?: string;
-  password: string;
+  passwordHash: string;
 }
 
 const FEATURES = {
@@ -131,14 +131,14 @@ const FEATURES = {
 
 const isLocalFile = (normalized: string): string | null => {
   const resolved = resolve(VAULT_DIR, normalized);
-  if (
-    resolved.startsWith(VAULT_DIR + sep) &&
-    existsSync(resolved) &&
-    statSync(resolved).isFile()
-  ) {
-    return relative(VAULT_DIR, resolved).split(sep).join("/");
-  }
-  return null;
+  if (!resolved.startsWith(VAULT_DIR + sep)) return null;
+  if (!existsSync(resolved)) return null;
+  const stat = statSync(resolved);
+  if (!stat.isFile()) return null;
+  const real = realpathSync(resolved);
+  const realRoot = realpathSync(VAULT_DIR);
+  if (!real.startsWith(realRoot + sep)) return null;
+  return relative(VAULT_DIR, resolved).split(sep).join("/");
 };
 
 function parseFrontmatter(frontmatter: Frontmatter | null): VaultFrontmatter {
@@ -304,7 +304,11 @@ async function main() {
     const violations: string[] = [];
     if (fm.pinned === true) violations.push(`"pinned" must not be true`);
     if (fm.protected === false) violations.push(`"protected" must be true`);
-    if (!fm.password?.trim()) violations.push(`"password" is required`);
+    if ("password" in fm)
+      violations.push(
+        `"password" is no longer allowed; use "passwordHash" instead`,
+      );
+    if (!fm.passwordHash?.trim()) violations.push(`"passwordHash" is required`);
     if (!fm.title?.trim()) violations.push(`"title" is required`);
     if (!fm.description?.trim()) violations.push(`"description" is required`);
     if (violations.length > 0) {
@@ -357,18 +361,7 @@ async function main() {
     if (stubsOnly) {
       console.log(`prepared ${slug} (stubs-only, no hash)`);
     } else {
-      const secret = process.env.ARGON2_SECRET;
-      if (!secret) {
-        throw new Error(
-          `ARGON2_SECRET is not set (${entry}); run with --stubs-only`,
-        );
-      }
-      hashes.set(
-        slug,
-        await argon2.hash(fm.password, {
-          secret: Buffer.from(secret, "utf8"),
-        }),
-      );
+      hashes.set(slug, fm.passwordHash);
       console.log(`prepared ${slug} with hash`);
     }
   }
@@ -459,14 +452,26 @@ async function main() {
 
   if (hashes.size > 0) {
     const sqlFile = join(ROOT, `.vault-hashes-${process.pid}.sql`);
-    const lines = [...hashes]
-      .map(([slug, hash]) => {
-        const safeSlug = slug.replaceAll("'", "''");
-        const safeHash = hash.replaceAll("'", "''");
-        return `INSERT INTO vault (slug, password_hash, updated_at) VALUES ('${safeSlug}', '${safeHash}', unixepoch()) ON CONFLICT(slug) DO UPDATE SET password_hash = excluded.password_hash, updated_at = unixepoch();`;
-      })
-      .join("\n");
-    writeFileSync(sqlFile, lines);
+    const currentSlugs = [...hashes.keys()];
+    const lines: string[] = [];
+
+    for (const slug of currentSlugs) {
+      const hash = hashes.get(slug)!;
+      const safeSlug = slug.replaceAll("'", "''");
+      const safeHash = hash.replaceAll("'", "''");
+      lines.push(`DELETE FROM unlocks WHERE slug = '${safeSlug}';`);
+      lines.push(
+        `INSERT INTO vault (slug, password_hash, updated_at) VALUES ('${safeSlug}', '${safeHash}', unixepoch()) ON CONFLICT(slug) DO UPDATE SET password_hash = excluded.password_hash, updated_at = unixepoch();`,
+      );
+    }
+
+    const slugList = currentSlugs
+      .map((s) => `'${s.replaceAll("'", "''")}'`)
+      .join(", ");
+    lines.push(`DELETE FROM vault WHERE slug NOT IN (${slugList});`);
+    lines.push(`DELETE FROM unlocks WHERE slug NOT IN (${slugList});`);
+
+    writeFileSync(sqlFile, lines.join("\n"));
     try {
       runWrangler([
         "d1",
@@ -476,7 +481,9 @@ async function main() {
         "--file",
         sqlFile,
       ]);
-      console.log(`upserted ${hashes.size} hashes into D1`);
+      console.log(
+        `upserted ${hashes.size} hashes, revoked unlocks, cleaned stale rows`,
+      );
     } finally {
       rmSync(sqlFile, { force: true });
     }

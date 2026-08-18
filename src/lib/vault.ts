@@ -5,16 +5,17 @@ const UNLOCK_TTL_SECONDS = 7776000;
 
 const ASSET_URL_TTL_SECONDS = 300;
 
-export interface VaultEnv {
-  DB: D1Database;
-  SESSION: KVNamespace;
-  VAULT_BUCKET: R2Bucket;
-  JWT_SECRET: SecretsStoreSecret;
-  JWT_AUDIENCE: SecretsStoreSecret;
-  TURNSTILE_SECRET: SecretsStoreSecret;
-  VAULT_SIGNING_SECRET: SecretsStoreSecret;
-  VERIFY_PATH: SecretsStoreSecret;
-}
+export type VaultEnv = Pick<
+  Env,
+  | "DB"
+  | "SESSION"
+  | "VAULT_BUCKET"
+  | "JWT_SECRET"
+  | "JWT_AUDIENCE"
+  | "TURNSTILE_SECRET"
+  | "VAULT_SIGNING_SECRET"
+  | "VERIFY_PATH"
+>;
 
 const encoder = new TextEncoder();
 
@@ -41,9 +42,13 @@ async function hmacSha256(
   return crypto.subtle.sign("HMAC", key, encoder.encode(message));
 }
 
-function timingSafeEqual(a: string, b: string): boolean {
-  if (a.length !== b.length) return false;
-  return crypto.subtle.timingSafeEqual(encoder.encode(a), encoder.encode(b));
+async function timingSafeEqual(a: string, b: string): Promise<boolean> {
+  const digest = async (value: string): Promise<ArrayBuffer> => {
+    const data = encoder.encode(value);
+    return crypto.subtle.digest("SHA-256", data);
+  };
+  const [left, right] = await Promise.all([digest(a), digest(b)]);
+  return crypto.subtle.timingSafeEqual(left, right);
 }
 
 export async function signAssetUrl(
@@ -71,7 +76,7 @@ export async function verifySignedAsset(
   const expected = base64UrlEncode(
     new Uint8Array(await hmacSha256(secret, `${exp}.${key}`)),
   );
-  return timingSafeEqual(expected, sig);
+  return await timingSafeEqual(expected, sig);
 }
 
 export async function signAssetUrlsInHtml(

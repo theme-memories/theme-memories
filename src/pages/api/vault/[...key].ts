@@ -22,10 +22,32 @@ const CONTENT_TYPES: Record<string, string> = {
   json: "application/json",
 };
 
+const SAFE_EXTENSIONS = new Set(Object.keys(CONTENT_TYPES));
+const MAX_KEY_LENGTH = 256;
+
 export const GET: APIRoute = async ({ params, url }) => {
   const key = params.key ?? "";
   const exp = url.searchParams.get("exp") ?? "";
   const sig = url.searchParams.get("sig") ?? "";
+
+  if (
+    key.length > MAX_KEY_LENGTH ||
+    key.includes("..") ||
+    key.split("").some((c) => c.charCodeAt(0) < 0x20)
+  ) {
+    return new Response("Not Found", {
+      status: 404,
+      headers: { "Cache-Control": "no-store" },
+    });
+  }
+
+  const ext = key.includes(".") ? key.split(".").pop()!.toLowerCase() : "";
+  if (!SAFE_EXTENSIONS.has(ext)) {
+    return new Response("Not Found", {
+      status: 404,
+      headers: { "Cache-Control": "no-store" },
+    });
+  }
 
   let secret: string | null = null;
   try {
@@ -48,15 +70,12 @@ export const GET: APIRoute = async ({ params, url }) => {
     });
   }
 
-  const ext = key.includes(".") ? key.split(".").pop()!.toLowerCase() : "";
-  const contentType =
-    CONTENT_TYPES[ext] ??
-    object.httpMetadata?.contentType ??
-    "application/octet-stream";
+  const contentType = CONTENT_TYPES[ext] ?? "application/octet-stream";
 
   return new Response(object.body, {
     headers: {
       "Content-Type": contentType,
+      "X-Content-Type-Options": "nosniff",
       "Cache-Control": "private, max-age=300",
     },
   });
