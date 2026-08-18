@@ -15,25 +15,6 @@ import { satteriGithubAlerts } from "./src/lib/satteri-github-alerts";
 export default defineConfig({
   site: "https://amia.work",
   trailingSlash: "never",
-  security: {
-    csp: {
-      directives: [
-        "default-src 'none'",
-        "img-src 'self' data: blob:",
-        "font-src 'self' https://fonts.gstatic.com",
-        "connect-src 'self'",
-        "frame-src https://challenges.cloudflare.com",
-        "base-uri 'self'",
-        "form-action 'self'",
-      ],
-      scriptDirective: {
-        resources: ["'self'", "https://challenges.cloudflare.com"],
-      },
-      styleDirective: {
-        resources: ["'self'", "'unsafe-inline'"],
-      },
-    },
-  },
   adapter: cloudflare({
     imageService: {
       build: "cloudflare-binding",
