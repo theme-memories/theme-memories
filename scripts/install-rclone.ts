@@ -14,9 +14,9 @@ import { execFileSync } from "node:child_process";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
-const RCLONE_VERSION = process.env.RCLONE_VERSION;
+const RCLONE_VERSION = process.env.RCLONE_PINNED_VERSION;
 if (!RCLONE_VERSION) {
-  console.error("RCLONE_VERSION env var is required (e.g. 1.75.0)");
+  console.error("RCLONE_PINNED_VERSION env var is required (e.g. 1.75.0)");
   process.exit(1);
 }
 

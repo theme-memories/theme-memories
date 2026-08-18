@@ -3,10 +3,6 @@
 # builds native bindings. Without these, pnpm 11+ aborts the install with
 # ERR_PNPM_IGNORED_BUILDS.
 allowBuilds:
-# SECURITY REVIEW [HIGH]: This is an install-time code-execution allowlist.
-# Keep it minimal, require frozen lockfile installs, review lockfile/package
-# changes from public PRs, and inject R2/Argon2 secrets only into the later
-# protected publish step, never into `pnpm install` or dependency scripts.
   argon2: true
   core-js: true
   esbuild: true
