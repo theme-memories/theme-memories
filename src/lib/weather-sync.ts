@@ -60,11 +60,13 @@ async function fetchJson(
   url: string,
   signal: AbortSignal,
 ): Promise<Record<string, unknown>> {
-  const response = await fetch(url, { signal });
+  const response = await fetch(url, {
+    signal,
+    redirect: "error",
+    headers: { Accept: "application/json" },
+  });
   if (!response.ok) {
-    throw new Error(
-      `OpenWeatherMap ${response.status}: ${await response.text()}`,
-    );
+    throw new Error(`OpenWeatherMap request failed (${response.status})`);
   }
   return (await response.json()) as Record<string, unknown>;
 }
@@ -73,9 +75,16 @@ export async function syncWeather(
   env: WeatherSyncEnv,
 ): Promise<WeatherSyncResult> {
   const apiKey = await env.OPENWEATHERMAP_API_KEY.get();
+  if (!apiKey) throw new Error("weather-sync: API key is not configured");
   const { lat, lon } = weatherConfig;
   const signal = AbortSignal.timeout(TIMEOUT_MS);
-  const baseParams = `lat=${lat}&lon=${lon}&units=metric&lang=ja&appid=${apiKey}`;
+  const baseParams = new URLSearchParams({
+    lat: String(lat),
+    lon: String(lon),
+    units: "metric",
+    lang: "ja",
+    appid: apiKey,
+  });
 
   const currentResponse = await fetchJson(
     `${CURRENT_URL}?${baseParams}`,
@@ -102,7 +111,7 @@ export async function syncWeather(
   } catch (error) {
     console.error(
       "weather-sync: alerts fetch failed, continuing without alerts",
-      error,
+      error instanceof Error ? error.name : "UnknownError",
     );
   }
 

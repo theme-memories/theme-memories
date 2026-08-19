@@ -10,6 +10,7 @@ import { katex } from "./src/lib/satteri-katex";
 import { sectionize } from "./src/lib/satteri-sectionize";
 import satteriDirective from "./src/lib/satteri-directive";
 import { satteriGithubAlerts } from "./src/lib/satteri-github-alerts";
+import satteriSanitize from "./src/lib/satteri-sanitize";
 
 // https://astro.build/config
 export default defineConfig({
@@ -53,7 +54,7 @@ export default defineConfig({
         smartPunctuation: true,
       },
       mdastPlugins: [satteriPangu(), sectionize(), katex(), satteriDirective()],
-      hastPlugins: [satteriGithubAlerts()],
+      hastPlugins: [satteriGithubAlerts(), satteriSanitize()],
     }),
   },
   fonts: [

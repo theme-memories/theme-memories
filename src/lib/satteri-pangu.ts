@@ -1,5 +1,5 @@
 /*
-Upstream: https://github.com/vincentbel/remark-pangu/blob/master/index.js
+Fork of upstream: https://github.com/vincentbel/remark-pangu/blob/master/index.js
 Latest update: 2020-05-04 05:55 UTC with commit 532ab83
 Converted to satteri plugin
 */

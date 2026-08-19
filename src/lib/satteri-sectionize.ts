@@ -1,7 +1,8 @@
 /*
-Derived from upstream: https://github.com/baka-gourd/satteri-plugins/blob/main/packages/satteri-sectionize/src/index.ts
-Latest update: 2026-06-24 15:26 UTC with commit f3a9caf
+Fork of upstream: https://github.com/baka-gourd/satteri-plugins/blob/main/packages/satteri-sectionize/src/index.ts
+Latest update: 2026-08-18 14:02 UTC with commit 4d917a4
 Custom logic added to support footnotes
+Need synced satteri v0.10 to update.
 */
 
 import {
@@ -15,20 +16,22 @@ export interface SectionizeOptions {
 }
 
 type HeadingNode = Extract<MdastNode, { type: "heading" }>;
-type BlockquoteNode = Extract<MdastNode, { type: "blockquote" }>;
+type SectionContent = MdastNode;
 
 export interface SectionData {
   hName: "section";
   depth: number;
 }
 
-export type SectionNode = BlockquoteNode & {
+export type SectionNode = MdastNode & {
+  type: "section";
   data: SectionData;
+  children: SectionContent[];
 };
 
 interface OpenSection {
   depth: number;
-  children: MdastNode[];
+  children: SectionContent[];
 }
 
 const defaultMaxDepth = 6;
@@ -40,11 +43,11 @@ function isSectionHeading(
   return node.type === "heading" && node.depth <= maxDepth;
 }
 
-function createSection(depth: number, children: MdastNode[]): SectionNode {
+function createSection(depth: number, children: SectionContent[]): SectionNode {
   return {
-    type: "blockquote",
+    type: "section",
     data: { hName: "section", depth },
-    children: children as SectionNode["children"],
+    children,
   };
 }
 
@@ -54,7 +57,7 @@ export function isSectionNode(
   const data = node.data as Record<string, unknown> | undefined;
 
   return (
-    node.type === "blockquote" &&
+    node.type === "section" &&
     data?.hName === "section" &&
     typeof data.depth === "number"
   );
@@ -63,8 +66,8 @@ export function isSectionNode(
 function sectionizeChildren(
   children: readonly MdastNode[],
   maxDepth: number,
-): MdastNode[] {
-  const result: MdastNode[] = [];
+): SectionContent[] {
+  const result: SectionContent[] = [];
   const sections: OpenSection[] = [];
 
   for (const child of children) {
@@ -88,7 +91,7 @@ function sectionizeChildren(
       sections.pop();
     }
 
-    const sectionChildren: MdastNode[] = [child];
+    const sectionChildren: SectionContent[] = [child];
     (sections.at(-1)?.children ?? result).push(
       createSection(child.depth, sectionChildren),
     );

@@ -4,6 +4,10 @@ export const R2_PREFIX = "assets";
 const UNLOCK_TTL_SECONDS = 7776000;
 
 const ASSET_URL_TTL_SECONDS = 300;
+const ASSET_KEY_PATTERN = /^[A-Za-z0-9_-]{1,128}(?:\/[A-Za-z0-9._-]+)+$/;
+const MAX_VERIFY_RESPONSE_BYTES = 4096;
+const VERIFY_PATH_PATTERN = /^\/[A-Za-z0-9_-]+(?:\/[A-Za-z0-9_-]+)*$/;
+const EXPECTED_TURNSTILE_HOSTNAME = "amia.work";
 
 export type VaultEnv = Pick<
   Env,
@@ -18,6 +22,14 @@ export type VaultEnv = Pick<
 >;
 
 const encoder = new TextEncoder();
+
+export function isSafeAssetKey(key: string): boolean {
+  return (
+    key.length <= 256 &&
+    ASSET_KEY_PATTERN.test(key) &&
+    key.split("/").every((segment) => segment !== "." && segment !== "..")
+  );
+}
 
 function base64UrlEncode(bytes: Uint8Array): string {
   let binary = "";
@@ -56,6 +68,14 @@ export async function signAssetUrl(
   secret: string,
   ttlSeconds = ASSET_URL_TTL_SECONDS,
 ): Promise<string> {
+  if (!isSafeAssetKey(key)) throw new Error("invalid vault asset key");
+  if (
+    !Number.isSafeInteger(ttlSeconds) ||
+    ttlSeconds <= 0 ||
+    ttlSeconds > ASSET_URL_TTL_SECONDS
+  ) {
+    throw new Error("invalid vault asset URL lifetime");
+  }
   const exp = Math.floor(Date.now() / 1000) + ttlSeconds;
   const sig = base64UrlEncode(
     new Uint8Array(await hmacSha256(secret, `${exp}.${key}`)),
@@ -69,10 +89,16 @@ export async function verifySignedAsset(
   sig: string,
   secret: string,
 ): Promise<boolean> {
-  if (!/^\d+$/.test(expRaw) || !sig) return false;
+  if (
+    !isSafeAssetKey(key) ||
+    !/^\d{1,12}$/.test(expRaw) ||
+    !/^[-_A-Za-z0-9]{43}$/.test(sig)
+  ) {
+    return false;
+  }
   const exp = Number(expRaw);
   const now = Math.floor(Date.now() / 1000);
-  if (exp <= now || exp - now > ASSET_URL_TTL_SECONDS) return false;
+  if (exp < now || exp - now > ASSET_URL_TTL_SECONDS) return false;
   const expected = base64UrlEncode(
     new Uint8Array(await hmacSha256(secret, `${exp}.${key}`)),
   );
@@ -131,6 +157,10 @@ export async function verifyPasswordWithRemote(
   slug: string,
   issuer: string,
 ): Promise<VerifyPasswordResult> {
+  if (!targetHash.startsWith("$argon2id$") || targetHash.length > 512) {
+    return { ok: false, verified: false, error: "server_error" };
+  }
+
   const jwtSecret = await env.JWT_SECRET.get();
   if (!jwtSecret) return { ok: false, verified: false, error: "server_error" };
 
@@ -154,14 +184,18 @@ export async function verifyPasswordWithRemote(
     return { ok: false, verified: false, error: "server_error" };
   }
   if (
-    !verifyPath.startsWith("/") ||
-    verifyPath.includes("?") ||
-    verifyPath.includes("#") ||
-    verifyPath === "/"
+    audienceUrl.username ||
+    audienceUrl.password ||
+    audienceUrl.pathname !== "/" ||
+    audienceUrl.search ||
+    audienceUrl.hash
   ) {
     return { ok: false, verified: false, error: "server_error" };
   }
-  const verifyEndpoint = `${jwtAudience}${verifyPath}`;
+  if (!VERIFY_PATH_PATTERN.test(verifyPath) || verifyPath.length > 256) {
+    return { ok: false, verified: false, error: "server_error" };
+  }
+  const verifyEndpoint = new URL(verifyPath, audienceUrl.origin).href;
 
   let token: string;
   try {
@@ -176,8 +210,10 @@ export async function verifyPasswordWithRemote(
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        Accept: "application/json",
         Authorization: `Bearer ${token}`,
       },
+      redirect: "error",
       body: JSON.stringify({ input, target: targetHash }),
       signal: AbortSignal.timeout(10_000),
     });
@@ -189,9 +225,29 @@ export async function verifyPasswordWithRemote(
     return { ok: false, verified: false, error: "upstream_error" };
   }
 
+  const responseType = (response.headers.get("Content-Type") ?? "")
+    .split(";", 1)[0]
+    .trim()
+    .toLowerCase();
+  if (responseType !== "application/json") {
+    return { ok: false, verified: false, error: "upstream_error" };
+  }
+  const responseLength = response.headers.get("Content-Length");
+  if (
+    responseLength !== null &&
+    (!/^\d+$/.test(responseLength) ||
+      Number(responseLength) > MAX_VERIFY_RESPONSE_BYTES)
+  ) {
+    return { ok: false, verified: false, error: "upstream_error" };
+  }
+
   let body: { success?: boolean };
   try {
-    body = (await response.json()) as { success?: boolean };
+    const text = await response.text();
+    if (text.length > MAX_VERIFY_RESPONSE_BYTES) {
+      return { ok: false, verified: false, error: "upstream_error" };
+    }
+    body = JSON.parse(text) as { success?: boolean };
   } catch {
     return { ok: false, verified: false, error: "upstream_error" };
   }
@@ -210,6 +266,7 @@ export async function verifyTurnstile(
   let result: {
     success?: boolean;
     action?: string;
+    hostname?: string;
   };
   try {
     const response = await fetch(
@@ -217,6 +274,7 @@ export async function verifyTurnstile(
       {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        redirect: "error",
         body: new URLSearchParams({
           secret,
           response: token,
@@ -229,12 +287,17 @@ export async function verifyTurnstile(
     result = (await response.json()) as {
       success?: boolean;
       action?: string;
+      hostname?: string;
     };
   } catch {
     return false;
   }
 
-  return result.success === true && result.action === EXPECTED_ACTION;
+  return (
+    result.success === true &&
+    result.action === EXPECTED_ACTION &&
+    result.hostname === EXPECTED_TURNSTILE_HOSTNAME
+  );
 }
 
 export async function getVaultHash(

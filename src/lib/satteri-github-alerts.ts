@@ -20,6 +20,18 @@ const ALERTS: Record<string, AlertSpec> = {
   caution: { title: "注意", icon: "error" },
 };
 
+const SAFE_ALERT_PROPERTIES = new Set([
+  "id",
+  "role",
+  "dir",
+  "lang",
+  "ariaDescribedBy",
+  "ariaHidden",
+  "ariaLabel",
+  "ariaLabelledBy",
+  "data-alert",
+]);
+
 function buildTitle(spec: AlertSpec, title: string): Element {
   return {
     type: "element",
@@ -61,7 +73,13 @@ export function satteriGithubAlerts(): HastPluginDefinition {
 
         const properties: Element["properties"] = { className: [...className] };
         for (const [key, value] of Object.entries(node.properties)) {
-          if (key === "title" || key === "className" || value == null) continue;
+          if (
+            key === "title" ||
+            key === "className" ||
+            value == null ||
+            !SAFE_ALERT_PROPERTIES.has(key)
+          )
+            continue;
           properties[key] = value;
         }
 

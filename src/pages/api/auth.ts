@@ -9,7 +9,7 @@ import {
 
 export const prerender = false;
 
-const SLUG_RE = /^[a-zA-Z0-9_-]+$/;
+const SLUG_RE = /^[a-zA-Z0-9_-]{1,128}$/;
 const MAX_INPUT_LENGTH = 1024;
 const MAX_BODY_BYTES = 8192;
 
@@ -24,19 +24,79 @@ function jsonErr(errcode: string, status: number) {
   );
 }
 
+type BodyReadResult =
+  { ok: true; text: string } | { ok: false; status: 400 | 413 };
+
+async function readBodyAtMost(
+  request: Request,
+  maxBytes: number,
+): Promise<BodyReadResult> {
+  const rawLength = request.headers.get("Content-Length");
+  if (rawLength !== null) {
+    if (!/^(0|[1-9]\d*)$/.test(rawLength)) return { ok: false, status: 400 };
+    const length = Number(rawLength);
+    if (!Number.isSafeInteger(length) || length > maxBytes) {
+      return { ok: false, status: 413 };
+    }
+  }
+
+  if (!request.body) return { ok: true, text: "" };
+
+  const reader = request.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      if (!value) continue;
+      total += value.byteLength;
+      if (total > maxBytes) {
+        await reader.cancel();
+        return { ok: false, status: 413 };
+      }
+      chunks.push(value);
+    }
+  } catch {
+    return { ok: false, status: 400 };
+  } finally {
+    reader.releaseLock();
+  }
+
+  const bytes = new Uint8Array(total);
+  let offset = 0;
+  for (const chunk of chunks) {
+    bytes.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+
+  try {
+    return {
+      ok: true,
+      text: new TextDecoder("utf-8", { fatal: true }).decode(bytes),
+    };
+  } catch {
+    return { ok: false, status: 400 };
+  }
+}
+
 export const POST: APIRoute = async ({ request, clientAddress, session }) => {
   if (!session) return jsonErr("SESSION_UNAVAILABLE", 500);
 
-  const contentLength = Number(request.headers.get("Content-Length") ?? 0);
-  if (contentLength > MAX_BODY_BYTES) return jsonErr("INVALID_REQUEST", 413);
-
-  const contentType = request.headers.get("Content-Type") ?? "";
-  if (!contentType.startsWith("application/json"))
+  const contentType = (request.headers.get("Content-Type") ?? "")
+    .split(";", 1)[0]
+    .trim()
+    .toLowerCase();
+  if (contentType !== "application/json")
     return jsonErr("INVALID_REQUEST", 400);
 
   let body: { slug?: unknown; input?: unknown; turnstile?: unknown };
+  const bodyResult = await readBodyAtMost(request, MAX_BODY_BYTES);
+  if (!bodyResult.ok) {
+    return jsonErr("INVALID_REQUEST", bodyResult.status);
+  }
   try {
-    body = (await request.json()) as typeof body;
+    body = JSON.parse(bodyResult.text) as typeof body;
   } catch {
     return jsonErr("INVALID_REQUEST", 400);
   }

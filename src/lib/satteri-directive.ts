@@ -21,6 +21,36 @@ export type HastProps = Record<string, unknown>;
 export type DirectiveAttributes =
   Record<string, string | null | undefined> | null | undefined;
 
+const SAFE_DIRECTIVE_TAGS = new Set([
+  "aside",
+  "article",
+  "caution",
+  "div",
+  "important",
+  "note",
+  "section",
+  "tip",
+  "warning",
+]);
+
+const SAFE_DIRECTIVE_ATTRIBUTES = new Set([
+  "class",
+  "className",
+  "id",
+  "title",
+  "role",
+  "dir",
+  "lang",
+]);
+
+function isSafeDirectiveAttribute(key: string): boolean {
+  return (
+    SAFE_DIRECTIVE_ATTRIBUTES.has(key) ||
+    key.startsWith("aria-") ||
+    key.startsWith("data-")
+  );
+}
+
 export function directiveAttrsToHastProps(
   attributes: DirectiveAttributes,
 ): HastProps {
@@ -30,6 +60,7 @@ export function directiveAttrsToHastProps(
 
   for (const [key, value] of Object.entries(attributes)) {
     if (value === null || value === undefined) continue;
+    if (!isSafeDirectiveAttribute(key)) continue;
 
     if (key === "class" || key === "className") {
       props.className = value.split(/\s+/).filter(Boolean);
@@ -54,9 +85,10 @@ export function setDirectiveData<
 type DirectiveNode = ContainerDirective | LeafDirective | TextDirective;
 
 function handleDirective(node: DirectiveNode) {
+  const tagName = node.name.toLowerCase();
   return setDirectiveData(
     node,
-    node.name,
+    SAFE_DIRECTIVE_TAGS.has(tagName) ? tagName : "div",
     directiveAttrsToHastProps(node.attributes),
   );
 }

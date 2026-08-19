@@ -37,7 +37,12 @@ const sitekey = import.meta.env.PUBLIC_TURNSTILE_SITEKEY ?? "";
                 />
               )
             }
-            <form id="vault-login-form" class="vault-login-form">
+            <form
+              id="vault-login-form"
+              class="vault-login-form"
+              method="post"
+              action="/api/auth"
+            >
               <div class="vault-login-slug" title="投稿ID">
                 <label for="vault-login-slug">投稿ID</label>
                 <input

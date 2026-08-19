@@ -5,10 +5,12 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "astro dev",
-    "build": "node scripts/install-rclone.ts && node scripts/publish-vault.ts && wrangler types",
-    "preview": "astro build && astro preview",
+    "content:prepare": "node scripts/publish-vault.ts --stubs-only",
+    "content:publish:prod": "node scripts/install-rclone.ts && node scripts/publish-vault.ts --publish-prod",
+    "build": "pnpm content:prepare && wrangler types && astro build",
+    "preview": "pnpm content:prepare && astro build && astro preview",
     "astro": "astro",
-    "deploy": "astro build && wrangler deploy",
+    "deploy": "pnpm content:publish:prod && wrangler deploy",
     "cf-typegen": "wrangler types",
     "prepare": "husky"
   },
@@ -17,15 +19,15 @@
   "type": "module",
   "dependencies": {
     "@astrojs/check": "^0.9.10",
-    "@astrojs/cloudflare": "^14.2.1",
-    "@astrojs/markdown-satteri": "^0.3.5",
+    "@astrojs/cloudflare": "^14.2.2",
+    "@astrojs/markdown-satteri": "^0.3.6",
     "@astrojs/rss": "^4.0.19",
     "@astrojs/sitemap": "^3.7.3",
     "@expressive-code/plugin-collapsible-sections": "^0.44.1",
     "@expressive-code/plugin-line-numbers": "^0.44.1",
     "@tailwindcss/typography": "^0.5.20",
     "@tailwindcss/vite": "^4.3.3",
-    "astro": "^7.2.2",
+    "astro": "^7.2.3",
     "astro-expressive-code": "^0.44.1",
     "katex": "^0.18.4",
     "lottie-web": "^5.13.0",
@@ -55,11 +57,11 @@
     "prettier": "^3.9.6",
     "prettier-plugin-astro": "^0.14.1",
     "prettier-plugin-tailwindcss": "^0.8.1",
-    "satteri-expressive-code": "^0.1.18",
+    "satteri-expressive-code": "^0.1.21",
     "stylelint": "^17.14.1",
     "stylelint-config-standard": "^40.0.0",
     "typescript-eslint": "^8.67.0",
-    "wrangler": "^4.123.0"
+    "wrangler": "^4.124.0"
   },
   "lint-staged": {
     "*.{js,mjs,cjs,ts,mts,cts}": [

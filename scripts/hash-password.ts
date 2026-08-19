@@ -1,8 +1,23 @@
 import argon2 from "argon2";
 
-const password = process.argv[2];
+if (process.argv.length > 2) {
+  console.error(
+    "Do not pass passwords as arguments; pipe the password through stdin",
+  );
+  process.exit(1);
+}
+
+const chunks: Buffer[] = [];
+for await (const chunk of process.stdin) {
+  chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+}
+const password = Buffer.concat(chunks)
+  .toString("utf8")
+  .replace(/\r?\n$/, "");
 if (!password) {
-  console.error("Usage: pnpm tsx scripts/hash-password.ts <password>");
+  console.error(
+    "Usage: read -r -s PASSWORD; printf '%s' \"$PASSWORD\" | node scripts/hash-password.ts",
+  );
   process.exit(1);
 }
 

@@ -1,5 +1,6 @@
 import { execFileSync } from "node:child_process";
 import {
+  chmodSync,
   copyFileSync,
   existsSync,
   mkdirSync,
@@ -23,6 +24,7 @@ import { sectionize } from "../src/lib/satteri-sectionize.ts";
 import { katex } from "../src/lib/satteri-katex.ts";
 import satteriDirective from "../src/lib/satteri-directive.ts";
 import { satteriGithubAlerts } from "../src/lib/satteri-github-alerts.ts";
+import satteriSanitize from "../src/lib/satteri-sanitize.ts";
 import { satteriHeadingIdsPlugin } from "@astrojs/markdown-satteri";
 import ecConfig from "../ec.config.mjs";
 import { vault as vaultConfig } from "../src/config.ts";
@@ -58,14 +60,22 @@ const STAGING_DIR = join(ROOT, ".vault-staging");
 const r2BucketName = wranglerConfig?.r2_buckets?.find(
   (bucket) => bucket.binding === R2_BINDING,
 )?.bucket_name;
-const R2_REMOTE =
-  process.env.RCLONE_R2_REMOTE ??
-  (r2BucketName ? `r2:${r2BucketName}` : "r2:blog-vault");
-const d1DatabaseName =
-  wranglerConfig?.d1_databases?.find((db) => db.binding === D1_BINDING)
-    ?.database_name ?? "blog";
+const d1DatabaseName = wranglerConfig?.d1_databases?.find(
+  (db) => db.binding === D1_BINDING,
+)?.database_name;
+if (!r2BucketName || !d1DatabaseName) {
+  throw new Error(
+    `wrangler.jsonc must declare ${R2_BINDING} and ${D1_BINDING}; refusing to use fallback production resources`,
+  );
+}
+const productionDatabaseName = d1DatabaseName;
+const R2_REMOTE = `r2:${r2BucketName}`;
 
-const stubsOnly = process.argv.includes("--stubs-only");
+const publishProduction = process.argv.includes("--publish-prod");
+const stubsOnly = process.argv.includes("--stubs-only") || !publishProduction;
+if (publishProduction && process.argv.includes("--stubs-only")) {
+  throw new Error("choose either --stubs-only or --publish-prod, not both");
+}
 
 function runWrangler(args: string[]): void {
   const localBin = join(ROOT, "node_modules", ".bin", "wrangler");
@@ -166,6 +176,7 @@ async function renderFragment(
       satteriGithubAlerts(),
       satteriHeadingIdsPlugin(),
       expressiveCode(ecConfig as SatteriExpressiveCodeOptions),
+      satteriSanitize(),
     ],
     features: FEATURES,
     fileURL,
@@ -192,6 +203,7 @@ async function renderQuestionHtml(question: string): Promise<string> {
       satteriGithubAlerts(),
       satteriHeadingIdsPlugin(),
       expressiveCode(ecConfig as SatteriExpressiveCodeOptions),
+      satteriSanitize(),
     ],
     features: FEATURES,
   });
@@ -254,210 +266,235 @@ function collectAssets(fragment: string): {
 
 async function main() {
   rmSync(STAGING_DIR, { recursive: true, force: true });
-  mkdirSync(STAGING_DIR, { recursive: true });
+  mkdirSync(STAGING_DIR, { recursive: true, mode: 0o700 });
   rmSync(STUB_DIR, { recursive: true, force: true });
   mkdirSync(STUB_DIR, { recursive: true });
 
-  if (!existsSync(VAULT_DIR)) {
-    console.log("no src/content/vault directory, nothing to publish");
-    return;
-  }
-
-  const stagedAssets = new Map<string, string>();
-  const envelopes = new Map<
-    string,
-    { html: string; headings: unknown[]; frontmatter: unknown }
-  >();
-  const hashes = new Map<string, string>();
-  const stubs: Array<Record<string, unknown>> = [];
-
-  const entries = readdirSync(VAULT_DIR).filter((name) =>
-    existsSync(join(VAULT_DIR, name, "index.md")),
-  );
-  entries.sort();
-
-  for (const entry of entries) {
-    const slug = entry;
-    if (!/^[a-zA-Z0-9_-]+$/.test(slug)) {
-      console.warn(`skip ${entry}: invalid slug`);
-      continue;
-    }
-
-    const source = readFileSync(join(VAULT_DIR, slug, "index.md"), "utf8");
-    const { html, headings, frontmatter } = await renderFragment(
-      source,
-      pathToFileURL(join(VAULT_DIR, slug, "index.md")),
-    );
-
-    let fm: VaultFrontmatter;
-    try {
-      fm = parseFrontmatter(frontmatter);
-    } catch (error) {
-      console.warn(`skip ${entry}: ${(error as Error).message}`);
-      continue;
-    }
-
-    if (fm.draft === true) {
-      console.log(`skip ${entry}: draft`);
-      continue;
-    }
-
-    const violations: string[] = [];
-    if (fm.pinned === true) violations.push(`"pinned" must not be true`);
-    if (fm.protected === false) violations.push(`"protected" must be true`);
-    if ("password" in fm)
-      violations.push(
-        `"password" is no longer allowed; use "passwordHash" instead`,
-      );
-    if (!fm.passwordHash?.trim()) violations.push(`"passwordHash" is required`);
-    if (!fm.title?.trim()) violations.push(`"title" is required`);
-    if (!fm.description?.trim()) violations.push(`"description" is required`);
-    if (violations.length > 0) {
+  try {
+    if (!existsSync(VAULT_DIR)) {
       throw new Error(
-        `${entry}: invalid vault frontmatter:\n  - ${violations.join("\n  - ")}`,
+        "src/content/vault is missing; refusing to publish or delete remote vault data",
       );
     }
 
-    const { html: withAssets, assets } = collectAssets(html);
-    for (const [key, sourcePath] of assets) stagedAssets.set(key, sourcePath);
+    const stagedAssets = new Map<string, string>();
+    const envelopes = new Map<
+      string,
+      { html: string; headings: unknown[]; frontmatter: unknown }
+    >();
+    const hashes = new Map<string, string>();
+    const stubs: Array<Record<string, unknown>> = [];
 
-    const questionHtml = await renderQuestionHtml(
-      fm.question?.trim() || vaultConfig.genericQuestion,
+    const entries = readdirSync(VAULT_DIR).filter((name) =>
+      existsSync(join(VAULT_DIR, name, "index.md")),
     );
+    entries.sort();
 
-    const thumb =
-      fm.thumb?.replace(/^\.\//, "").replace(/^\//, "") || undefined;
-    if (thumb) {
-      const r2Key = isLocalFile(thumb);
-      if (r2Key) {
-        stagedAssets.set(r2Key, join(VAULT_DIR, ...r2Key.split("/")));
+    for (const entry of entries) {
+      const slug = entry;
+      if (!/^[a-zA-Z0-9_-]+$/.test(slug)) {
+        throw new Error(`invalid vault slug: ${entry}`);
+      }
+
+      const source = readFileSync(join(VAULT_DIR, slug, "index.md"), "utf8");
+      const { html, headings, frontmatter } = await renderFragment(
+        source,
+        pathToFileURL(join(VAULT_DIR, slug, "index.md")),
+      );
+
+      let fm: VaultFrontmatter;
+      try {
+        fm = parseFrontmatter(frontmatter);
+      } catch (error) {
+        throw new Error(`${entry}: ${(error as Error).message}`, {
+          cause: error,
+        });
+      }
+
+      if (fm.draft === true) {
+        console.log(`skip ${entry}: draft`);
+        continue;
+      }
+
+      const violations: string[] = [];
+      if (fm.pinned === true) violations.push(`"pinned" must not be true`);
+      if (fm.protected === false) violations.push(`"protected" must be true`);
+      if ("password" in fm)
+        violations.push(
+          `"password" is no longer allowed; use "passwordHash" instead`,
+        );
+      if (!fm.passwordHash?.trim())
+        violations.push(`"passwordHash" is required`);
+      if (fm.slug !== slug)
+        violations.push(`"slug" must match the directory name`);
+      if (!fm.title?.trim()) violations.push(`"title" is required`);
+      if (!fm.description?.trim()) violations.push(`"description" is required`);
+      if (violations.length > 0) {
+        throw new Error(
+          `${entry}: invalid vault frontmatter:\n  - ${violations.join("\n  - ")}`,
+        );
+      }
+
+      const { html: withAssets, assets } = collectAssets(html);
+      for (const [key, sourcePath] of assets) stagedAssets.set(key, sourcePath);
+
+      const questionHtml = await renderQuestionHtml(
+        fm.question?.trim() || vaultConfig.genericQuestion,
+      );
+
+      const thumb =
+        fm.thumb?.replace(/^\.\//, "").replace(/^\//, "") || undefined;
+      if (thumb) {
+        const r2Key = isLocalFile(thumb);
+        if (r2Key) {
+          stagedAssets.set(r2Key, join(VAULT_DIR, ...r2Key.split("/")));
+        } else {
+          console.warn(`skip ${entry}: thumb asset missing: ${thumb}`);
+        }
+      }
+
+      envelopes.set(slug, {
+        html: withAssets,
+        headings,
+        frontmatter: {
+          slug,
+          title: fm.title,
+          publishedAt: fm.publishedAt,
+          displayDate: fm.displayDate,
+          category: fm.category,
+          thumb,
+          description: fm.description,
+        },
+      });
+
+      const stub: Record<string, unknown> = {
+        slug,
+        publishedAt: fm.publishedAt,
+        category: fm.category,
+      };
+      if (fm.displayDate) stub.displayDate = fm.displayDate;
+      if (questionHtml) stub.questionHtml = questionHtml;
+      stubs.push(stub);
+
+      if (stubsOnly) {
+        console.log(`prepared ${slug} (stubs-only, no hash)`);
       } else {
-        console.warn(`skip ${entry}: thumb asset missing: ${thumb}`);
+        const duplicate = [...hashes.entries()].find(
+          ([, existingHash]) => existingHash === fm.passwordHash,
+        );
+        if (duplicate) {
+          throw new Error(
+            `password hash is reused by ${duplicate[0]} and ${slug}; rotate each vault password before production publish`,
+          );
+        }
+        hashes.set(slug, fm.passwordHash);
+        console.log(`prepared ${slug} with hash`);
       }
     }
 
-    envelopes.set(slug, {
-      html: withAssets,
-      headings,
-      frontmatter: {
-        slug,
-        title: fm.title,
-        publishedAt: fm.publishedAt,
-        displayDate: fm.displayDate,
-        category: fm.category,
-        thumb,
-        description: fm.description,
-      },
-    });
-
-    const stub: Record<string, unknown> = {
-      slug,
-      publishedAt: fm.publishedAt,
-      category: fm.category,
-    };
-    if (fm.displayDate) stub.displayDate = fm.displayDate;
-    if (questionHtml) stub.questionHtml = questionHtml;
-    stubs.push(stub);
-
-    if (stubsOnly) {
-      console.log(`prepared ${slug} (stubs-only, no hash)`);
-    } else {
-      hashes.set(slug, fm.passwordHash);
-      console.log(`prepared ${slug} with hash`);
-    }
-  }
-
-  if (envelopes.size === 0) {
-    console.log("no vault posts to publish");
-    rmSync(STAGING_DIR, { recursive: true, force: true });
-    return;
-  }
-
-  for (const [key, sourcePath] of stagedAssets) {
-    const dest = join(STAGING_DIR, "assets", ...key.split("/"));
-    mkdirSync(dirname(dest), { recursive: true });
-    copyFileSync(sourcePath, dest);
-  }
-  for (const [slug, envelope] of envelopes) {
-    const dest = join(STAGING_DIR, ENVELOPE_PREFIX, `${slug}.json`);
-    mkdirSync(dirname(dest), { recursive: true });
-    writeFileSync(dest, JSON.stringify(envelope));
-  }
-  console.log(
-    `staged ${stagedAssets.size} assets + ${envelopes.size} envelopes in ${STAGING_DIR}`,
-  );
-
-  for (const stub of stubs) {
-    writeFileSync(join(STUB_DIR, `${stub.slug}.json`), JSON.stringify(stub));
-  }
-  console.log(`wrote ${stubs.length} stubs to ${STUB_DIR}`);
-
-  if (stubsOnly) {
-    return;
-  }
-
-  const r2Config = {
-    type: process.env.RCLONE_CONFIG_R2_TYPE ?? "s3",
-    provider: process.env.RCLONE_CONFIG_R2_PROVIDER ?? "Cloudflare",
-    accessKeyId: process.env.RCLONE_CONFIG_R2_ACCESS_KEY_ID,
-    secretAccessKey: process.env.RCLONE_CONFIG_R2_SECRET_ACCESS_KEY,
-    endpoint:
-      process.env.RCLONE_CONFIG_R2_ENDPOINT ??
-      (process.env.CLOUDFLARE_ACCOUNT_ID
-        ? `https://${process.env.CLOUDFLARE_ACCOUNT_ID}.r2.cloudflarestorage.com`
-        : undefined),
-    acl: "private",
-    noCheckBucket: true,
-  };
-  const rcloneReady =
-    Boolean(r2Config.accessKeyId) &&
-    Boolean(r2Config.secretAccessKey) &&
-    Boolean(r2Config.endpoint);
-
-  const destination = R2_REMOTE;
-  if (rcloneReady) {
-    console.log(`rclone sync ${STAGING_DIR} -> ${destination}`);
-    runRclone(
-      [
-        "sync",
-        STAGING_DIR,
-        destination,
-        "--checksum",
-        "--fast-list",
-        "--transfers",
-        "16",
-        "--checkers",
-        "16",
-      ],
-      {
-        RCLONE_CONFIG_R2_TYPE: r2Config.type,
-        RCLONE_CONFIG_R2_PROVIDER: r2Config.provider,
-        RCLONE_CONFIG_R2_ACCESS_KEY_ID: r2Config.accessKeyId!,
-        RCLONE_CONFIG_R2_SECRET_ACCESS_KEY: r2Config.secretAccessKey!,
-        RCLONE_CONFIG_R2_ENDPOINT: r2Config.endpoint!,
-        RCLONE_CONFIG_R2_ACL: r2Config.acl,
-        RCLONE_CONFIG_R2_NO_CHECK_BUCKET: r2Config.noCheckBucket
-          ? "true"
-          : "false",
-      },
-    );
-  } else {
-    if (!stubsOnly) {
-      throw new Error(
-        "rclone R2 not fully configured (access key + secret + endpoint " +
-          "required); aborting to prevent D1 advertising posts without " +
-          "uploaded assets (use --stubs-only for local development)",
+    if (envelopes.size === 0) {
+      console.log(
+        stubsOnly
+          ? "no vault posts to prepare"
+          : "no vault posts to publish; production mode will clear remote vault data",
       );
     }
-    console.warn(
-      "rclone R2 not fully configured; skipping R2 upload (stubs-only mode)",
+
+    for (const [key, sourcePath] of stagedAssets) {
+      const dest = join(STAGING_DIR, "assets", ...key.split("/"));
+      mkdirSync(dirname(dest), { recursive: true });
+      copyFileSync(sourcePath, dest);
+      chmodSync(dest, 0o600);
+    }
+    for (const [slug, envelope] of envelopes) {
+      const dest = join(STAGING_DIR, ENVELOPE_PREFIX, `${slug}.json`);
+      mkdirSync(dirname(dest), { recursive: true });
+      writeFileSync(dest, JSON.stringify(envelope), { mode: 0o600 });
+    }
+    console.log(
+      `staged ${stagedAssets.size} assets + ${envelopes.size} envelopes in ${STAGING_DIR}`,
     );
-  }
 
-  runWrangler(["d1", "migrations", "apply", d1DatabaseName, "--remote"]);
-  console.log("applied pending D1 migrations");
+    for (const stub of stubs) {
+      writeFileSync(join(STUB_DIR, `${stub.slug}.json`), JSON.stringify(stub), {
+        mode: 0o644,
+      });
+    }
+    console.log(`wrote ${stubs.length} stubs to ${STUB_DIR}`);
 
-  if (hashes.size > 0) {
+    if (stubsOnly) {
+      return;
+    }
+
+    const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
+    if (!accountId || !/^[a-f0-9]{32}$/i.test(accountId)) {
+      throw new Error(
+        "CLOUDFLARE_ACCOUNT_ID is required for R2 publishing (set it in CI/CD or export it locally)",
+      );
+    }
+    const r2Endpoint = `https://${accountId}.r2.cloudflarestorage.com`;
+
+    const r2Config = {
+      type: "s3",
+      provider: "Cloudflare",
+      accessKeyId: process.env.RCLONE_CONFIG_R2_ACCESS_KEY_ID,
+      secretAccessKey: process.env.RCLONE_CONFIG_R2_SECRET_ACCESS_KEY,
+      endpoint: r2Endpoint,
+      acl: "private",
+      noCheckBucket: false,
+    };
+    const rcloneReady =
+      Boolean(r2Config.accessKeyId) && Boolean(r2Config.secretAccessKey);
+
+    const destination = R2_REMOTE;
+    if (rcloneReady) {
+      console.log(`rclone sync ${STAGING_DIR} -> ${destination}`);
+      runRclone(
+        [
+          "sync",
+          STAGING_DIR,
+          destination,
+          "--checksum",
+          "--fast-list",
+          "--transfers",
+          "16",
+          "--checkers",
+          "16",
+        ],
+        {
+          RCLONE_CONFIG_R2_TYPE: r2Config.type,
+          RCLONE_CONFIG_R2_PROVIDER: r2Config.provider,
+          RCLONE_CONFIG_R2_ACCESS_KEY_ID: r2Config.accessKeyId!,
+          RCLONE_CONFIG_R2_SECRET_ACCESS_KEY: r2Config.secretAccessKey!,
+          RCLONE_CONFIG_R2_ENDPOINT: r2Config.endpoint,
+          RCLONE_CONFIG_R2_ACL: r2Config.acl,
+          RCLONE_CONFIG_R2_NO_CHECK_BUCKET: r2Config.noCheckBucket
+            ? "true"
+            : "false",
+        },
+      );
+    } else {
+      if (!stubsOnly) {
+        throw new Error(
+          "rclone R2 not fully configured (CLOUDFLARE_ACCOUNT_ID + access key + secret required); " +
+            "aborting to prevent D1 advertising posts without uploaded assets " +
+            "(use --stubs-only for local development)",
+        );
+      }
+      console.warn(
+        "rclone R2 not fully configured; skipping R2 upload (stubs-only mode)",
+      );
+    }
+
+    runWrangler([
+      "d1",
+      "migrations",
+      "apply",
+      productionDatabaseName,
+      "--remote",
+    ]);
+    console.log("applied pending D1 migrations");
+
     const sqlFile = join(ROOT, `.vault-hashes-${process.pid}.sql`);
     const currentSlugs = [...hashes.keys()];
     const lines: string[] = [];
@@ -472,18 +509,25 @@ async function main() {
       );
     }
 
-    const slugList = currentSlugs
-      .map((s) => `'${s.replaceAll("'", "''")}'`)
-      .join(", ");
-    lines.push(`DELETE FROM vault WHERE slug NOT IN (${slugList});`);
-    lines.push(`DELETE FROM unlocks WHERE slug NOT IN (${slugList});`);
+    if (currentSlugs.length > 0) {
+      const slugList = currentSlugs
+        .map((s) => `'${s.replaceAll("'", "''")}'`)
+        .join(", ");
+      lines.push(`DELETE FROM vault WHERE slug NOT IN (${slugList});`);
+      lines.push(`DELETE FROM unlocks WHERE slug NOT IN (${slugList});`);
+    } else {
+      // An intentional empty vault must revoke old unlocks and remove old
+      // envelopes/assets. The missing-directory case above still fails closed.
+      lines.push("DELETE FROM unlocks;");
+      lines.push("DELETE FROM vault;");
+    }
 
-    writeFileSync(sqlFile, lines.join("\n"));
+    writeFileSync(sqlFile, lines.join("\n"), { mode: 0o600 });
     try {
       runWrangler([
         "d1",
         "execute",
-        d1DatabaseName,
+        productionDatabaseName,
         "--remote",
         "--file",
         sqlFile,
@@ -494,6 +538,8 @@ async function main() {
     } finally {
       rmSync(sqlFile, { force: true });
     }
+  } finally {
+    rmSync(STAGING_DIR, { recursive: true, force: true });
   }
 }
 

@@ -7,6 +7,7 @@ import type { Category } from "../../lib/articles";
 import { vault } from "../../config";
 import {
   ENVELOPE_PREFIX,
+  isSafeAssetKey,
   isUnlocked,
   signAssetUrl,
   signAssetUrlsInHtml,
@@ -19,6 +20,14 @@ import Footer from "../../components/Footer.astro";
 
 const slug = Astro.params.slug ?? "";
 const session = Astro.session;
+const MAX_ENVELOPE_BYTES = 5 * 1024 * 1024;
+
+Astro.response.headers.set("Cache-Control", "private, no-store");
+Astro.response.headers.set("Referrer-Policy", "no-referrer");
+
+if (!/^[A-Za-z0-9_-]{1,128}$/.test(slug)) {
+  return Astro.redirect("/posts");
+}
 
 const userId = session ? await session.get("user_id") : undefined;
 if (!userId || !(await isUnlocked(env, userId, slug))) {
@@ -29,6 +38,12 @@ const object = await env.VAULT_BUCKET.get(`${ENVELOPE_PREFIX}/${slug}.json`);
 if (!object) {
   return Astro.redirect("/posts");
 }
+if (object.size > MAX_ENVELOPE_BYTES) {
+  return new Response("Vault unavailable", {
+    status: 503,
+    headers: { "Cache-Control": "private, no-store" },
+  });
+}
 
 let secret: string | null = null;
 try {
@@ -38,10 +53,11 @@ if (!secret) {
   return new Response("Vault is not configured", { status: 503 });
 }
 
-const envelope = (await object.json()) as {
+type VaultEnvelope = {
   html: string;
   headings: Array<{ depth: number; slug: string; text: string }>;
-  frontmatter?: {
+  frontmatter: {
+    slug: string;
     title?: string;
     category?: Category;
     publishedAt?: string;
@@ -50,6 +66,84 @@ const envelope = (await object.json()) as {
   };
 };
 
+const CATEGORIES = new Set<Category>([
+  "announce",
+  "campaign",
+  "important",
+  "message",
+  "other",
+  "update",
+]);
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function isVaultEnvelope(value: unknown): value is VaultEnvelope {
+  if (!isRecord(value) || typeof value.html !== "string") return false;
+  if (!Array.isArray(value.headings)) return false;
+  if (!isRecord(value.frontmatter) || value.frontmatter.slug !== slug) {
+    return false;
+  }
+
+  if (
+    value.headings.some((heading) => {
+      if (!isRecord(heading)) return true;
+      const depth = heading.depth;
+      const headingSlug = heading.slug;
+      const headingText = heading.text;
+      return (
+        typeof depth !== "number" ||
+        !Number.isInteger(depth) ||
+        depth < 1 ||
+        depth > 6 ||
+        typeof headingSlug !== "string" ||
+        headingSlug.length > 256 ||
+        typeof headingText !== "string" ||
+        headingText.length > 1024
+      );
+    })
+  ) {
+    return false;
+  }
+
+  const frontmatter = value.frontmatter;
+  if (
+    (frontmatter.title !== undefined &&
+      typeof frontmatter.title !== "string") ||
+    (frontmatter.category !== undefined &&
+      (typeof frontmatter.category !== "string" ||
+        !CATEGORIES.has(frontmatter.category as Category))) ||
+    (frontmatter.publishedAt !== undefined &&
+      typeof frontmatter.publishedAt !== "string") ||
+    (frontmatter.thumb !== undefined &&
+      (typeof frontmatter.thumb !== "string" ||
+        !isSafeAssetKey(frontmatter.thumb))) ||
+    (frontmatter.description !== undefined &&
+      typeof frontmatter.description !== "string")
+  ) {
+    return false;
+  }
+
+  return true;
+}
+
+let rawEnvelope: unknown;
+try {
+  rawEnvelope = await object.json();
+} catch {
+  return new Response("Vault unavailable", {
+    status: 503,
+    headers: { "Cache-Control": "private, no-store" },
+  });
+}
+if (!isVaultEnvelope(rawEnvelope)) {
+  return new Response("Vault unavailable", {
+    status: 503,
+    headers: { "Cache-Control": "private, no-store" },
+  });
+}
+const envelope = rawEnvelope;
 const html = await signAssetUrlsInHtml(envelope.html, secret);
 const title = envelope.frontmatter?.title ?? vault.genericTitle;
 const description =
@@ -57,9 +151,6 @@ const description =
 const thumbUrl = envelope.frontmatter?.thumb
   ? await signAssetUrl(envelope.frontmatter.thumb, secret)
   : undefined;
-
-Astro.response.headers.set("Cache-Control", "private, no-store");
-Astro.response.headers.set("Referrer-Policy", "no-referrer");
 ---
 
 <Layout title={`${title} | Theme Memories`} description={description}>

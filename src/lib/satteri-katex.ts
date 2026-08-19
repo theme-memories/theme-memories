@@ -1,5 +1,5 @@
 /* 
-Same content as upstream: https://github.com/baka-gourd/satteri-plugins/blob/main/packages/satteri-katex/src/index.ts
+Fork of upstream: https://github.com/baka-gourd/satteri-plugins/blob/main/packages/satteri-katex/src/index.ts
 Latest update: 2026-06-11 13:48 UTC with commit 65b3afd
 */
 
