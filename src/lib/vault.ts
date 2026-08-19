@@ -7,7 +7,6 @@ const ASSET_URL_TTL_SECONDS = 300;
 const ASSET_KEY_PATTERN = /^[A-Za-z0-9_-]{1,128}(?:\/[A-Za-z0-9._-]+)+$/;
 const MAX_VERIFY_RESPONSE_BYTES = 4096;
 const VERIFY_PATH_PATTERN = /^\/[A-Za-z0-9_-]+(?:\/[A-Za-z0-9_-]+)*$/;
-const EXPECTED_TURNSTILE_HOSTNAME = "amia.work";
 
 export type VaultEnv = Pick<
   Env,
@@ -263,11 +262,7 @@ export async function verifyTurnstile(
 ): Promise<boolean> {
   if (!token || token.length > 2048) return false;
 
-  let result: {
-    success?: boolean;
-    action?: string;
-    hostname?: string;
-  };
+  let result: { success?: boolean; action?: string };
   try {
     const response = await fetch(
       "https://challenges.cloudflare.com/turnstile/v0/siteverify",
@@ -284,20 +279,12 @@ export async function verifyTurnstile(
       },
     );
     if (!response.ok) return false;
-    result = (await response.json()) as {
-      success?: boolean;
-      action?: string;
-      hostname?: string;
-    };
+    result = (await response.json()) as { success?: boolean; action?: string };
   } catch {
     return false;
   }
 
-  return (
-    result.success === true &&
-    result.action === EXPECTED_ACTION &&
-    result.hostname === EXPECTED_TURNSTILE_HOSTNAME
-  );
+  return result.success === true && result.action === EXPECTED_ACTION;
 }
 
 export async function getVaultHash(
