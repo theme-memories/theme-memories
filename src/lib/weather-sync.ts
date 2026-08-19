@@ -62,9 +62,12 @@ async function fetchJson(
 ): Promise<Record<string, unknown>> {
   const response = await fetch(url, {
     signal,
-    redirect: "error",
+    redirect: "manual",
     headers: { Accept: "application/json" },
   });
+  if (response.status >= 300 && response.status < 400) {
+    throw new Error(`OpenWeatherMap request redirected (${response.status})`);
+  }
   if (!response.ok) {
     throw new Error(`OpenWeatherMap request failed (${response.status})`);
   }
