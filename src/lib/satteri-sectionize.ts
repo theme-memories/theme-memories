@@ -16,22 +16,20 @@ export interface SectionizeOptions {
 }
 
 type HeadingNode = Extract<MdastNode, { type: "heading" }>;
-type SectionContent = MdastNode;
+type BlockquoteNode = Extract<MdastNode, { type: "blockquote" }>;
 
 export interface SectionData {
   hName: "section";
   depth: number;
 }
 
-export type SectionNode = MdastNode & {
-  type: "section";
+export type SectionNode = BlockquoteNode & {
   data: SectionData;
-  children: SectionContent[];
 };
 
 interface OpenSection {
   depth: number;
-  children: SectionContent[];
+  children: MdastNode[];
 }
 
 const defaultMaxDepth = 6;
@@ -43,11 +41,11 @@ function isSectionHeading(
   return node.type === "heading" && node.depth <= maxDepth;
 }
 
-function createSection(depth: number, children: SectionContent[]): SectionNode {
+function createSection(depth: number, children: MdastNode[]): SectionNode {
   return {
-    type: "section",
+    type: "blockquote",
     data: { hName: "section", depth },
-    children,
+    children: children as SectionNode["children"],
   };
 }
 
@@ -57,7 +55,7 @@ export function isSectionNode(
   const data = node.data as Record<string, unknown> | undefined;
 
   return (
-    node.type === "section" &&
+    node.type === "blockquote" &&
     data?.hName === "section" &&
     typeof data.depth === "number"
   );
@@ -66,8 +64,8 @@ export function isSectionNode(
 function sectionizeChildren(
   children: readonly MdastNode[],
   maxDepth: number,
-): SectionContent[] {
-  const result: SectionContent[] = [];
+): MdastNode[] {
+  const result: MdastNode[] = [];
   const sections: OpenSection[] = [];
 
   for (const child of children) {
@@ -91,7 +89,7 @@ function sectionizeChildren(
       sections.pop();
     }
 
-    const sectionChildren: SectionContent[] = [child];
+    const sectionChildren: MdastNode[] = [child];
     (sections.at(-1)?.children ?? result).push(
       createSection(child.depth, sectionChildren),
     );
