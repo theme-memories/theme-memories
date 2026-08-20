@@ -264,6 +264,67 @@ function collectAssets(fragment: string): {
   return { html, assets };
 }
 
+const ARGON2_PHC_PREFIX = "$argon2id$";
+const MAX_TARGET_LENGTH = 128;
+const EXPECTED_ARGON2 = {
+  memoryCost: 19456,
+  timeCost: 2,
+  parallelism: 1,
+};
+
+function isCanonicalBase64(value: string): boolean {
+  if (!/^[A-Za-z0-9+/]+$/.test(value)) return false;
+  const decoded = Buffer.from(value, "base64");
+  return decoded.toString("base64").replace(/=+$/, "") === value;
+}
+
+function isValidArgon2Phc(target: string): boolean {
+  const parts = target.split("$");
+  if (parts.length !== 6) return false;
+  const [, algorithm, version, rawParams, salt, digest] = parts;
+  if (algorithm !== "argon2id" || !/^v=\d+$/.test(version)) return false;
+  if (!isCanonicalBase64(salt) || !isCanonicalBase64(digest)) return false;
+  const params = new Map<string, string>();
+  for (const rawParam of rawParams.split(",")) {
+    const match = /^(m|t|p)=(\d+)$/.exec(rawParam);
+    if (!match || params.has(match[1])) return false;
+    params.set(match[1], match[2]);
+  }
+  return params.size === 3;
+}
+
+async function assertPublishableHash(hash: string): Promise<void> {
+  if (hash.length === 0 || hash.length > MAX_TARGET_LENGTH) {
+    throw new Error(
+      `passwordHash length out of bounds (expected 1..${MAX_TARGET_LENGTH}); refusing to publish`,
+    );
+  }
+  if (!hash.startsWith(ARGON2_PHC_PREFIX) || !isValidArgon2Phc(hash)) {
+    throw new Error(
+      "passwordHash is not a well-formed argon2id PHC string; refusing to publish",
+    );
+  }
+  const argon2Module = await import("argon2");
+  const argon2 = ((argon2Module as { default?: unknown }).default ??
+    argon2Module) as {
+    needsRehash(hash: string, options: typeof EXPECTED_ARGON2): boolean;
+  };
+  let needsRehash: boolean;
+  try {
+    needsRehash = argon2.needsRehash(hash, EXPECTED_ARGON2);
+  } catch {
+    throw new Error(
+      "passwordHash failed argon2 validation; refusing to publish",
+    );
+  }
+  if (needsRehash) {
+    throw new Error(
+      "passwordHash needs rehash (cost parameters differ from the verifier's " +
+        "expected argon2id parameters); refusing to publish",
+    );
+  }
+}
+
 async function main() {
   rmSync(STAGING_DIR, { recursive: true, force: true });
   mkdirSync(STAGING_DIR, { recursive: true, mode: 0o700 });
@@ -501,23 +562,18 @@ async function main() {
 
     for (const slug of currentSlugs) {
       const hash = hashes.get(slug)!;
-      const safeSlug = slug.replaceAll("'", "''");
-      const safeHash = hash.replaceAll("'", "''");
-      lines.push(`DELETE FROM unlocks WHERE slug = '${safeSlug}';`);
+      await assertPublishableHash(hash);
+      lines.push(`DELETE FROM unlocks WHERE slug = '${slug}';`);
       lines.push(
-        `INSERT INTO vault (slug, password_hash, updated_at) VALUES ('${safeSlug}', '${safeHash}', unixepoch()) ON CONFLICT(slug) DO UPDATE SET password_hash = excluded.password_hash, updated_at = unixepoch();`,
+        `INSERT INTO vault (slug, password_hash, updated_at) VALUES ('${slug}', '${hash}', unixepoch()) ON CONFLICT(slug) DO UPDATE SET password_hash = excluded.password_hash, updated_at = unixepoch();`,
       );
     }
 
     if (currentSlugs.length > 0) {
-      const slugList = currentSlugs
-        .map((s) => `'${s.replaceAll("'", "''")}'`)
-        .join(", ");
+      const slugList = currentSlugs.map((s) => `'${s}'`).join(", ");
       lines.push(`DELETE FROM vault WHERE slug NOT IN (${slugList});`);
       lines.push(`DELETE FROM unlocks WHERE slug NOT IN (${slugList});`);
     } else {
-      // An intentional empty vault must revoke old unlocks and remove old
-      // envelopes/assets. The missing-directory case above still fails closed.
       lines.push("DELETE FROM unlocks;");
       lines.push("DELETE FROM vault;");
     }

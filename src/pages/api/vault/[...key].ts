@@ -27,7 +27,12 @@ const CONTENT_TYPES: Record<string, string> = {
 };
 
 const SAFE_EXTENSIONS = new Set(Object.keys(CONTENT_TYPES));
-export const GET: APIRoute = async ({ params, url, session }) => {
+export const GET: APIRoute = async ({
+  params,
+  url,
+  session,
+  clientAddress,
+}) => {
   const key = params.key ?? "";
   const exp = url.searchParams.get("exp") ?? "";
   const sig = url.searchParams.get("sig") ?? "";
@@ -37,6 +42,25 @@ export const GET: APIRoute = async ({ params, url, session }) => {
       status: 404,
       headers: { "Cache-Control": "no-store" },
     });
+  }
+
+  const slash = key.indexOf("/");
+  const slug = slash > 0 ? key.slice(0, slash) : "";
+
+  if (slug) {
+    try {
+      const outcome = await env.VAULT_RL.limit({
+        key: `${slug}:${clientAddress}`,
+      });
+      if (!outcome.success) {
+        return new Response("Too Many Requests", {
+          status: 429,
+          headers: { "Cache-Control": "no-store", "Retry-After": "60" },
+        });
+      }
+    } catch {
+      /* Rate limiter not available, fail open */
+    }
   }
 
   const ext = key.includes(".") ? key.split(".").pop()!.toLowerCase() : "";
@@ -60,8 +84,6 @@ export const GET: APIRoute = async ({ params, url, session }) => {
     });
   }
 
-  const slash = key.indexOf("/");
-  const slug = slash > 0 ? key.slice(0, slash) : "";
   let userId: string | undefined;
   try {
     userId = session ? await session.get("user_id") : undefined;

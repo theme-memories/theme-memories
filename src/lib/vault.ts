@@ -1,10 +1,10 @@
 export const ENVELOPE_PREFIX = "data";
 export const R2_PREFIX = "assets";
 
-const UNLOCK_TTL_SECONDS = 7776000;
-
+const UNLOCK_TTL_SECONDS = 604800;
 const ASSET_URL_TTL_SECONDS = 300;
 const ASSET_KEY_PATTERN = /^[A-Za-z0-9_-]{1,128}(?:\/[A-Za-z0-9._-]+)+$/;
+const MAX_TARGET_LENGTH = 128;
 const MAX_VERIFY_RESPONSE_BYTES = 4096;
 const VERIFY_PATH_PATTERN = /^\/[A-Za-z0-9_-]+(?:\/[A-Za-z0-9_-]+)*\/?$/;
 
@@ -156,7 +156,10 @@ export async function verifyPasswordWithRemote(
   slug: string,
   issuer: string,
 ): Promise<VerifyPasswordResult> {
-  if (!targetHash.startsWith("$argon2id$") || targetHash.length > 512) {
+  if (
+    !targetHash.startsWith("$argon2id$") ||
+    targetHash.length > MAX_TARGET_LENGTH
+  ) {
     return { ok: false, verified: false, error: "server_error" };
   }
 
@@ -210,6 +213,7 @@ export async function verifyPasswordWithRemote(
   try {
     response = await fetch(verifyEndpoint, {
       method: "POST",
+      redirect: "manual",
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
@@ -218,6 +222,9 @@ export async function verifyPasswordWithRemote(
       body: JSON.stringify({ input, target: targetHash }),
       signal: AbortSignal.timeout(10_000),
     });
+    if (response.status >= 300 && response.status < 400) {
+      return { ok: false, verified: false, error: "upstream_error" };
+    }
   } catch {
     return { ok: false, verified: false, error: "upstream_error" };
   }
