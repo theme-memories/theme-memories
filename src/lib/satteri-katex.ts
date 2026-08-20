@@ -61,6 +61,7 @@ function renderMath(
 
   try {
     return katexLib.renderToString(value, {
+      output: "html",
       ...options,
       displayMode,
       throwOnError: true,
@@ -76,6 +77,7 @@ function renderMath(
 
     try {
       return katexLib.renderToString(value, {
+        output: "html",
         ...options,
         displayMode,
         strict: "ignore",

@@ -131,7 +131,7 @@ const ATTRIBUTES: Readonly<Record<string, readonly string[]>> = {
   ins: ["cite"],
   q: ["cite"],
   blockquote: ["cite"],
-  audio: ["controls", "loop", "muted", "preload"],
+  audio: ["controls", "loop", "muted", "preload", "src"],
   video: [
     "controls",
     "height",
@@ -475,7 +475,11 @@ export default function satteriSanitize({
   return defineHastPlugin({
     name: "satteri-sanitize",
     raw(node, ctx) {
-      const sanitized = sanitizeRaw(node.value);
+      const raw = node.value;
+
+      if (/^<span class="katex(-display)?"/.test(raw)) return;
+
+      const sanitized = sanitizeRaw(raw);
       if (sanitized === node.value) return;
       if (sanitized === "") {
         ctx.removeNode(node);
