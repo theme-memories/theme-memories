@@ -2,7 +2,6 @@
 Fork of upstream: https://github.com/Ashish-CodeJourney/satteri-plugins/tree/main/packages/satteri-sanitize/src
 Latest update: 2026-08-18 07:09 UTC with commit d13255f
 Custom logic added to support more tag/attribute.
-Need synced satteri v0.10 to update.
 */
 
 import { defineHastPlugin } from "satteri";
@@ -384,20 +383,27 @@ const keptClasses = (value: string): string =>
 export default function satteriSanitize({
   tagNames = TAG_NAMES,
   attributes = {},
+  protocols = {},
+  clobberPrefix = CLOBBER_PREFIX,
 }: {
   tagNames?: readonly string[];
   attributes?: Readonly<Record<string, readonly string[]>>;
+  protocols?: Readonly<Record<string, readonly string[]>>;
+  clobberPrefix?: string;
 } = {}): HastPluginDefinition {
   const allowedTags = new Set(tagNames.map((name) => name.toLowerCase()));
-  const mergedAttributes: Record<string, readonly string[]> = {
+  const allowedAttributes: Record<string, readonly string[]> = {
     ...ATTRIBUTES,
     ...attributes,
   };
+  const allowedProtocols: Record<string, readonly string[]> = {
+    ...PROTOCOLS,
+    ...protocols,
+  };
 
   const listed = (tagName: string, name: string): boolean => {
-    const list = mergedAttributes[tagName] ?? [];
-    if (name !== "class" && name !== "className")
-      return list.includes(name) || list.includes("className");
+    const list = allowedAttributes[tagName] ?? [];
+    if (name !== "class" && name !== "className") return list.includes(name);
     return list.includes("class") || list.includes("className");
   };
 
@@ -412,10 +418,10 @@ export default function satteriSanitize({
   };
 
   const cleanValue = (name: string, value: string): string | undefined => {
-    const allowed = PROTOCOLS[name];
+    const allowed = allowedProtocols[name];
     if (allowed !== undefined && !isAllowedUrl(value, allowed))
       return undefined;
-    if (CLOBBER.includes(name)) return CLOBBER_PREFIX + value;
+    if (CLOBBER.includes(name)) return clobberPrefix + value;
     return value;
   };
 
@@ -487,7 +493,7 @@ export default function satteriSanitize({
 
         for (const name of ["href", "src"]) {
           const value = node.properties?.[name];
-          const allowed = PROTOCOLS[name];
+          const allowed = allowedProtocols[name];
           if (typeof value !== "string" || allowed === undefined) continue;
           if (!isAllowedUrl(value, allowed))
             ctx.setProperty(node, name, undefined);

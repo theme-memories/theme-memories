@@ -1,35 +1,38 @@
 /*
 Fork of upstream: https://github.com/baka-gourd/satteri-plugins/blob/main/packages/satteri-sectionize/src/index.ts
 Latest update: 2026-08-18 14:02 UTC with commit 4d917a4
-Custom logic added to support footnotes
-Need synced satteri v0.10 to update.
+Custom logic added to keep footnote definitions outside sections.
 */
 
 import {
   defineMdastPlugin,
+  type Custom,
   type MdastNode,
   type MdastPluginDefinition,
 } from "satteri";
 
 export interface SectionizeOptions {
+  /** Deepest heading level that starts a section. @default 6 */
   maxDepth?: number;
 }
 
 type HeadingNode = Extract<MdastNode, { type: "heading" }>;
-type BlockquoteNode = Extract<MdastNode, { type: "blockquote" }>;
+type SectionContent = MdastNode | Custom;
 
 export interface SectionData {
   hName: "section";
   depth: number;
 }
 
-export type SectionNode = BlockquoteNode & {
+export type SectionNode = Custom & {
+  type: "section";
   data: SectionData;
+  children: SectionContent[];
 };
 
 interface OpenSection {
   depth: number;
-  children: MdastNode[];
+  children: SectionContent[];
 }
 
 const defaultMaxDepth = 6;
@@ -41,21 +44,21 @@ function isSectionHeading(
   return node.type === "heading" && node.depth <= maxDepth;
 }
 
-function createSection(depth: number, children: MdastNode[]): SectionNode {
+function createSection(depth: number, children: SectionContent[]): SectionNode {
   return {
-    type: "blockquote",
+    type: "section",
     data: { hName: "section", depth },
-    children: children as SectionNode["children"],
+    children,
   };
 }
 
 export function isSectionNode(
-  node: Readonly<MdastNode>,
+  node: Readonly<MdastNode | Custom>,
 ): node is Readonly<SectionNode> {
   const data = node.data as Record<string, unknown> | undefined;
 
   return (
-    node.type === "blockquote" &&
+    node.type === "section" &&
     data?.hName === "section" &&
     typeof data.depth === "number"
   );
@@ -64,8 +67,8 @@ export function isSectionNode(
 function sectionizeChildren(
   children: readonly MdastNode[],
   maxDepth: number,
-): MdastNode[] {
-  const result: MdastNode[] = [];
+): SectionContent[] {
+  const result: SectionContent[] = [];
   const sections: OpenSection[] = [];
 
   for (const child of children) {
@@ -75,6 +78,7 @@ function sectionizeChildren(
       continue;
     }
 
+    // Custom: footnote definitions stay outside any section.
     if (child.type === "footnoteDefinition") {
       result.push(child);
       continue;
@@ -89,7 +93,7 @@ function sectionizeChildren(
       sections.pop();
     }
 
-    const sectionChildren: MdastNode[] = [child];
+    const sectionChildren: SectionContent[] = [child];
     (sections.at(-1)?.children ?? result).push(
       createSection(child.depth, sectionChildren),
     );
@@ -106,6 +110,12 @@ function firstSectionHeadingIndex(
   return children.findIndex((child) => isSectionHeading(child, maxDepth));
 }
 
+/**
+ * Wraps each heading and its following sibling content in a `<section>`.
+ *
+ * Sections end at the next heading of the same or a higher level. MDX ESM
+ * nodes and footnote definitions remain outside sections.
+ */
 export function sectionize(
   options: SectionizeOptions = {},
 ): MdastPluginDefinition {
