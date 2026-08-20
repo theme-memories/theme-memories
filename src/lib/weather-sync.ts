@@ -88,7 +88,6 @@ export async function syncWeather(
     lang: "ja",
     appid: apiKey,
   });
-
   const currentResponse = await fetchJson(
     `${CURRENT_URL}?${baseParams}`,
     signal,
@@ -137,7 +136,13 @@ export async function syncWeather(
   };
 
   const body = JSON.stringify(payload);
-  const httpMetadata = { contentType: "application/json" };
+  if (body.length > 64 * 1024) {
+    throw new Error("weather-sync: payload too large");
+  }
+  const httpMetadata = {
+    contentType: "application/json",
+    cacheControl: "public, max-age=300, stale-while-revalidate=600",
+  };
   const canonicalKey = "weather.json";
 
   await env.ARTICLE_BUCKET.put(canonicalKey, body, { httpMetadata });

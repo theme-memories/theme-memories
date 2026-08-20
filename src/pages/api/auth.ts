@@ -134,7 +134,7 @@ export const POST: APIRoute = async ({ request, clientAddress, session }) => {
     const rl = await env.VAULT_AUTH_RL.limit({ key: slug });
     if (!rl.success) return jsonErr("RATE_LIMITED", 429);
   } catch {
-    jsonErr("RATE_LIMITED", 429);
+    return jsonErr("RATE_LIMITED", 429);
   }
 
   let hash: string | null;
@@ -157,6 +157,7 @@ export const POST: APIRoute = async ({ request, clientAddress, session }) => {
   } catch {
     return jsonErr("SERVER_ERROR", 503);
   }
+
   if (!result.ok) {
     if (result.error === "rate_limited") {
       return jsonErr("RATE_LIMITED", 429);
