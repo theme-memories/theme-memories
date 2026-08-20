@@ -95,7 +95,7 @@ export function katex(options?: Readonly<KatexOptions>): MdastPluginDefinition {
   return defineMdastPlugin({
     name: "katex",
     math(node, ctx) {
-      return { rawHtml: renderMath(node, true, settings, ctx) };
+      return { type: "html", value: renderMath(node, true, settings, ctx) };
     },
     inlineMath(node, ctx) {
       return { type: "html", value: renderMath(node, false, settings, ctx) };
