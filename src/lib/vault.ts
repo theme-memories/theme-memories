@@ -6,7 +6,7 @@ const UNLOCK_TTL_SECONDS = 7776000;
 const ASSET_URL_TTL_SECONDS = 300;
 const ASSET_KEY_PATTERN = /^[A-Za-z0-9_-]{1,128}(?:\/[A-Za-z0-9._-]+)+$/;
 const MAX_VERIFY_RESPONSE_BYTES = 4096;
-const VERIFY_PATH_PATTERN = /^\/[A-Za-z0-9_-]+(?:\/[A-Za-z0-9_-]+)*$/;
+const VERIFY_PATH_PATTERN = /^\/[A-Za-z0-9_-]+(?:\/[A-Za-z0-9_-]+)*\/?$/;
 
 export type VaultEnv = Pick<
   Env,
@@ -215,7 +215,6 @@ export async function verifyPasswordWithRemote(
         Accept: "application/json",
         Authorization: `Bearer ${token}`,
       },
-      redirect: "error",
       body: JSON.stringify({ input, target: targetHash }),
       signal: AbortSignal.timeout(10_000),
     });
@@ -227,13 +226,6 @@ export async function verifyPasswordWithRemote(
     return { ok: false, verified: false, error: "upstream_error" };
   }
 
-  const responseType = (response.headers.get("Content-Type") ?? "")
-    .split(";", 1)[0]
-    .trim()
-    .toLowerCase();
-  if (responseType !== "application/json") {
-    return { ok: false, verified: false, error: "upstream_error" };
-  }
   const responseLength = response.headers.get("Content-Length");
   if (
     responseLength !== null &&
