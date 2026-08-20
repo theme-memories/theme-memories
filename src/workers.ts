@@ -40,7 +40,6 @@ export default {
               name: errorName(error),
             }),
           );
-          throw error;
         }
         break;
       }

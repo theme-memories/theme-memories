@@ -59,7 +59,10 @@ export const GET: APIRoute = async ({
         });
       }
     } catch {
-      /* Rate limiter not available, fail open */
+      return new Response("Too Many Requests", {
+        status: 429,
+        headers: { "Cache-Control": "no-store", "Retry-After": "60" },
+      });
     }
   }
 

@@ -136,7 +136,7 @@ export const POST: APIRoute = async ({ request, clientAddress, session }) => {
   } catch {
     return jsonErr("SERVER_ERROR", 503);
   }
-  if (!hash) return jsonErr("NOT_FOUND", 404);
+  if (!hash) return jsonErr("VERIFY_FAILED", 200);
 
   let result;
   try {
@@ -151,6 +151,9 @@ export const POST: APIRoute = async ({ request, clientAddress, session }) => {
     return jsonErr("SERVER_ERROR", 503);
   }
   if (!result.ok) {
+    if (result.error === "rate_limited") {
+      return jsonErr("RATE_LIMITED", 429);
+    }
     return jsonErr(result.error ?? "UPSTREAM_ERROR", 502);
   }
   if (!result.verified) {
@@ -159,11 +162,9 @@ export const POST: APIRoute = async ({ request, clientAddress, session }) => {
 
   const existing = await session.get("user_id");
   const userId = existing ?? crypto.randomUUID();
-  if (existing) {
-    await session.regenerate();
-  } else {
+  await session.regenerate();
+  if (!existing) {
     session.set("user_id", userId);
-    await session.regenerate();
   }
   await recordUnlock(env, userId, slug);
 

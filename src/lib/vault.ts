@@ -175,7 +175,6 @@ export async function verifyPasswordWithRemote(
   if (!verifyPath) {
     return { ok: false, verified: false, error: "server_error" };
   }
-
   let audienceUrl: URL;
   try {
     audienceUrl = new URL(jwtAudience);
@@ -230,6 +229,9 @@ export async function verifyPasswordWithRemote(
   }
 
   if (!response.ok) {
+    if (response.status === 429) {
+      return { ok: false, verified: false, error: "rate_limited" };
+    }
     return { ok: false, verified: false, error: "upstream_error" };
   }
 
