@@ -185,7 +185,6 @@ export async function verifyPasswordWithRemote(
   if (
     audienceUrl.username ||
     audienceUrl.password ||
-    audienceUrl.pathname !== "/" ||
     audienceUrl.search ||
     audienceUrl.hash
   ) {
@@ -194,7 +193,11 @@ export async function verifyPasswordWithRemote(
   if (!VERIFY_PATH_PATTERN.test(verifyPath) || verifyPath.length > 256) {
     return { ok: false, verified: false, error: "server_error" };
   }
-  const verifyEndpoint = new URL(verifyPath, audienceUrl.origin).href;
+  // JWT_AUDIENCE is the verifier's base URL. Preserve its path when joining
+  // the configured endpoint, as the previous implementation did.
+  const basePath = audienceUrl.pathname.replace(/\/$/, "");
+  const verifyEndpoint = new URL(`${basePath}${verifyPath}`, audienceUrl.origin)
+    .href;
 
   let token: string;
   try {
