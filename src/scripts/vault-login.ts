@@ -57,6 +57,12 @@ const showToast = (message: string) => {
 
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
+  if (!latestToken) {
+    showToast(
+      "CAPTCHAの確認が完了していません。少し待ってから再試行してください。",
+    );
+    return;
+  }
   submitBtn.disabled = true;
   let redirecting = false;
   try {
