@@ -284,7 +284,10 @@ export async function verifyTurnstile(
     return false;
   }
 
-  return result.success === true && result.action === EXPECTED_ACTION;
+  return (
+    result.success === true &&
+    (!result.action || result.action === EXPECTED_ACTION)
+  );
 }
 
 export async function getVaultHash(
