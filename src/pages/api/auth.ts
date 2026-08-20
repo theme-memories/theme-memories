@@ -130,6 +130,13 @@ export const POST: APIRoute = async ({ request, clientAddress, session }) => {
     return jsonErr("TURNSTILE_FAILED", 403);
   }
 
+  try {
+    const rl = await env.VAULT_AUTH_RL.limit({ key: slug });
+    if (!rl.success) return jsonErr("RATE_LIMITED", 429);
+  } catch {
+    jsonErr("RATE_LIMITED", 429);
+  }
+
   let hash: string | null;
   try {
     hash = await getVaultHash(env, slug);
