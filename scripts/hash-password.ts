@@ -29,5 +29,8 @@ if (!secret) {
 
 const hash = await argon2.hash(password, {
   secret: Buffer.from(secret, "utf8"),
+  memoryCost: 19456,
+  timeCost: 2,
+  parallelism: 1,
 });
 console.log(hash);
