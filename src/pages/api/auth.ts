@@ -80,7 +80,7 @@ async function readBodyAtMost(
   }
 }
 
-export const POST: APIRoute = async ({ request, session }) => {
+export const POST: APIRoute = async ({ request, clientAddress, session }) => {
   if (!session) return jsonErr("SESSION_UNAVAILABLE", 500);
 
   const contentType = (request.headers.get("Content-Type") ?? "")
@@ -125,7 +125,7 @@ export const POST: APIRoute = async ({ request, session }) => {
   }
   if (
     !turnstileSecret ||
-    !(await verifyTurnstile(turnstile, turnstileSecret))
+    !(await verifyTurnstile(turnstile, clientAddress, turnstileSecret))
   ) {
     return jsonErr("TURNSTILE_FAILED", 403);
   }

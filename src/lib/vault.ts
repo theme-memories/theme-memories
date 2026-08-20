@@ -257,6 +257,7 @@ const EXPECTED_ACTION = "vault-login";
 
 export async function verifyTurnstile(
   token: string,
+  clientAddress: string,
   secret: string,
 ): Promise<boolean> {
   if (!token || token.length > 2048) return false;
@@ -268,8 +269,11 @@ export async function verifyTurnstile(
       {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        redirect: "error",
-        body: new URLSearchParams({ secret, response: token }),
+        body: new URLSearchParams({
+          secret,
+          response: token,
+          remoteip: clientAddress,
+        }),
         signal: AbortSignal.timeout(10_000),
       },
     );

@@ -121,8 +121,8 @@ importers:
         specifier: ^0.8.1
         version: 0.8.1(prettier-plugin-astro@0.14.1)(prettier@3.9.6)
       satteri-expressive-code:
-        specifier: ^0.1.21
-        version: 0.1.21(satteri@0.9.5)
+        specifier: ^0.1.22
+        version: 0.1.22(satteri@0.9.5)
       stylelint:
         specifier: ^17.14.1
         version: 17.14.1(supports-color@10.2.2)(typescript@6.0.3)
@@ -2577,8 +2577,8 @@ packages:
   magic-string@0.30.21:
     resolution: {integrity: sha512-vd2F4YUyEXKGcLHoq+TEyCjxueSeHnFxyyjNp80yg0XV4vUhnDer/lvvlqM/arB5bXQN5K2/3oinyCRyx8T2CQ==}
 
-  magic-string@1.2.0:
-    resolution: {integrity: sha512-ptco+HFxTLgjafSLim2LojBSwfg5feBjd+SqyiwdGkzC38UPdZy3zgrHMI2CoTf5fJL38tbHMYWVzIH8BxGqJw==}
+  magic-string@1.2.1:
+    resolution: {integrity: sha512-vCfXkt3lIJha02CjPT1igeysyHVfCsEpIeD20O+X9aJ2hML3/kKx8E9Iv1FB+aMSAlDOEAtpRWzuooQCrYwdUg==}
 
   magicast@0.5.4:
     resolution: {integrity: sha512-llBEhWm1SacoRwgHUoQJYtwp4PBLF4faQi5TCpIGyGs9n4y5+juI0tDgyKIfpqxckRHaHzouUEph3THklWh03w==}
@@ -2968,8 +2968,8 @@ packages:
   sass-formatter@0.7.9:
     resolution: {integrity: sha512-CWZ8XiSim+fJVG0cFLStwDvft1VI7uvXdCNJYXhDvowiv+DsbD1nXLiQ4zrE5UBvj5DWZJ93cwN0NX5PMsr1Pw==}
 
-  satteri-expressive-code@0.1.21:
-    resolution: {integrity: sha512-7vkBhtBOZ0MeEximQj2s9qVlagYUK0G6xxtRu2Xko22MCbcV0fNGdPn3q0d+RCspPiUkTduTBSpbsbW+ptR4UA==}
+  satteri-expressive-code@0.1.22:
+    resolution: {integrity: sha512-ko8SoDMJwaMEVPLZkqIfT5vIopzuIvar+r/rJgVlDqKobr6ZJi+OGiRdrp8e8AaqYUZqHqceOJlExHNGHKkU7g==}
     peerDependencies:
       satteri: '>=0.4.0'
 
@@ -4946,7 +4946,7 @@ snapshots:
       http-cache-semantics: 4.2.0
       js-yaml: 4.3.1
       jsonc-parser: 3.3.1
-      magic-string: 1.2.0
+      magic-string: 1.2.1
       magicast: 0.5.4
       mrmime: 2.0.1
       neotraverse: 1.0.1
@@ -5847,7 +5847,7 @@ snapshots:
     dependencies:
       '@jridgewell/sourcemap-codec': 1.5.5
 
-  magic-string@1.2.0:
+  magic-string@1.2.1:
     dependencies:
       '@jridgewell/sourcemap-codec': 1.5.5
 
@@ -6178,7 +6178,7 @@ snapshots:
     dependencies:
       suf-log: 2.5.3
 
-  satteri-expressive-code@0.1.21(satteri@0.9.5):
+  satteri-expressive-code@0.1.22(satteri@0.9.5):
     dependencies:
       expressive-code: 0.42.0
       satteri: 0.9.5

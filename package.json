@@ -57,7 +57,7 @@
     "prettier": "^3.9.6",
     "prettier-plugin-astro": "^0.14.1",
     "prettier-plugin-tailwindcss": "^0.8.1",
-    "satteri-expressive-code": "^0.1.21",
+    "satteri-expressive-code": "^0.1.22",
     "stylelint": "^17.14.1",
     "stylelint-config-standard": "^40.0.0",
     "typescript-eslint": "^8.67.0",
