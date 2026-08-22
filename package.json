@@ -1,6 +1,6 @@
 {
   "name": "theme-memories",
-  "version": "26.8.21",
+  "version": "26.8.22",
   "description": "An astro framework blog theme",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -36,7 +36,7 @@
     "photoswipe-dynamic-caption-plugin": "^1.2.7",
     "plyr": "^3.8.4",
     "reading-time": "^1.5.0",
-    "satteri": "^0.10.4",
+    "satteri": "^0.10.5",
     "sharp": "^0.35.3",
     "swiper": "^14.1.0",
     "tailwindcss": "^4.3.3",
@@ -57,11 +57,11 @@
     "prettier": "^3.9.6",
     "prettier-plugin-astro": "^0.14.1",
     "prettier-plugin-tailwindcss": "^0.8.1",
-    "satteri-expressive-code": "^0.1.23",
+    "satteri-expressive-code": "^0.1.24",
     "stylelint": "^17.14.1",
     "stylelint-config-standard": "^40.0.0",
     "typescript-eslint": "^8.67.0",
-    "wrangler": "^4.124.0"
+    "wrangler": "^4.125.0"
   },
   "lint-staged": {
     "*.{js,mjs,cjs,ts,mts,cts}": [
