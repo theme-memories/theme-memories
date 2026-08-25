@@ -136,7 +136,9 @@ const FEATURES = {
   },
   math: true,
   directive: true,
+  definitionList: true,
   smartPunctuation: true,
+  rawHtml: true,
 } as const;
 
 const isLocalFile = (normalized: string): string | null => {
@@ -175,8 +177,8 @@ async function renderFragment(
     hastPlugins: [
       satteriGithubAlerts(),
       satteriHeadingIdsPlugin(),
-      expressiveCode(ecConfig as SatteriExpressiveCodeOptions),
       satteriSanitize(),
+      expressiveCode(ecConfig as SatteriExpressiveCodeOptions),
     ],
     features: FEATURES,
     fileURL,
@@ -202,8 +204,8 @@ async function renderQuestionHtml(question: string): Promise<string> {
     hastPlugins: [
       satteriGithubAlerts(),
       satteriHeadingIdsPlugin(),
-      expressiveCode(ecConfig as SatteriExpressiveCodeOptions),
       satteriSanitize(),
+      expressiveCode(ecConfig as SatteriExpressiveCodeOptions),
     ],
     features: FEATURES,
   });

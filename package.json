@@ -1,6 +1,6 @@
 {
   "name": "theme-memories",
-  "version": "26.8.22",
+  "version": "26.8.25",
   "description": "An astro framework blog theme",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -46,7 +46,7 @@
     "@eslint/js": "^10.0.1",
     "@types/node": "^24.13.3",
     "argon2": "^0.45.1",
-    "eslint": "^10.8.1",
+    "eslint": "^10.9.0",
     "eslint-config-prettier": "^10.1.8",
     "globals": "^17.11.0",
     "husky": "^9.1.7",

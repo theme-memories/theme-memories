@@ -5,7 +5,11 @@ Custom logic added to support more tag/attribute.
 */
 
 import { defineHastPlugin } from "satteri";
-import type { HastPluginDefinition } from "satteri";
+import type {
+  HastNode,
+  HastPluginDefinition,
+  HastVisitorContext,
+} from "satteri";
 
 const TAG_NAMES: readonly string[] = [
   "a",
@@ -159,6 +163,57 @@ const CLOBBER: readonly string[] = ["id", "name"];
 const CLOBBER_PREFIX = "user-content-";
 
 const CLASS_PREFIXES: readonly string[] = ["language-", "math"];
+
+const REMOVE_WITH_CONTENT: readonly string[] = [
+  "script",
+  "style",
+  "template",
+  "iframe",
+  "frame",
+  "frameset",
+  "object",
+  "embed",
+  "applet",
+  "noscript",
+  "meta",
+  "link",
+  "base",
+  "title",
+  "xmp",
+  "plaintext",
+];
+
+const URL_ATTRIBUTES: readonly string[] = ["href", "src", "longdesc", "cite"];
+
+const EVENT_HANDLER = /^on[a-z]/i;
+
+const KATEX_CLASS = /^katex(-display)?$/;
+
+const classNameTokens = (value: unknown): string[] => {
+  if (Array.isArray(value))
+    return value.filter((token): token is string => typeof token === "string");
+  if (typeof value === "string") return value.split(/\s+/);
+  return [];
+};
+
+const isKatexRoot = (node: Readonly<HastNode>): boolean =>
+  node.type === "element" &&
+  node.tagName.toLowerCase() === "span" &&
+  classNameTokens(node.properties?.className).some((token) =>
+    KATEX_CLASS.test(token),
+  );
+
+const withinKatex = (
+  node: Readonly<HastNode>,
+  ctx: HastVisitorContext,
+): boolean => {
+  let current: Readonly<HastNode> | undefined = node;
+  while (current !== undefined) {
+    if (isKatexRoot(current)) return true;
+    current = ctx.parent(current);
+  }
+  return false;
+};
 
 type Tag = {
   readonly kind: "tag";
@@ -491,16 +546,43 @@ export default function satteriSanitize({
       if (dropDepth > 0) ctx.removeNode(node);
     },
     element: {
-      filter: ["a", "img", ...BLOCK_ELEMENTS],
+      filter: [],
       visit(node, ctx) {
         if (BLOCK_ELEMENTS.includes(node.tagName)) dropDepth = 0;
+        if (withinKatex(node, ctx)) return;
 
-        for (const name of ["href", "src"]) {
-          const value = node.properties?.[name];
-          const allowed = allowedProtocols[name];
-          if (typeof value !== "string" || allowed === undefined) continue;
-          if (!isAllowedUrl(value, allowed))
-            ctx.setProperty(node, name, undefined);
+        const tagName = node.tagName.toLowerCase();
+        if (!allowedTags.has(tagName)) {
+          if (REMOVE_WITH_CONTENT.includes(tagName)) ctx.removeNode(node);
+          else ctx.replaceNode(node, node.children);
+          return;
+        }
+
+        const properties = node.properties ?? {};
+        for (const key of Object.keys(properties)) {
+          if (EVENT_HANDLER.test(key) || key === "style") {
+            ctx.setProperty(node, key, undefined);
+            continue;
+          }
+
+          const urlKey = key.toLowerCase();
+          if (!URL_ATTRIBUTES.includes(urlKey)) continue;
+          const allowed = allowedProtocols[urlKey];
+          if (allowed === undefined) continue;
+
+          const value = properties[key];
+          if (typeof value === "string") {
+            if (!isAllowedUrl(value, allowed))
+              ctx.setProperty(node, key, undefined);
+          } else if (Array.isArray(value)) {
+            if (
+              value.some(
+                (entry) =>
+                  typeof entry === "string" && !isAllowedUrl(entry, allowed),
+              )
+            )
+              ctx.setProperty(node, key, undefined);
+          }
         }
       },
     },
