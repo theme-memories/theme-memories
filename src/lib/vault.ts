@@ -6,7 +6,7 @@ const ASSET_URL_TTL_SECONDS = 300;
 const ASSET_KEY_PATTERN = /^[A-Za-z0-9_-]{1,128}(?:\/[A-Za-z0-9._-]+)+$/;
 const MAX_TARGET_LENGTH = 128;
 const MAX_VERIFY_RESPONSE_BYTES = 4096;
-const VERIFY_PATH_PATTERN = /^\/[A-Za-z0-9_-]+(?:\/[A-Za-z0-9_-]+)*\/?$/;
+const VERIFY_PATH_PATTERN = /^\/[A-Za-z0-9_-]+(?:\/[A-Za-z0-9_-]+)*$/;
 
 export type VaultEnv = Pick<
   Env,
@@ -132,6 +132,7 @@ export async function mintVerifyJwt(
     iss: issuer,
     aud: audience,
     sub,
+    jti: crypto.randomUUID(),
     iat: now,
     exp: now + ttlSeconds,
   };
