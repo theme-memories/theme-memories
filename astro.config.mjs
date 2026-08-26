@@ -53,7 +53,6 @@ export default defineConfig({
         directive: true,
         definitionList: true,
         smartPunctuation: true,
-        rawHtml: true,
       },
       mdastPlugins: [satteriPangu(), sectionize(), katex(), satteriDirective()],
       hastPlugins: [satteriGithubAlerts(), satteriSanitize()],

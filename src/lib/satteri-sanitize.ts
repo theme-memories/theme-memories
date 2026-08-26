@@ -187,6 +187,31 @@ const URL_ATTRIBUTES: readonly string[] = ["href", "src", "longdesc", "cite"];
 
 const EVENT_HANDLER = /^on[a-z]/i;
 
+const TEXT_ALIGN_VALUES = new Set(["left", "center", "right"]);
+
+const isSafeTextAlignStyle = (value: string): boolean => {
+  const declarations = value
+    .split(";")
+    .map((part) => part.trim())
+    .filter(Boolean);
+  if (declarations.length !== 1) return false;
+  const [property, alignValue] = declarations[0]!.split(":");
+  if (!property || !alignValue) return false;
+  return (
+    property.trim().toLowerCase() === "text-align" &&
+    TEXT_ALIGN_VALUES.has(alignValue.trim().toLowerCase())
+  );
+};
+
+const isTableCellStyle = (
+  tagName: string,
+  name: string,
+  value: string,
+): boolean =>
+  name === "style" &&
+  (tagName === "th" || tagName === "td") &&
+  isSafeTextAlignStyle(value);
+
 const KATEX_CLASS = /^katex(-display)?$/;
 
 const classNameTokens = (value: unknown): string[] => {
@@ -486,6 +511,10 @@ export default function satteriSanitize({
     for (const [rawName, value] of tag.attributes) {
       const name = rawName.toLowerCase();
       if (isEventHandler(name)) continue;
+      if (isTableCellStyle(tag.name, name, value)) {
+        kept.push([name, value]);
+        continue;
+      }
       if (!attributeAllowed(tag.name, name)) continue;
 
       if (name === "class" && !classIsCallerConfigured(tag.name)) {
@@ -560,7 +589,14 @@ export default function satteriSanitize({
 
         const properties = node.properties ?? {};
         for (const key of Object.keys(properties)) {
-          if (EVENT_HANDLER.test(key) || key === "style") {
+          if (EVENT_HANDLER.test(key)) {
+            ctx.setProperty(node, key, undefined);
+            continue;
+          }
+          if (
+            key === "style" &&
+            !isTableCellStyle(tagName, "style", String(properties[key] ?? ""))
+          ) {
             ctx.setProperty(node, key, undefined);
             continue;
           }

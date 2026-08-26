@@ -145,7 +145,6 @@ const FEATURES = {
   directive: true,
   definitionList: true,
   smartPunctuation: true,
-  rawHtml: true,
 } as const;
 
 const isLocalFile = (normalized: string): string | null => {
