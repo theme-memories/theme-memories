@@ -21,6 +21,27 @@ const submitBtn = form.querySelector(
 const container = document.getElementById("vault-turnstile");
 const toastRoot = document.createElement("div");
 
+const ERROR_MESSAGES: Record<string, string> = {
+  INVALID_REQUEST: "リクエストを処理できませんでした。",
+  INVALID_INPUT: "入力内容を確認してください。",
+  TURNSTILE_FAILED: "CAPTCHAの確認に失敗しました。もう一度お試しください。",
+  VERIFY_FAILED: "パスワードが正しくありません。",
+  RATE_LIMITED: "試行回数が多すぎます。しばらくしてから再試行してください。",
+  TOO_MANY_REQUESTS:
+    "試行回数が多すぎます。しばらくしてから再試行してください。",
+  SESSION_UNAVAILABLE:
+    "サーバーで問題が発生しました。しばらくしてから再試行してください。",
+  SERVER_ERROR:
+    "サーバーで問題が発生しました。しばらくしてから再試行してください。",
+  INTERNAL_ERROR:
+    "サーバーで問題が発生しました。しばらくしてから再試行してください。",
+  UPSTREAM_ERROR:
+    "認証サービスに接続できません。しばらくしてから再試行してください。",
+  SERVICE_UNAVAILABLE:
+    "認証サービスに接続できません。しばらくしてから再試行してください。",
+  TIMEOUT: "認証サービスに接続できません。しばらくしてから再試行してください。",
+};
+
 const turnstileWindow = window as Window & { turnstile?: TurnstileApi };
 let widgetId: string | undefined;
 let latestToken = "";
@@ -89,13 +110,10 @@ form.addEventListener("submit", async (event) => {
     } catch {
       /* ignore */
     }
-    if (data.errcode === "TURNSTILE_FAILED") {
-      showToast("CAPTCHAの確認に失敗しました。");
-    } else if (data.errcode === "VERIFY_FAILED") {
-      showToast("パスワードが正しくありません。");
-    } else {
-      showToast("エラーが発生しました。しばらくしてから再試行してください。");
-    }
+    showToast(
+      (data.errcode && ERROR_MESSAGES[data.errcode]) ??
+        "エラーが発生しました。しばらくしてから再試行してください。",
+    );
     (form.elements.namedItem("input") as HTMLInputElement).value = "";
   } catch {
     showToast("通信エラーが発生しました。");

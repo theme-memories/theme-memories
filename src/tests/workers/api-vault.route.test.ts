@@ -68,6 +68,16 @@ describe("GET /api/vault/[key]", () => {
     await seed();
   });
 
+  async function expectJsonError(
+    response: Response,
+    status: number,
+    errcode: string,
+  ): Promise<void> {
+    expect(response.status).toBe(status);
+    expect(response.headers.get("Content-Type")).toContain("application/json");
+    expect(await response.json()).toEqual({ success: false, errcode });
+  }
+
   it("serves a signed asset to an unlocked user", async () => {
     const res = await callGet(KEY, await signedSearch(KEY));
     expect(res.status).toBe(200);
@@ -101,7 +111,7 @@ describe("GET /api/vault/[key]", () => {
 
   it("404s unsafe keys before touching auth or storage", async () => {
     const res = await callGet("../escape.png");
-    expect(res.status).toBe(404);
+    await expectJsonError(res, 404, "NOT_FOUND");
   });
 
   it("404s disallowed extensions regardless of signature state", async () => {
@@ -111,7 +121,7 @@ describe("GET /api/vault/[key]", () => {
 
   it("403s missing signatures", async () => {
     const res = await callGet(KEY);
-    expect(res.status).toBe(403);
+    await expectJsonError(res, 403, "FORBIDDEN");
   });
 
   it("403s expired signatures", async () => {

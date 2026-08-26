@@ -177,13 +177,17 @@ export const POST: APIRoute = async ({
     return jsonErr("VERIFY_FAILED", 200);
   }
 
-  const existing = await session.get("user_id");
-  const userId = existing ?? crypto.randomUUID();
-  await session.regenerate();
-  if (!existing) {
-    session.set("user_id", userId);
+  try {
+    const existing = await session.get("user_id");
+    const userId = existing ?? crypto.randomUUID();
+    await session.regenerate();
+    if (!existing) {
+      session.set("user_id", userId);
+    }
+    await recordUnlock(env, userId, slug);
+  } catch {
+    return jsonErr("SERVER_ERROR", 503);
   }
-  await recordUnlock(env, userId, slug);
 
   return new Response(null, {
     status: 303,

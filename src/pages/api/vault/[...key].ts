@@ -29,6 +29,22 @@ const CONTENT_TYPES: Record<string, string> = {
 
 const SAFE_EXTENSIONS = new Set(Object.keys(CONTENT_TYPES));
 
+const JSON_HEADERS = {
+  "Content-Type": "application/json",
+  "Cache-Control": "no-store",
+} as const;
+
+function jsonErr(
+  errcode: string,
+  status: number,
+  extra?: Record<string, string>,
+) {
+  return Response.json(
+    { success: false, errcode },
+    { status, headers: { ...JSON_HEADERS, ...extra } },
+  );
+}
+
 function contentRangeValue(
   range: R2Range | undefined,
   size: number,
@@ -66,10 +82,7 @@ export const GET: APIRoute = async ({
   const sig = url.searchParams.get("sig") ?? "";
 
   if (!isSafeAssetKey(key)) {
-    return new Response("Not Found", {
-      status: 404,
-      headers: { "Cache-Control": "no-store" },
-    });
+    return jsonErr("NOT_FOUND", 404);
   }
 
   const slash = key.indexOf("/");
@@ -81,25 +94,16 @@ export const GET: APIRoute = async ({
         key: `${slug}:${clientAddress}`,
       });
       if (!outcome.success) {
-        return new Response("Too Many Requests", {
-          status: 429,
-          headers: { "Cache-Control": "no-store", "Retry-After": "60" },
-        });
+        return jsonErr("TOO_MANY_REQUESTS", 429, { "Retry-After": "60" });
       }
     } catch {
-      return new Response("Too Many Requests", {
-        status: 429,
-        headers: { "Cache-Control": "no-store", "Retry-After": "60" },
-      });
+      return jsonErr("TOO_MANY_REQUESTS", 429, { "Retry-After": "60" });
     }
   }
 
   const ext = key.includes(".") ? key.split(".").pop()!.toLowerCase() : "";
   if (!SAFE_EXTENSIONS.has(ext)) {
-    return new Response("Not Found", {
-      status: 404,
-      headers: { "Cache-Control": "no-store" },
-    });
+    return jsonErr("NOT_FOUND", 404);
   }
 
   let secret: string | null = null;
@@ -109,26 +113,17 @@ export const GET: APIRoute = async ({
     /* secret not configured; fail closed */
   }
   if (!secret || !(await verifySignedAsset(key, exp, sig, secret))) {
-    return new Response("Forbidden", {
-      status: 403,
-      headers: { "Cache-Control": "no-store" },
-    });
+    return jsonErr("FORBIDDEN", 403);
   }
 
   let userId: string | undefined;
   try {
     userId = session ? await session.get("user_id") : undefined;
     if (!userId || !slug || !(await isUnlocked(env, userId, slug))) {
-      return new Response("Forbidden", {
-        status: 403,
-        headers: { "Cache-Control": "no-store" },
-      });
+      return jsonErr("FORBIDDEN", 403);
     }
   } catch {
-    return new Response("Vault unavailable", {
-      status: 503,
-      headers: { "Cache-Control": "no-store" },
-    });
+    return jsonErr("SERVICE_UNAVAILABLE", 503);
   }
 
   const hasRange = request.headers.has("range");
@@ -142,10 +137,7 @@ export const GET: APIRoute = async ({
     object = await env.VAULT_BUCKET.get(`${R2_PREFIX}/${key}`);
   }
   if (!object) {
-    return new Response("Not Found", {
-      status: 404,
-      headers: { "Cache-Control": "no-store" },
-    });
+    return jsonErr("NOT_FOUND", 404);
   }
 
   const contentType = CONTENT_TYPES[ext] ?? "application/octet-stream";
