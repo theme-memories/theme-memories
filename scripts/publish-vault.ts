@@ -28,7 +28,7 @@ import satteriSanitize from "../src/lib/satteri-sanitize.ts";
 import { satteriHeadingIdsPlugin } from "@astrojs/markdown-satteri";
 import ecConfig from "../ec.config.mjs";
 import { vault as vaultConfig } from "../src/config.ts";
-import { ENVELOPE_PREFIX } from "../src/lib/vault.ts";
+import { ENVELOPE_PREFIX, isSafeAssetKey } from "../src/lib/vault.ts";
 import {
   assertPublishableHash,
   buildVaultSyncCommands,
@@ -218,7 +218,10 @@ async function renderQuestionHtml(question: string): Promise<string> {
   return html;
 }
 
-function collectAssets(fragment: string): {
+function collectAssets(
+  fragment: string,
+  slug: string,
+): {
   html: string;
   assets: Map<string, string>;
 } {
@@ -228,6 +231,11 @@ function collectAssets(fragment: string): {
     if (!withoutQuery) return value;
     const r2Key = isLocalFile(withoutQuery);
     if (!r2Key) return value;
+    if (!isSafeAssetKey(r2Key)) {
+      throw new Error(
+        `${slug}: asset name not deployable: ${r2Key} — rename using only [A-Za-z0-9._-/]`,
+      );
+    }
     const source = join(VAULT_DIR, ...r2Key.split("/"));
     assets.set(r2Key, source);
     return `/api/vault/${r2Key}`;
@@ -343,7 +351,7 @@ async function main() {
         );
       }
 
-      const { html: withAssets, assets } = collectAssets(html);
+      const { html: withAssets, assets } = collectAssets(html, entry);
       for (const [key, sourcePath] of assets) stagedAssets.set(key, sourcePath);
 
       const questionHtml = await renderQuestionHtml(
@@ -355,6 +363,11 @@ async function main() {
       if (thumb) {
         const r2Key = isLocalFile(thumb);
         if (r2Key) {
+          if (!isSafeAssetKey(r2Key)) {
+            throw new Error(
+              `${entry}: thumb name not deployable: ${r2Key} — rename using only [A-Za-z0-9._-/]`,
+            );
+          }
           stagedAssets.set(r2Key, join(VAULT_DIR, ...r2Key.split("/")));
         } else {
           console.warn(`skip ${entry}: thumb asset missing: ${thumb}`);

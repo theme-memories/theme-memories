@@ -112,14 +112,18 @@ export async function verifySignedAsset(
 export async function signAssetUrlsInHtml(
   html: string,
   secret: string,
+  slug?: string,
 ): Promise<string> {
   const parts = html.split(/(\/api\/vault\/[^\s"'`<>?]+)/g);
   const signed = await Promise.all(
-    parts.map((part) =>
-      part.startsWith("/api/vault/")
-        ? signAssetUrl(part.slice("/api/vault/".length), secret)
-        : part,
-    ),
+    parts.map(async (part) => {
+      if (!part.startsWith("/api/vault/")) return part;
+      const key = part.slice("/api/vault/".length);
+      if ((slug && !key.startsWith(`${slug}/`)) || !isSafeAssetKey(key)) {
+        return part;
+      }
+      return signAssetUrl(key, secret);
+    }),
   );
   return signed.join("");
 }
@@ -223,7 +227,7 @@ export async function verifyPasswordWithRemote(
         Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({ input, target: targetHash }),
-      signal: AbortSignal.timeout(10_000),
+      signal: AbortSignal.timeout(13_000),
     });
     if (response.status >= 300 && response.status < 400) {
       return { ok: false, verified: false, error: "upstream_error" };

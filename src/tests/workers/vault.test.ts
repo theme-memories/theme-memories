@@ -268,6 +268,33 @@ describe("signAssetUrlsInHtml", () => {
       ),
     ).toBe(true);
   });
+
+  it("leaves malformed keys unsigned instead of throwing", async () => {
+    freezeAt(2_000_000);
+    const html = '<p><img src="/api/vault/demo/画像(1).png"></p>';
+    await expect(signAssetUrlsInHtml(html, SECRET)).resolves.toBe(html);
+  });
+
+  it("does not sign keys outside the requested slug", async () => {
+    freezeAt(2_000_000);
+    const html =
+      '<p><img src="/api/vault/other/a.png"><img src="/api/vault/demo/a.png"></p>';
+    const out = await signAssetUrlsInHtml(html, SECRET, "demo");
+
+    expect(out).toContain('src="/api/vault/other/a.png"');
+    expect(out).toContain('src="/api/vault/demo/a.png?exp=');
+
+    const refs = [...out.matchAll(/\/api\/vault\/([^\s"'`<>]+)/g)].map(
+      (m) => m[1],
+    );
+    const signedRef = refs.find((ref) => ref.includes("?"))!;
+    const [key, search] = signedRef.split("?");
+    expect(key).toBe("demo/a.png");
+    const params = new URLSearchParams(search);
+    await expect(
+      verifySignedAsset(key!, params.get("exp")!, params.get("sig")!, SECRET),
+    ).resolves.toBe(true);
+  });
 });
 
 describe("readSecret", () => {

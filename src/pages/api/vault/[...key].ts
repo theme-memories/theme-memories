@@ -45,7 +45,12 @@ function contentRangeValue(
     return `bytes ${start}-${start + end - 1}/${size}`;
   }
   const start = typeof offset === "number" ? offset : 0;
-  const end = typeof length === "number" ? length : size - start;
+  const remaining = size - start;
+  const end = Math.min(
+    typeof length === "number" ? length : remaining,
+    remaining,
+  );
+  if (end <= 0) return null;
   return `bytes ${start}-${start + end - 1}/${size}`;
 }
 

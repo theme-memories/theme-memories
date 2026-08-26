@@ -86,7 +86,6 @@ export async function syncWeather(
   const apiKey = await env.OPENWEATHERMAP_API_KEY.get();
   if (!apiKey) throw new Error("weather-sync: API key is not configured");
   const { lat, lon } = weatherConfig;
-  const signal = AbortSignal.timeout(TIMEOUT_MS);
   const baseParams = new URLSearchParams({
     lat: String(lat),
     lon: String(lon),
@@ -96,7 +95,7 @@ export async function syncWeather(
   });
   const currentResponse = await fetchJson(
     `${CURRENT_URL}?${baseParams}`,
-    signal,
+    AbortSignal.timeout(TIMEOUT_MS),
   );
   const currentData = currentResponse["data"];
   const current = Array.isArray(currentData) ? currentData[0] : undefined;
@@ -108,7 +107,7 @@ export async function syncWeather(
   try {
     const alertsResponse = await fetchJson(
       `${ALERTS_URL}?${baseParams}&exclude=current,minutely,hourly,daily`,
-      signal,
+      AbortSignal.timeout(TIMEOUT_MS),
     );
     const alertsData = alertsResponse["alerts"];
     if (Array.isArray(alertsData)) {

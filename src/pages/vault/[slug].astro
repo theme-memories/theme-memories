@@ -143,13 +143,15 @@ if (!isVaultEnvelope(rawEnvelope)) {
   });
 }
 const envelope = rawEnvelope;
-const html = await signAssetUrlsInHtml(envelope.html, secret);
+const html = await signAssetUrlsInHtml(envelope.html, secret, slug);
 const title = envelope.frontmatter?.title ?? vault.genericTitle;
 const description =
   envelope.frontmatter?.description ?? "パスワードで保護された投稿です。";
-const thumbUrl = envelope.frontmatter?.thumb
-  ? await signAssetUrl(envelope.frontmatter.thumb, secret)
-  : undefined;
+const fmThumb = envelope.frontmatter?.thumb;
+const thumbUrl =
+  fmThumb && fmThumb.startsWith(`${slug}/`)
+    ? await signAssetUrl(fmThumb, secret)
+    : undefined;
 ---
 
 <Layout title={`${title} | Theme Memories`} description={description}>
