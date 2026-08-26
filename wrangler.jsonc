@@ -109,7 +109,7 @@
       "name": "VAULT_AUTH_RL",
       "namespace_id": "1002",
       "simple": {
-        "limit": 30,
+        "limit": 120,
         "period": 60,
       },
     },

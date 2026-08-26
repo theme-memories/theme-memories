@@ -68,31 +68,65 @@ const quote = (value: string): string => `'${value}'`;
 const upsertHash = (slug: string, hash: string): string =>
   `INSERT INTO vault (slug, password_hash, updated_at) VALUES (${quote(slug)}, ${quote(hash)}, unixepoch()) ON CONFLICT(slug) DO UPDATE SET password_hash = excluded.password_hash, updated_at = unixepoch();`;
 
-export function buildVaultSyncSql(
+export const VAULT_SYNC_CHUNK_SIZE = 100;
+const MAX_COMMAND_BYTES = 96 * 1024;
+
+export function buildVaultSyncCommands(
   current: ReadonlyMap<string, string>,
   existing: ReadonlyMap<string, string>,
+  chunkSize: number = VAULT_SYNC_CHUNK_SIZE,
 ): string[] {
-  const lines: string[] = [];
+  if (!Number.isSafeInteger(chunkSize) || chunkSize <= 0) {
+    throw new Error(`invalid vault sync chunk size: ${chunkSize}`);
+  }
+
+  const commands: string[] = [];
+  let batch: string[] = [];
+  const flush = (): void => {
+    if (batch.length > 0) {
+      commands.push(batch.join("\n"));
+      batch = [];
+    }
+  };
 
   for (const [slug, hash] of current) {
     if (!SLUG_RE.test(slug)) {
       throw new Error(`invalid vault slug: ${slug}`);
     }
     if (existing.get(slug) === hash) continue;
-    lines.push(`DELETE FROM unlocks WHERE slug = ${quote(slug)};`);
-    lines.push(upsertHash(slug, hash));
+    batch.push(
+      `DELETE FROM unlocks WHERE slug = ${quote(slug)};`,
+      upsertHash(slug, hash),
+    );
+    if (batch.length >= chunkSize * 2) flush();
   }
+  flush();
 
   if (current.size > 0) {
     const slugList = [...current.keys()].map(quote).join(", ");
-    lines.push(`DELETE FROM vault WHERE slug NOT IN (${slugList});`);
-    lines.push(`DELETE FROM unlocks WHERE slug NOT IN (${slugList});`);
+    commands.push(
+      `DELETE FROM vault WHERE slug NOT IN (${slugList});\nDELETE FROM unlocks WHERE slug NOT IN (${slugList});`,
+    );
   } else {
-    lines.push("DELETE FROM unlocks;");
-    lines.push("DELETE FROM vault;");
+    commands.push("DELETE FROM unlocks;\nDELETE FROM vault;");
   }
 
-  return lines;
+  for (const command of commands) {
+    if (Buffer.byteLength(command, "utf8") > MAX_COMMAND_BYTES) {
+      throw new Error(
+        `vault sync command is ${Buffer.byteLength(command)} bytes, exceeding ` +
+          `the safe --command size (${MAX_COMMAND_BYTES}); lower the chunk size`,
+      );
+    }
+  }
+  return commands;
+}
+
+export function buildVaultSyncSql(
+  current: ReadonlyMap<string, string>,
+  existing: ReadonlyMap<string, string>,
+): string[] {
+  return buildVaultSyncCommands(current, existing).join("\n").split("\n");
 }
 
 export function parseVaultRows(stdout: string): Map<string, string> {

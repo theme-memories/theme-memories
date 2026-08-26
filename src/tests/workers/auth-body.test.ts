@@ -5,7 +5,8 @@ function fakeRequest(
   headers: Record<string, string>,
   body?: Uint8Array | string,
 ): Request {
-  const stream = body === undefined ? null : new Response(body).body;
+  const stream =
+    body === undefined ? null : new Response(body as BodyInit).body;
   return {
     headers: new Headers(headers),
     body: stream,

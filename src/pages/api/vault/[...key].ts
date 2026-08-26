@@ -28,9 +28,31 @@ const CONTENT_TYPES: Record<string, string> = {
 };
 
 const SAFE_EXTENSIONS = new Set(Object.keys(CONTENT_TYPES));
+
+function contentRangeValue(
+  range: R2Range | undefined,
+  size: number,
+): string | null {
+  if (!range) return null;
+  const { offset, length, suffix } = range as {
+    offset?: number;
+    length?: number;
+    suffix?: unknown;
+  };
+  if (typeof suffix === "number") {
+    const start = Math.max(size - suffix, 0);
+    const end = Math.min(suffix, size);
+    return `bytes ${start}-${start + end - 1}/${size}`;
+  }
+  const start = typeof offset === "number" ? offset : 0;
+  const end = typeof length === "number" ? length : size - start;
+  return `bytes ${start}-${start + end - 1}/${size}`;
+}
+
 export const GET: APIRoute = async ({
   params,
   url,
+  request,
   session,
   clientAddress,
 }) => {
@@ -104,7 +126,16 @@ export const GET: APIRoute = async ({
     });
   }
 
-  const object = await env.VAULT_BUCKET.get(`${R2_PREFIX}/${key}`);
+  const hasRange = request.headers.has("range");
+  let object: R2ObjectBody | null;
+  try {
+    object = await env.VAULT_BUCKET.get(
+      `${R2_PREFIX}/${key}`,
+      hasRange ? { range: request.headers } : undefined,
+    );
+  } catch {
+    object = await env.VAULT_BUCKET.get(`${R2_PREFIX}/${key}`);
+  }
   if (!object) {
     return new Response("Not Found", {
       status: 404,
@@ -113,11 +144,15 @@ export const GET: APIRoute = async ({
   }
 
   const contentType = CONTENT_TYPES[ext] ?? "application/octet-stream";
-
-  return new Response(object.body, {
-    headers: {
-      "Content-Type": contentType,
-      "Cache-Control": "private, no-store",
-    },
+  const maxAge = Math.max(0, Number(exp) - Math.floor(Date.now() / 1000));
+  const headers = new Headers({
+    "Content-Type": contentType,
+    "Cache-Control": `public, max-age=${maxAge}`,
+    "Accept-Ranges": "bytes",
   });
+
+  const range = hasRange ? contentRangeValue(object.range, object.size) : null;
+  if (range) headers.set("Content-Range", range);
+
+  return new Response(object.body, { status: range ? 206 : 200, headers });
 };

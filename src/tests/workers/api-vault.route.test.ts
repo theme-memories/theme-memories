@@ -20,11 +20,13 @@ function callGet(
   key: string,
   search = "",
   session: SessionLike = makeSession("user-1"),
+  headers: Record<string, string> = {},
 ) {
   const url = new URL(`https://amia.work/api/vault/${key}${search}`);
   return GET({
     params: { key },
     url,
+    request: new Request(url, { headers }),
     session: session as never,
     clientAddress: "203.0.113.9",
   } as unknown as Parameters<typeof GET>[0]);
@@ -71,9 +73,35 @@ describe("GET /api/vault/[key]", () => {
     expect(res.status).toBe(200);
     expect(await res.arrayBuffer()).toEqual(PNG_BYTES.buffer);
     expect(res.headers.get("Content-Type")).toBe("image/png");
-    expect(res.headers.get("Cache-Control")).toBe("private, no-store");
-    expect(res.headers.get("X-Content-Type-Options")).toBeNull();
-    expect(res.headers.get("Referrer-Policy")).toBeNull();
+    expect(res.headers.get("Accept-Ranges")).toBe("bytes");
+    const cacheControl = res.headers.get("Cache-Control") ?? "";
+    const match = /^public, max-age=(\d+)$/.exec(cacheControl);
+    expect(match).not.toBeNull();
+    const maxAge = Number(match![1]);
+    expect(maxAge).toBeGreaterThanOrEqual(1);
+    expect(maxAge).toBeLessThanOrEqual(600);
+  });
+
+  it("serves 206 partial content with Content-Range for a byte range", async () => {
+    const res = await callGet(KEY, await signedSearch(KEY), undefined, {
+      Range: "bytes=0-3",
+    });
+    expect(res.status).toBe(206);
+    expect(await res.arrayBuffer()).toEqual(PNG_BYTES.slice(0, 4).buffer);
+    expect(res.headers.get("Content-Range")).toBe(
+      `bytes 0-3/${PNG_BYTES.length}`,
+    );
+  });
+
+  it("serves an open-ended range from the offset to the end", async () => {
+    const res = await callGet(KEY, await signedSearch(KEY), undefined, {
+      Range: "bytes=6-",
+    });
+    expect(res.status).toBe(206);
+    expect(await res.arrayBuffer()).toEqual(PNG_BYTES.slice(6).buffer);
+    expect(res.headers.get("Content-Range")).toBe(
+      `bytes 6-7/${PNG_BYTES.length}`,
+    );
   });
 
   it("404s unsafe keys before touching auth or storage", async () => {
@@ -92,7 +120,7 @@ describe("GET /api/vault/[key]", () => {
   });
 
   it("403s expired signatures", async () => {
-    const search = await signedSearch(KEY, TEST_SIGNING_SECRET, -400);
+    const search = await signedSearch(KEY, TEST_SIGNING_SECRET, -700);
     const res = await callGet(KEY, search);
     expect(res.status).toBe(403);
   });

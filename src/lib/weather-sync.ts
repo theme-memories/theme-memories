@@ -56,6 +56,12 @@ function precipitation1h(value: unknown): number | null {
   return null;
 }
 
+function sanitizeIcon(value: unknown): string {
+  return typeof value === "string" && /^[0-9]{2}[dn]$/.test(value)
+    ? value
+    : "01d";
+}
+
 async function fetchJson(
   url: string,
   signal: AbortSignal,
@@ -131,7 +137,8 @@ export async function syncWeather(
     wind_gust: numberOrNull(record["wind_gust"]),
     rain: precipitation1h(record["rain"]),
     snow: precipitation1h(record["snow"]),
-    ...(weatherRecord ? pick(weatherRecord, ["description", "icon"]) : {}),
+    ...(weatherRecord ? pick(weatherRecord, ["description"]) : {}),
+    icon: sanitizeIcon(weatherRecord?.["icon"]),
     alerts,
   };
 

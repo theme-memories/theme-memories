@@ -158,13 +158,39 @@ describe("signAssetUrl / verifySignedAsset", () => {
     }
   });
 
-  it("enforces TTL bounds on explicit lifetimes", async () => {
+  it("quantizes expiry so viewers in the same window share a cache key", async () => {
     freezeAt(1_000_000);
-    for (const ttl of [0, -1, 301, 10.5, Number.NaN]) {
-      await expect(signAssetUrl("demo/a.png", SECRET, ttl)).rejects.toThrow(
-        /lifetime/,
-      );
-    }
+    const first = new URL(
+      `https://amia.work${await signAssetUrl("demo/a.png", SECRET)}`,
+    );
+    freezeAt(1_000_100);
+    const second = new URL(
+      `https://amia.work${await signAssetUrl("demo/a.png", SECRET)}`,
+    );
+    expect(second.searchParams.get("exp")).toBe(first.searchParams.get("exp"));
+    expect(second.searchParams.get("sig")).toBe(first.searchParams.get("sig"));
+  });
+
+  it("rolls to the next bucket at the boundary", async () => {
+    freezeAt(1_000_000);
+    const before = new URL(
+      `https://amia.work${await signAssetUrl("demo/a.png", SECRET)}`,
+    );
+    freezeAt(1_000_200);
+    const after = new URL(
+      `https://amia.work${await signAssetUrl("demo/a.png", SECRET)}`,
+    );
+    expect(Number(after.searchParams.get("exp"))).toBe(
+      Number(before.searchParams.get("exp")) + 600,
+    );
+    expect(
+      await verifySignedAsset(
+        "demo/a.png",
+        after.searchParams.get("exp")!,
+        after.searchParams.get("sig")!,
+        SECRET,
+      ),
+    ).toBe(true);
   });
 });
 

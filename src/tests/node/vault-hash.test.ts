@@ -2,11 +2,13 @@ import { describe, expect, it } from "vitest";
 import argon2 from "argon2";
 import {
   assertPublishableHash,
+  buildVaultSyncCommands,
   buildVaultSyncSql,
   EXPECTED_ARGON2,
   isCanonicalBase64,
   isValidArgon2Phc,
   parseVaultRows,
+  VAULT_SYNC_CHUNK_SIZE,
 } from "../../lib/vault-hash";
 
 const SALT_22 = "MC4xMjM0NTY3ODkwYWJjZA";
@@ -140,6 +142,81 @@ describe("buildVaultSyncSql", () => {
     expect(() => buildVaultSyncSql(current, new Map())).toThrow(
       /invalid vault slug/,
     );
+  });
+});
+
+describe("buildVaultSyncCommands", () => {
+  const H = phc(19456, 2, 1);
+
+  function slugs(n: number): Map<string, string> {
+    return new Map(
+      Array.from({ length: n }, (_, i) => [
+        `slug-${String(i).padStart(3, "0")}`,
+        H,
+      ]),
+    );
+  }
+
+  it("defaults to 100 posts per chunk with cleanup strictly last", () => {
+    const commands = buildVaultSyncCommands(slugs(250), new Map());
+
+    expect(commands).toHaveLength(4); // 100 + 100 + 50 posts, then cleanup
+    const statementCounts = commands.map((c) => c.split("\n").length);
+    expect(statementCounts).toEqual([200, 200, 100, 2]);
+    for (const [i, command] of commands.slice(0, -1).entries()) {
+      expect(command).toContain(`'slug-${String(i * 100).padStart(3, "0")}'`);
+    }
+    const cleanup = commands.at(-1)!;
+    expect(cleanup.split("\n")).toHaveLength(2);
+    expect(cleanup).toContain("DELETE FROM vault WHERE slug NOT IN (");
+    expect(cleanup).toContain("'slug-249'");
+    expect(commands.slice(0, -1).every((c) => !c.includes("NOT IN"))).toBe(
+      true,
+    );
+  });
+
+  it("honours a custom chunk size and keeps revoke/upsert pairs together", () => {
+    const commands = buildVaultSyncCommands(slugs(5), new Map(), 2);
+
+    expect(commands).toHaveLength(4); // 2 + 2 + 1 posts, then cleanup
+    expect(commands.map((c) => c.split("\n").length)).toEqual([4, 4, 2, 2]);
+    for (const command of commands.slice(0, -1)) {
+      const lines = command.split("\n");
+      for (let i = 0; i < lines.length; i += 2) {
+        const slug = /slug = '([^']+)'/.exec(lines[i]!)?.[1];
+        expect(slug).toBeTruthy();
+        expect(lines[i]).toMatch(/^DELETE FROM unlocks WHERE slug = /);
+        expect(lines[i + 1]).toContain(`VALUES ('${slug}'`);
+      }
+    }
+  });
+
+  it("emits only cleanup when every hash is unchanged", () => {
+    const current = slugs(3);
+    const existing = new Map(current);
+    const commands = buildVaultSyncCommands(current, existing);
+
+    expect(commands).toHaveLength(1);
+    expect(commands[0]!.split("\n")).toEqual([
+      "DELETE FROM vault WHERE slug NOT IN ('slug-000', 'slug-001', 'slug-002');",
+      "DELETE FROM unlocks WHERE slug NOT IN ('slug-000', 'slug-001', 'slug-002');",
+    ]);
+  });
+
+  it("rejects invalid chunk sizes", () => {
+    expect(() => buildVaultSyncCommands(slugs(1), new Map(), 0)).toThrow(
+      /chunk size/,
+    );
+    expect(() => buildVaultSyncCommands(slugs(1), new Map(), -5)).toThrow(
+      /chunk size/,
+    );
+    expect(() =>
+      buildVaultSyncCommands(slugs(1), new Map(), Number.NaN),
+    ).toThrow(/chunk size/);
+  });
+
+  it("exposes the default chunk size used by publish-vault", () => {
+    expect(VAULT_SYNC_CHUNK_SIZE).toBe(100);
   });
 });
 

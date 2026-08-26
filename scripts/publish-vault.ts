@@ -31,7 +31,7 @@ import { vault as vaultConfig } from "../src/config.ts";
 import { ENVELOPE_PREFIX } from "../src/lib/vault.ts";
 import {
   assertPublishableHash,
-  buildVaultSyncSql,
+  buildVaultSyncCommands,
   parseVaultRows,
 } from "../src/lib/vault-hash.ts";
 
@@ -503,7 +503,6 @@ async function main() {
     ]);
     console.log("applied pending D1 migrations");
 
-    const sqlFile = join(ROOT, `.vault-hashes-${process.pid}.sql`);
     const currentSlugs = [...hashes.keys()];
 
     for (const slug of currentSlugs) {
@@ -533,24 +532,24 @@ async function main() {
       );
     }
 
-    const lines = buildVaultSyncSql(hashes, existing);
-
-    writeFileSync(sqlFile, lines.join("\n"), { mode: 0o600 });
-    try {
+    const commands = buildVaultSyncCommands(hashes, existing);
+    for (let i = 0; i < commands.length; i += 1) {
+      const sql = commands[i]!;
       runWrangler([
         "d1",
         "execute",
         productionDatabaseName,
         "--remote",
-        "--file",
-        sqlFile,
+        "--command",
+        sql,
       ]);
       console.log(
-        `upserted ${hashes.size} hashes (unlock revocations limited to changed slugs), cleaned stale rows`,
+        `applied vault sync ${i + 1}/${commands.length} (${Buffer.byteLength(sql)} bytes)`,
       );
-    } finally {
-      rmSync(sqlFile, { force: true });
     }
+    console.log(
+      `upserted ${hashes.size} hashes (unlock revocations limited to changed slugs), cleaned stale rows`,
+    );
   } finally {
     rmSync(STAGING_DIR, { recursive: true, force: true });
   }
