@@ -9,7 +9,7 @@ import {
   parseVaultRows,
 } from "../../lib/vault-hash";
 
-const SALT_22 = "MC4xMjM0NTY3ODkwYWJjZA"; // canonical base64 of 16 bytes
+const SALT_22 = "MC4xMjM0NTY3ODkwYWJjZA";
 const DIGEST_43 = "dGhpcyBpcyBhIDMyLWJ5dGUgZGlnZXN0IHN0YW5kaW4";
 
 function phc(m: number, t: number, p: number): string {
@@ -42,7 +42,6 @@ describe("isValidArgon2Phc / isCanonicalBase64", () => {
       ),
     ).toBe(false);
     expect(isValidArgon2Phc("$argon2id$v=19$m=19456,t=2,p=1")).toBe(false);
-    // Non-canonical base64 (padding or invalid chars) must fail.
     expect(
       isValidArgon2Phc(
         `$argon2id$v=19$m=19456,t=2,p=1$${SALT_22}=x$${DIGEST_43}`,
@@ -57,7 +56,7 @@ describe("isValidArgon2Phc / isCanonicalBase64", () => {
     expect(isCanonicalBase64(DIGEST_43)).toBe(true);
     expect(isCanonicalBase64(`${DIGEST_43}=`)).toBe(false);
     expect(isCanonicalBase64("a+b/")).toBe(true);
-    expect(isCanonicalBase64("a-b_c")).toBe(false); // base64url alphabet
+    expect(isCanonicalBase64("a-b_c")).toBe(false);
   });
 });
 
@@ -115,8 +114,6 @@ describe("buildVaultSyncSql", () => {
       joined.match(/DELETE FROM unlocks WHERE slug = 'new-slug';/g),
     ).toHaveLength(1);
     expect(joined).toContain("'new-slug'");
-    // No *targeted* revoke/upsert for the unchanged slug (it still appears in
-    // the prune NOT IN list, which is expected).
     expect(
       lines.some(
         (l) =>
@@ -124,7 +121,7 @@ describe("buildVaultSyncSql", () => {
             l.startsWith("INSERT INTO vault")) &&
           l.includes("'same-slug'"),
       ),
-    ).toBe(false); // Prune statements cover the full current slug list.
+    ).toBe(false);
     expect(joined).toContain(
       "DELETE FROM vault WHERE slug NOT IN ('changed-slug', 'new-slug', 'same-slug');",
     );
