@@ -2,7 +2,7 @@ export const ENVELOPE_PREFIX = "data";
 export const R2_PREFIX = "assets";
 
 const UNLOCK_TTL_SECONDS = 604800;
-const ASSET_URL_TTL_SECONDS = 600;
+const ASSET_URL_TTL_SECONDS = 300;
 const ASSET_KEY_PATTERN = /^[A-Za-z0-9_-]{1,128}(?:\/[A-Za-z0-9._-]+)+$/;
 const MAX_TARGET_LENGTH = 128;
 const MAX_VERIFY_RESPONSE_BYTES = 4096;
@@ -76,11 +76,17 @@ async function timingSafeEqual(a: string, b: string): Promise<boolean> {
 export async function signAssetUrl(
   key: string,
   secret: string,
+  ttlSeconds = ASSET_URL_TTL_SECONDS,
 ): Promise<string> {
   if (!isSafeAssetKey(key)) throw new Error("invalid vault asset key");
-  const now = Math.floor(Date.now() / 1000);
-  const exp =
-    (Math.floor(now / ASSET_URL_TTL_SECONDS) + 1) * ASSET_URL_TTL_SECONDS;
+  if (
+    !Number.isSafeInteger(ttlSeconds) ||
+    ttlSeconds <= 0 ||
+    ttlSeconds > ASSET_URL_TTL_SECONDS
+  ) {
+    throw new Error("invalid vault asset URL lifetime");
+  }
+  const exp = Math.floor(Date.now() / 1000) + ttlSeconds;
   const sig = base64UrlEncode(
     new Uint8Array(await hmacSha256(secret, `${exp}.${key}`)),
   );
@@ -274,7 +280,7 @@ export async function verifyTurnstile(
 ): Promise<boolean> {
   if (!token || token.length > 2048) return false;
 
-  let result: { success?: boolean; action?: string };
+  let result: { success?: boolean; action?: string; hostname?: string };
   try {
     const response = await fetch(
       "https://challenges.cloudflare.com/turnstile/v0/siteverify",
@@ -290,14 +296,19 @@ export async function verifyTurnstile(
       },
     );
     if (!response.ok) return false;
-    result = (await response.json()) as { success?: boolean; action?: string };
+    result = (await response.json()) as {
+      success?: boolean;
+      action?: string;
+      hostname?: string;
+    };
   } catch {
     return false;
   }
 
   return (
     result.success === true &&
-    (!result.action || result.action === EXPECTED_ACTION)
+    result.action === EXPECTED_ACTION &&
+    result.hostname === "amia.work"
   );
 }
 

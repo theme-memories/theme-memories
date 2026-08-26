@@ -74,12 +74,7 @@ describe("GET /api/vault/[key]", () => {
     expect(await res.arrayBuffer()).toEqual(PNG_BYTES.buffer);
     expect(res.headers.get("Content-Type")).toBe("image/png");
     expect(res.headers.get("Accept-Ranges")).toBe("bytes");
-    const cacheControl = res.headers.get("Cache-Control") ?? "";
-    const match = /^public, max-age=(\d+)$/.exec(cacheControl);
-    expect(match).not.toBeNull();
-    const maxAge = Number(match![1]);
-    expect(maxAge).toBeGreaterThanOrEqual(1);
-    expect(maxAge).toBeLessThanOrEqual(600);
+    expect(res.headers.get("Cache-Control")).toBe("private, no-store");
   });
 
   it("serves 206 partial content with Content-Range for a byte range", async () => {

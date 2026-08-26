@@ -47,6 +47,35 @@ describe("satteriSanitize", () => {
     expect(html).not.toContain("<script");
   });
 
+  it.each([
+    '<a href="//attacker.example/path">external</a>',
+    '<img src="//attacker.example/image.png">',
+    '<a href="data:text/html,alert(1)">data</a>',
+    '<a href="vbscript:alert(1)">script</a>',
+    '<a href="java&#x73;cript:alert(1)">encoded</a>',
+    '<div style="background:url(https://attacker.example/x)">x</div>',
+    '<svg onload="alert(1)"><script>alert(1)</script></svg>',
+    '<iframe src="https://attacker.example"></iframe>',
+    '<object data="https://attacker.example"></object>',
+    '<embed src="https://attacker.example">',
+    '<base href="https://attacker.example/">',
+    '<form action="https://attacker.example"><input></form>',
+  ])("removes unsafe HTML: %s", async (markdown) => {
+    const html = await render(markdown);
+    expect(html).not.toMatch(
+      /attacker\.example|javascript:|vbscript:|data:|on[a-z]+=|<svg|<iframe|<object|<embed|<base|<form/i,
+    );
+  });
+
+  it("keeps safe links and media while rejecting protocol-relative URLs", async () => {
+    const html = await render(
+      '<a href="https://example.com">safe</a> <img src="https://example.com/a.png"> <a href="//example.com/no">unsafe</a>',
+    );
+    expect(html).toContain('href="https://example.com"');
+    expect(html).toContain('src="https://example.com/a.png"');
+    expect(html).not.toContain('href="//example.com/no"');
+  });
+
   it("preserves KaTeX output untouched", async () => {
     const html = await render("$$E=mc^2$$");
     expect(html).toContain('class="katex');

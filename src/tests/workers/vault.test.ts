@@ -1,10 +1,11 @@
-import { expect, describe, it, afterEach } from "vitest";
+import { expect, describe, it, afterEach, vi } from "vitest";
 import {
   isSafeAssetKey,
   mintVerifyJwt,
   readSecret,
   signAssetUrlsInHtml,
   signAssetUrl,
+  verifyTurnstile,
   verifySignedAsset,
 } from "../../lib/vault";
 
@@ -43,6 +44,7 @@ function freezeAt(epochSeconds: number): void {
 afterEach(() => {
   Date.now = realNow;
   frozenNow = null;
+  vi.unstubAllGlobals();
 });
 
 describe("isSafeAssetKey", () => {
@@ -158,39 +160,21 @@ describe("signAssetUrl / verifySignedAsset", () => {
     }
   });
 
-  it("quantizes expiry so viewers in the same window share a cache key", async () => {
+  it("uses the requested short-lived expiry", async () => {
     freezeAt(1_000_000);
-    const first = new URL(
-      `https://amia.work${await signAssetUrl("demo/a.png", SECRET)}`,
+    const url = new URL(
+      `https://amia.work${await signAssetUrl("demo/a.png", SECRET, 120)}`,
     );
-    freezeAt(1_000_100);
-    const second = new URL(
-      `https://amia.work${await signAssetUrl("demo/a.png", SECRET)}`,
-    );
-    expect(second.searchParams.get("exp")).toBe(first.searchParams.get("exp"));
-    expect(second.searchParams.get("sig")).toBe(first.searchParams.get("sig"));
+    expect(Number(url.searchParams.get("exp"))).toBe(1_000_120);
   });
 
-  it("rolls to the next bucket at the boundary", async () => {
+  it("enforces TTL bounds on explicit lifetimes", async () => {
     freezeAt(1_000_000);
-    const before = new URL(
-      `https://amia.work${await signAssetUrl("demo/a.png", SECRET)}`,
-    );
-    freezeAt(1_000_200);
-    const after = new URL(
-      `https://amia.work${await signAssetUrl("demo/a.png", SECRET)}`,
-    );
-    expect(Number(after.searchParams.get("exp"))).toBe(
-      Number(before.searchParams.get("exp")) + 600,
-    );
-    expect(
-      await verifySignedAsset(
-        "demo/a.png",
-        after.searchParams.get("exp")!,
-        after.searchParams.get("sig")!,
-        SECRET,
-      ),
-    ).toBe(true);
+    for (const ttl of [0, -1, 301, 10.5, Number.NaN]) {
+      await expect(signAssetUrl("demo/a.png", SECRET, ttl)).rejects.toThrow(
+        /lifetime/,
+      );
+    }
   });
 });
 
@@ -239,6 +223,48 @@ describe("mintVerifyJwt", () => {
     const tamperedBody =
       body.slice(0, -2) + (body.endsWith("AA") ? "BB" : "AA");
     expect(sig).not.toBe(await hmac(SECRET, `${head}.${tamperedBody}`));
+  });
+});
+
+describe("verifyTurnstile", () => {
+  const response = (body: unknown): Response =>
+    new Response(JSON.stringify(body), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+
+  it("accepts only a successful vault-login token for amia.work", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () =>
+        response({
+          success: true,
+          action: "vault-login",
+          hostname: "amia.work",
+        }),
+      ),
+    );
+
+    await expect(
+      verifyTurnstile("token", "203.0.113.9", "turnstile-secret"),
+    ).resolves.toBe(true);
+  });
+
+  it.each([
+    { success: true, hostname: "amia.work" },
+    { success: true, action: "other-action", hostname: "amia.work" },
+    { success: true, action: "vault-login", hostname: "other.example" },
+    { success: true, action: "vault-login" },
+    { success: false, action: "vault-login", hostname: "amia.work" },
+  ])("rejects an invalid verification response: %j", async (body) => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => response(body)),
+    );
+
+    await expect(
+      verifyTurnstile("token", "203.0.113.9", "turnstile-secret"),
+    ).resolves.toBe(false);
   });
 });
 

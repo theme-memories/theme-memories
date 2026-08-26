@@ -422,6 +422,7 @@ const stripIgnored = (value: string): string => value.replace(/[\0- ]/g, "");
 
 const isAllowedUrl = (value: string, protocols: readonly string[]): boolean => {
   const normalized = stripIgnored(decodeEntities(value));
+  if (normalized.startsWith("//")) return false;
   const colon = normalized.indexOf(":");
   if (colon === -1) return true;
 

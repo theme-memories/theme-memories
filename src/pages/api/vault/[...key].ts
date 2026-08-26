@@ -149,10 +149,9 @@ export const GET: APIRoute = async ({
   }
 
   const contentType = CONTENT_TYPES[ext] ?? "application/octet-stream";
-  const maxAge = Math.max(0, Number(exp) - Math.floor(Date.now() / 1000));
   const headers = new Headers({
     "Content-Type": contentType,
-    "Cache-Control": `public, max-age=${maxAge}`,
+    "Cache-Control": "private, no-store",
     "Accept-Ranges": "bytes",
   });
 

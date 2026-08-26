@@ -80,7 +80,16 @@ export async function readBodyAtMost(
   }
 }
 
-export const POST: APIRoute = async ({ request, clientAddress, session }) => {
+export const POST: APIRoute = async ({
+  request,
+  clientAddress,
+  session,
+  site,
+}) => {
+  const origin = request.headers.get("Origin");
+  if (!site || origin !== site.origin) {
+    return jsonErr("INVALID_REQUEST", 400);
+  }
   if (!session) return jsonErr("SESSION_UNAVAILABLE", 500);
 
   const contentType = (request.headers.get("Content-Type") ?? "")
