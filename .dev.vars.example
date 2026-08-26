@@ -1,0 +1,6 @@
+VAULT_SIGNING_SECRET=replace-with-at-least-32-random-bytes
+TURNSTILE_SECRET=replace-with-at-least-32-random-bytes
+JWT_SECRET=must-match-vercel-jwt-secret
+JWT_AUDIENCE=https://your-verify-endpoint.example
+VERIFY_PATH=/secret-verify-path
+OPENWEATHERMAP_API_KEY=replace-with-openweathermap-key

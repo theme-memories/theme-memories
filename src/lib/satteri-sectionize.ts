@@ -78,7 +78,6 @@ function sectionizeChildren(
       continue;
     }
 
-    // Custom: footnote definitions stay outside any section.
     if (child.type === "footnoteDefinition") {
       result.push(child);
       continue;
@@ -110,12 +109,6 @@ function firstSectionHeadingIndex(
   return children.findIndex((child) => isSectionHeading(child, maxDepth));
 }
 
-/**
- * Wraps each heading and its following sibling content in a `<section>`.
- *
- * Sections end at the next heading of the same or a higher level. MDX ESM
- * nodes and footnote definitions remain outside sections.
- */
 export function sectionize(
   options: SectionizeOptions = {},
 ): MdastPluginDefinition {

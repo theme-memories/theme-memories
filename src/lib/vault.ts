@@ -22,6 +22,17 @@ export type VaultEnv = Pick<
 
 const encoder = new TextEncoder();
 
+export async function readSecret(
+  binding: SecretsStoreSecret | string,
+): Promise<string | null> {
+  if (typeof binding === "string") return binding;
+  try {
+    return (await binding.get()) ?? null;
+  } catch {
+    return null;
+  }
+}
+
 export function isSafeAssetKey(key: string): boolean {
   return (
     key.length <= 256 &&
@@ -196,8 +207,6 @@ export async function verifyPasswordWithRemote(
   if (!VERIFY_PATH_PATTERN.test(verifyPath) || verifyPath.length > 256) {
     return { ok: false, verified: false, error: "server_error" };
   }
-  // JWT_AUDIENCE is the verifier's base URL. Preserve its path when joining
-  // the configured endpoint, as the previous implementation did.
   const basePath = audienceUrl.pathname.replace(/\/$/, "");
   const verifyEndpoint = new URL(`${basePath}${verifyPath}`, audienceUrl.origin)
     .href;

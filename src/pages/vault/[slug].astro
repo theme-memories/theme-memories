@@ -23,7 +23,6 @@ const session = Astro.session;
 const MAX_ENVELOPE_BYTES = 5 * 1024 * 1024;
 
 Astro.response.headers.set("Cache-Control", "private, no-store");
-Astro.response.headers.set("Referrer-Policy", "no-referrer");
 
 if (!/^[A-Za-z0-9_-]{1,128}$/.test(slug)) {
   return Astro.redirect("/posts");

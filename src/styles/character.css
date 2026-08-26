@@ -261,7 +261,6 @@
     @apply block w-full;
   }
 
-  /* js toggle states */
   .js-change {
     @apply hidden!;
   }

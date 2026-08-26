@@ -3,6 +3,7 @@ import type { APIRoute } from "astro";
 import {
   isSafeAssetKey,
   isUnlocked,
+  readSecret,
   R2_PREFIX,
   verifySignedAsset,
 } from "../../../lib/vault";
@@ -76,7 +77,7 @@ export const GET: APIRoute = async ({
 
   let secret: string | null = null;
   try {
-    secret = await env.VAULT_SIGNING_SECRET.get();
+    secret = await readSecret(env.VAULT_SIGNING_SECRET);
   } catch {
     /* secret not configured; fail closed */
   }
@@ -116,9 +117,7 @@ export const GET: APIRoute = async ({
   return new Response(object.body, {
     headers: {
       "Content-Type": contentType,
-      "X-Content-Type-Options": "nosniff",
       "Cache-Control": "private, no-store",
-      "Referrer-Policy": "no-referrer",
     },
   });
 };

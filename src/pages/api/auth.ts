@@ -27,7 +27,7 @@ function jsonErr(errcode: string, status: number) {
 type BodyReadResult =
   { ok: true; text: string } | { ok: false; status: 400 | 413 };
 
-async function readBodyAtMost(
+export async function readBodyAtMost(
   request: Request,
   maxBytes: number,
 ): Promise<BodyReadResult> {

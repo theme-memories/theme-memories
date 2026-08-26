@@ -29,6 +29,11 @@ import { satteriHeadingIdsPlugin } from "@astrojs/markdown-satteri";
 import ecConfig from "../ec.config.mjs";
 import { vault as vaultConfig } from "../src/config.ts";
 import { ENVELOPE_PREFIX } from "../src/lib/vault.ts";
+import {
+  assertPublishableHash,
+  buildVaultSyncSql,
+  parseVaultRows,
+} from "../src/lib/vault-hash.ts";
 
 const ROOT = resolve(dirname(new URL(import.meta.url).pathname), "..");
 
@@ -77,7 +82,7 @@ if (publishProduction && process.argv.includes("--stubs-only")) {
   throw new Error("choose either --stubs-only or --publish-prod, not both");
 }
 
-function runWrangler(args: string[]): void {
+function runWrangler(args: string[], captureStdout = false): string {
   const localBin = join(ROOT, "node_modules", ".bin", "wrangler");
   const candidates = [
     { command: "pnpm", args: ["wrangler", ...args] },
@@ -86,8 +91,10 @@ function runWrangler(args: string[]): void {
   ];
   for (const candidate of candidates) {
     try {
-      execFileSync(candidate.command, candidate.args, { stdio: "inherit" });
-      return;
+      return execFileSync(candidate.command, candidate.args, {
+        stdio: captureStdout ? ["ignore", "pipe", "inherit"] : "inherit",
+        encoding: captureStdout ? "utf8" : undefined,
+      }) as string;
     } catch (error) {
       const missing = (error as NodeJS.ErrnoException).code === "ENOENT";
       if (!missing) throw error;
@@ -264,67 +271,6 @@ function collectAssets(fragment: string): {
   );
 
   return { html, assets };
-}
-
-const ARGON2_PHC_PREFIX = "$argon2id$";
-const MAX_TARGET_LENGTH = 128;
-const EXPECTED_ARGON2 = {
-  memoryCost: 19456,
-  timeCost: 2,
-  parallelism: 1,
-};
-
-function isCanonicalBase64(value: string): boolean {
-  if (!/^[A-Za-z0-9+/]+$/.test(value)) return false;
-  const decoded = Buffer.from(value, "base64");
-  return decoded.toString("base64").replace(/=+$/, "") === value;
-}
-
-function isValidArgon2Phc(target: string): boolean {
-  const parts = target.split("$");
-  if (parts.length !== 6) return false;
-  const [, algorithm, version, rawParams, salt, digest] = parts;
-  if (algorithm !== "argon2id" || !/^v=\d+$/.test(version)) return false;
-  if (!isCanonicalBase64(salt) || !isCanonicalBase64(digest)) return false;
-  const params = new Map<string, string>();
-  for (const rawParam of rawParams.split(",")) {
-    const match = /^(m|t|p)=(\d+)$/.exec(rawParam);
-    if (!match || params.has(match[1])) return false;
-    params.set(match[1], match[2]);
-  }
-  return params.size === 3;
-}
-
-async function assertPublishableHash(hash: string): Promise<void> {
-  if (hash.length === 0 || hash.length > MAX_TARGET_LENGTH) {
-    throw new Error(
-      `passwordHash length out of bounds (expected 1..${MAX_TARGET_LENGTH}); refusing to publish`,
-    );
-  }
-  if (!hash.startsWith(ARGON2_PHC_PREFIX) || !isValidArgon2Phc(hash)) {
-    throw new Error(
-      "passwordHash is not a well-formed argon2id PHC string; refusing to publish",
-    );
-  }
-  const argon2Module = await import("argon2");
-  const argon2 = ((argon2Module as { default?: unknown }).default ??
-    argon2Module) as {
-    needsRehash(hash: string, options: typeof EXPECTED_ARGON2): boolean;
-  };
-  let needsRehash: boolean;
-  try {
-    needsRehash = argon2.needsRehash(hash, EXPECTED_ARGON2);
-  } catch {
-    throw new Error(
-      "passwordHash failed argon2 validation; refusing to publish",
-    );
-  }
-  if (needsRehash) {
-    throw new Error(
-      "passwordHash needs rehash (cost parameters differ from the verifier's " +
-        "expected argon2id parameters); refusing to publish",
-    );
-  }
 }
 
 async function main() {
@@ -560,25 +506,35 @@ async function main() {
 
     const sqlFile = join(ROOT, `.vault-hashes-${process.pid}.sql`);
     const currentSlugs = [...hashes.keys()];
-    const lines: string[] = [];
 
     for (const slug of currentSlugs) {
-      const hash = hashes.get(slug)!;
-      await assertPublishableHash(hash);
-      lines.push(`DELETE FROM unlocks WHERE slug = '${slug}';`);
-      lines.push(
-        `INSERT INTO vault (slug, password_hash, updated_at) VALUES ('${slug}', '${hash}', unixepoch()) ON CONFLICT(slug) DO UPDATE SET password_hash = excluded.password_hash, updated_at = unixepoch();`,
+      await assertPublishableHash(hashes.get(slug)!);
+    }
+
+    let existing: Map<string, string>;
+    try {
+      const stdout = runWrangler(
+        [
+          "d1",
+          "execute",
+          productionDatabaseName,
+          "--remote",
+          "--json",
+          "--command",
+          "SELECT slug, password_hash FROM vault",
+        ],
+        true,
+      );
+      existing = parseVaultRows(stdout);
+    } catch (error) {
+      throw new Error(
+        "could not read current vault hashes from D1; refusing to publish " +
+          "(blanket revocation fallback is not allowed)",
+        { cause: error },
       );
     }
 
-    if (currentSlugs.length > 0) {
-      const slugList = currentSlugs.map((s) => `'${s}'`).join(", ");
-      lines.push(`DELETE FROM vault WHERE slug NOT IN (${slugList});`);
-      lines.push(`DELETE FROM unlocks WHERE slug NOT IN (${slugList});`);
-    } else {
-      lines.push("DELETE FROM unlocks;");
-      lines.push("DELETE FROM vault;");
-    }
+    const lines = buildVaultSyncSql(hashes, existing);
 
     writeFileSync(sqlFile, lines.join("\n"), { mode: 0o600 });
     try {
@@ -591,7 +547,7 @@ async function main() {
         sqlFile,
       ]);
       console.log(
-        `upserted ${hashes.size} hashes, revoked unlocks, cleaned stale rows`,
+        `upserted ${hashes.size} hashes (unlock revocations limited to changed slugs), cleaned stale rows`,
       );
     } finally {
       rmSync(sqlFile, { force: true });

@@ -3,7 +3,7 @@
   "version": "26.8.26",
   "description": "An astro framework blog theme",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "vitest run",
     "dev": "astro dev",
     "content:prepare": "node scripts/publish-vault.ts --stubs-only",
     "content:publish:prod": "node scripts/install-rclone.ts && node scripts/publish-vault.ts --publish-prod",
@@ -43,10 +43,11 @@
     "typescript": "^6.0.3"
   },
   "devDependencies": {
+    "@cloudflare/vitest-plugin": "^1.0.0",
     "@eslint/js": "^10.0.1",
     "@types/node": "^24.13.3",
     "argon2": "^0.45.1",
-    "eslint": "^10.9.0",
+    "eslint": "^10.9.1",
     "eslint-config-prettier": "^10.1.8",
     "globals": "^17.11.0",
     "husky": "^9.1.7",
@@ -60,7 +61,8 @@
     "satteri-expressive-code": "^0.1.24",
     "stylelint": "^17.14.1",
     "stylelint-config-standard": "^40.0.0",
-    "typescript-eslint": "^8.67.0",
+    "typescript-eslint": "^8.68.0",
+    "vitest": "^4.1.11",
     "wrangler": "^4.125.0"
   },
   "lint-staged": {

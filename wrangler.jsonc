@@ -1,13 +1,4 @@
 {
-  // SECURITY/OPS HEADER NOTES (Cloudflare side):
-  // - The main site has NO Content-Security-Policy (only /vault|/login|/api get
-  //   X-Frame-Options via the Response Header Transform rule). Add a
-  //   Response Header Transform Rule with a CSP, start in report-only:
-  //     Content-Security-Policy-Report-Only: default-src 'self'; img-src 'self' data: https://object.amia.work https://openweathermap.org; script-src 'self'; style-src 'self' 'unsafe-inline'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'
-  // - Extend frame-ancestors 'none' (or X-Frame-Options: DENY) to ALL paths, not
-  //   just /vault|/login|/api, to cover public blog pages against clickjacking.
-  // - `global_fetch_strictly_public` is good (blocks SSRF to private IPs); the
-  //   verify endpoint is public so the cross-provider fetch still works.
   "$schema": "./node_modules/wrangler/config-schema.json",
   "compatibility_date": "2026-08-04",
   "compatibility_flags": ["global_fetch_strictly_public"],
@@ -23,8 +14,6 @@
       "enabled": true,
       "destinations": ["grafana-traces"],
       "head_sampling_rate": 1,
-      // OPS: 100% sampling can exhaust free-tier traces/logs quota quickly.
-      // Lower to e.g. 0.1 unless full-fidelity traces are required.
       "persist": true,
     },
     "logs": {
@@ -120,7 +109,7 @@
       "name": "VAULT_AUTH_RL",
       "namespace_id": "1002",
       "simple": {
-        "limit": 10,
+        "limit": 30,
         "period": 60,
       },
     },
