@@ -351,10 +351,3 @@ export async function recordUnlock(
     .bind(userId, slug, UNLOCK_TTL_SECONDS, UNLOCK_TTL_SECONDS)
     .run();
 }
-
-export async function cleanupExpiredUnlocks(env: VaultEnv): Promise<number> {
-  const result = await env.DB.prepare(
-    "DELETE FROM unlocks WHERE expires_at < unixepoch()",
-  ).run();
-  return result.meta.changes ?? 0;
-}
