@@ -101,7 +101,24 @@ const TAG_NAMES: readonly string[] = [
   "u",
 ];
 
-const DROP_CONTENT: readonly string[] = ["script"];
+const DROP_CONTENT: readonly string[] = [
+  "script",
+  "style",
+  "template",
+  "iframe",
+  "frame",
+  "frameset",
+  "object",
+  "embed",
+  "applet",
+  "noscript",
+  "meta",
+  "link",
+  "base",
+  "title",
+  "xmp",
+  "plaintext",
+];
 
 const GLOBAL_ATTRIBUTES: readonly string[] = [
   "dir",
