@@ -19,7 +19,7 @@
   "type": "module",
   "dependencies": {
     "@astrojs/check": "^0.9.10",
-    "@astrojs/cloudflare": "^14.2.4",
+    "@astrojs/cloudflare": "^14.2.5",
     "@astrojs/markdown-satteri": "^0.3.8",
     "@astrojs/rss": "^4.0.19",
     "@astrojs/sitemap": "^3.7.3",
@@ -27,7 +27,7 @@
     "@expressive-code/plugin-line-numbers": "^0.44.1",
     "@tailwindcss/typography": "^0.5.20",
     "@tailwindcss/vite": "^4.3.3",
-    "astro": "^7.2.6",
+    "astro": "^7.2.7",
     "astro-expressive-code": "^0.44.1",
     "katex": "^0.18.4",
     "lottie-web": "^5.13.0",
@@ -43,7 +43,7 @@
     "typescript": "^6.0.3"
   },
   "devDependencies": {
-    "@cloudflare/vitest-plugin": "^1.0.0",
+    "@cloudflare/vitest-plugin": "^1.1.0",
     "@eslint/js": "^10.0.1",
     "@types/node": "^24.13.3",
     "argon2": "^0.45.1",
@@ -63,7 +63,7 @@
     "stylelint-config-standard": "^40.0.0",
     "typescript-eslint": "^8.68.0",
     "vitest": "^4.1.11",
-    "wrangler": "^4.125.0"
+    "wrangler": "^4.126.0"
   },
   "lint-staged": {
     "*.{js,mjs,cjs,ts,mts,cts}": [
