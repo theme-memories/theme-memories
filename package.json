@@ -11,7 +11,7 @@
     "build": "pnpm post:prepare && wrangler types && astro build",
     "preview": "pnpm post:prepare && astro build && astro preview",
     "astro": "astro",
-    "deploy": "post:upload && wrangler deploy",
+    "deploy": "pnpm post:upload && wrangler deploy",
     "cf-typegen": "wrangler types",
     "prepare": "husky"
   },
