@@ -5,12 +5,13 @@
   "scripts": {
     "test": "vitest run",
     "dev": "astro dev",
-    "content:prepare": "node scripts/publish-vault.ts --stubs-only",
-    "content:publish:prod": "node scripts/install-rclone.ts && node scripts/publish-vault.ts --publish-prod",
-    "build": "pnpm content:prepare && wrangler types && astro build",
-    "preview": "pnpm content:prepare && astro build && astro preview",
+    "post:prepare": "node scripts/post-prepare.ts",
+    "post:new": "node scripts/post-new.ts",
+    "post:upload": "node scripts/install-rclone.ts && node scripts/post-upload.ts",
+    "build": "pnpm post:prepare && wrangler types && astro build",
+    "preview": "pnpm post:prepare && astro build && astro preview",
     "astro": "astro",
-    "deploy": "pnpm content:publish:prod && wrangler deploy",
+    "deploy": "post:upload && wrangler deploy",
     "cf-typegen": "wrangler types",
     "prepare": "husky"
   },
@@ -43,8 +44,9 @@
     "typescript": "^6.0.3"
   },
   "devDependencies": {
-    "@cloudflare/vitest-plugin": "^1.1.0",
+    "@cloudflare/vitest-plugin": "^1.1.1",
     "@eslint/js": "^10.0.1",
+    "@inquirer/prompts": "^8.7.0",
     "@types/node": "^24.13.3",
     "argon2": "^0.45.1",
     "eslint": "^10.9.1",
@@ -63,7 +65,7 @@
     "stylelint-config-standard": "^40.0.0",
     "typescript-eslint": "^8.68.0",
     "vitest": "^4.1.11",
-    "wrangler": "^4.126.0"
+    "wrangler": "^4.127.0"
   },
   "lint-staged": {
     "*.{js,mjs,cjs,ts,mts,cts}": [

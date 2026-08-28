@@ -9,89 +9,95 @@ import {
 } from "node:fs";
 import { createHash } from "node:crypto";
 import { tmpdir } from "node:os";
-import { dirname, join, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
+import { join } from "node:path";
 import { execFileSync } from "node:child_process";
+import {
+  RCLONE_BINARY_NAME,
+  RCLONE_BINARY_PATH,
+  RCLONE_INSTALL_DIR,
+  RCLONE_PINNED_CHECKSUM,
+  RCLONE_VERSION,
+} from "./config.ts";
 
-const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+const ZIP_FILE_NAME = `rclone-v${RCLONE_VERSION}-linux-amd64.zip`;
+const ZIP_DOWNLOAD_URL = `https://github.com/rclone/rclone/releases/download/v${RCLONE_VERSION}/${ZIP_FILE_NAME}`;
+const CHECKSUMS_URL = `https://github.com/rclone/rclone/releases/download/v${RCLONE_VERSION}/SHA256SUMS`;
 
-const RCLONE_VERSION = "1.75.0";
-const PINNED_ZIP_SHA256 =
-  "aa2804e08f48250e71009c727124b6341cd0288465804a9a09d14663cabafbaa";
-
-const ZIP_NAME = `rclone-v${RCLONE_VERSION}-linux-amd64.zip`;
-const DOWNLOAD_URL = `https://github.com/rclone/rclone/releases/download/v${RCLONE_VERSION}/${ZIP_NAME}`;
-const SUMS_URL = `https://github.com/rclone/rclone/releases/download/v${RCLONE_VERSION}/SHA256SUMS`;
-const BIN_NAME = "rclone";
-const INSTALL_DIR = join(ROOT, ".tools", "rclone");
-const BIN_PATH = join(INSTALL_DIR, BIN_NAME);
-
-function sha256File(path: string): string {
+function computeSha256(path: string): string {
   const data = readFileSync(path);
   return createHash("sha256").update(data).digest("hex");
 }
 
-function fetchExpectedSha256(sumsPath: string): string {
+function readChecksumFromSumsFile(sumsPath: string): string {
   const lines = readFileSync(sumsPath, "utf8").split("\n");
   for (const line of lines) {
     const [hash, name] = line.trim().split(/\s+/);
-    if (name === ZIP_NAME && hash) return hash;
+    if (name === ZIP_FILE_NAME && hash) return hash;
   }
-  throw new Error(`could not find ${ZIP_NAME} in SHA256SUMS`);
+  throw new Error(`could not find ${ZIP_FILE_NAME} in SHA256SUMS`);
 }
 
-function main(): void {
-  const tempDir = mkdtempSync(join(tmpdir(), "rclone-install-"));
-  const extractDir = join(tempDir, "extract");
-  const zipPath = join(tempDir, ZIP_NAME);
-  const sumsPath = join(tempDir, "SHA256SUMS");
+function downloadFile(url: string, dest: string): void {
+  console.log(`downloading ${url}`);
+  execFileSync("wget", ["-q", "-O", dest, url], { stdio: "inherit" });
+}
+
+function installRclone(): void {
+  const workDir = mkdtempSync(join(tmpdir(), "rclone-install-"));
+  const extractDir = join(workDir, "extract");
+  const downloadedZipPath = join(workDir, ZIP_FILE_NAME);
+  const downloadedSumsPath = join(workDir, "SHA256SUMS");
   mkdirSync(extractDir);
 
   try {
-    console.log(`downloading ${DOWNLOAD_URL}`);
-    execFileSync("wget", ["-q", "-O", zipPath, DOWNLOAD_URL], {
-      stdio: "inherit",
-    });
-    console.log(`downloaded ${ZIP_NAME}`);
+    downloadFile(ZIP_DOWNLOAD_URL, downloadedZipPath);
+    console.log(`downloaded ${ZIP_FILE_NAME}`);
 
-    console.log(`downloading SHA256SUMS`);
-    execFileSync("wget", ["-q", "-O", sumsPath, SUMS_URL], {
-      stdio: "inherit",
-    });
+    downloadFile(CHECKSUMS_URL, downloadedSumsPath);
 
-    const expected = fetchExpectedSha256(sumsPath);
-    if (expected !== PINNED_ZIP_SHA256) {
+    const publishedChecksum = readChecksumFromSumsFile(downloadedSumsPath);
+    if (publishedChecksum !== RCLONE_PINNED_CHECKSUM) {
       throw new Error(
-        `reviewed checksum does not match release checksum for ${ZIP_NAME}`,
+        `release checksum does not match pinned checksum for ${ZIP_FILE_NAME}`,
       );
     }
-    const actual = sha256File(zipPath);
-    if (actual !== PINNED_ZIP_SHA256) {
-      throw new Error(`SHA-256 mismatch: expected ${expected}, got ${actual}`);
+
+    const downloadedChecksum = computeSha256(downloadedZipPath);
+    if (downloadedChecksum !== RCLONE_PINNED_CHECKSUM) {
+      throw new Error(
+        `SHA-256 mismatch: expected ${RCLONE_PINNED_CHECKSUM}, got ${downloadedChecksum}`,
+      );
     }
     console.log("checksum verified");
 
     execFileSync(
       "unzip",
-      ["-o", "-j", zipPath, `*/${BIN_NAME}`, "-d", extractDir],
+      [
+        "-o",
+        "-j",
+        downloadedZipPath,
+        `*/${RCLONE_BINARY_NAME}`,
+        "-d",
+        extractDir,
+      ],
       { stdio: "inherit" },
     );
-    const extracted = join(extractDir, BIN_NAME);
-    if (!existsSync(extracted)) {
-      throw new Error(`could not find ${BIN_NAME} in the archive`);
+    const extractedBinary = join(extractDir, RCLONE_BINARY_NAME);
+    if (!existsSync(extractedBinary)) {
+      throw new Error(`could not find ${RCLONE_BINARY_NAME} in the archive`);
     }
 
-    mkdirSync(INSTALL_DIR, { recursive: true });
-    copyFileSync(extracted, BIN_PATH);
-    chmodSync(BIN_PATH, 0o755);
-    console.log(`installed rclone v${RCLONE_VERSION} at ${BIN_PATH}`);
+    mkdirSync(RCLONE_INSTALL_DIR, { recursive: true });
+    copyFileSync(extractedBinary, RCLONE_BINARY_PATH);
+    chmodSync(RCLONE_BINARY_PATH, 0o755);
+    console.log(`installed rclone v${RCLONE_VERSION} at ${RCLONE_BINARY_PATH}`);
   } finally {
-    rmSync(tempDir, { recursive: true, force: true });
+    rmSync(workDir, { recursive: true, force: true });
   }
 }
 
 try {
-  main();
+  installRclone();
 } catch (error) {
   console.error(error);
   process.exitCode = 1;
