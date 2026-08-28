@@ -1,6 +1,6 @@
 {
   "name": "theme-memories",
-  "version": "26.8.27",
+  "version": "26.8.28",
   "description": "An astro framework blog theme",
   "scripts": {
     "test": "vitest run",

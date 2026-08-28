@@ -1,3 +1,9 @@
+// Cron task: fetch current weather + alerts from OpenWeatherMap and
+// store a sanitized snapshot to R2 (runs every 10 minutes).
+//
+// Flow: fetchCurrentWeather() + fetchWeatherAlerts() in parallel ->
+// buildWeatherPayload() (whitelist fields, coerce types, sanitize icon)
+// -> size guard -> write "weather.json" to the article bucket.
 import { weather as weatherConfig } from "../config";
 import { logEvent, logError } from "./shared";
 
@@ -87,6 +93,8 @@ function pickFields<T extends object>(
   return selected;
 }
 
+// Sanitizers: coerce loose API values into the stored shape. Missing or
+// wrong-typed values degrade to null rather than poisoning the payload.
 function numberOrNull(value: number | undefined): number | null {
   return typeof value === "number" ? value : null;
 }
@@ -97,6 +105,7 @@ function hourlyPrecipMm(precip: { "1h"?: number } | undefined): number | null {
 }
 
 function sanitizeIcon(icon: string | undefined): string {
+  // Fall back to a clear-day icon if the API returns an unexpected code.
   return typeof icon === "string" && /^[0-9]{2}[dn]$/.test(icon) ? icon : "01d";
 }
 
@@ -189,6 +198,7 @@ export async function syncWeather(
     throw new Error("weather-sync: API key is not configured");
   }
 
+  // Both calls are independent, so run them concurrently.
   const [currentWeather, weatherAlerts] = await Promise.all([
     fetchCurrentWeather(openWeatherApiKey),
     fetchWeatherAlerts(openWeatherApiKey),

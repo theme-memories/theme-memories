@@ -6,6 +6,11 @@ import type { VaultEnv } from "./lib/vault";
 
 export default {
   fetch: handle,
+  // Cron triggers are dispatched here by Cloudflare. Match the schedule
+  // expression to its handler:
+  //   "1 0 * * *"      -> daily vault unlock cleanup
+  //   "*/10 * * * *"   -> weather sync every 10 minutes
+  // Unknown schedules are logged and ignored (see warnUnknownSchedule).
   async scheduled(scheduledEvent: ScheduledController, env: Env) {
     switch (scheduledEvent.cron) {
       case "1 0 * * *":
