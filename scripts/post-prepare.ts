@@ -1,213 +1,30 @@
+import { pathToFileURL } from "node:url";
 import {
-  chmodSync,
-  copyFileSync,
   existsSync,
   mkdirSync,
   readdirSync,
   readFileSync,
-  realpathSync,
   rmSync,
-  statSync,
-  writeFileSync,
 } from "node:fs";
-import { dirname, join, relative, resolve, sep } from "node:path";
-import { pathToFileURL } from "node:url";
-import { load as loadYaml } from "js-yaml";
-import { markdownToHtml } from "satteri";
-import type { Frontmatter } from "satteri";
-import expressiveCode from "satteri-expressive-code";
-import type { SatteriExpressiveCodeOptions } from "satteri-expressive-code";
-import { satteriPangu } from "../src/lib/satteri-pangu.ts";
-import { sectionize } from "../src/lib/satteri-sectionize.ts";
-import { katex } from "../src/lib/satteri-katex.ts";
-import satteriDirective from "../src/lib/satteri-directive.ts";
-import { satteriGithubAlerts } from "../src/lib/satteri-github-alerts.ts";
-import satteriSanitize from "../src/lib/satteri-sanitize.ts";
-import { satteriHeadingIdsPlugin } from "@astrojs/markdown-satteri";
-import ecConfig from "../ec.config.mjs";
+import { join } from "node:path";
 import { vault as vaultConfig } from "../src/config.ts";
-import { ENVELOPE_PREFIX, isSafeAssetKey } from "../src/lib/vault.ts";
-import { MANIFEST_PATH, ROOT, STAGING_DIR } from "./config.ts";
-
-const VAULT_DIR = join(ROOT, "src", "content", "vault");
-const STUB_DIR = join(ROOT, "src", "content", "vault-json");
-
-interface VaultFrontmatter {
-  slug: string;
-  title: string;
-  publishedAt: string;
-  displayDate?: string;
-  category: string;
-  thumb?: string;
-  description: string;
-  pinned?: boolean;
-  draft?: boolean;
-  protected?: boolean;
-  question?: string;
-  passwordHash: string;
-}
-
-const FEATURES = {
-  gfm: {
-    footnotes: {
-      label: "注釈",
-      backContent: "↑",
-      backLabel: "注釈{reference}に戻る",
-    },
-  },
-  math: true,
-  directive: true,
-  definitionList: true,
-  smartPunctuation: true,
-} as const;
-
-const isLocalFile = (normalized: string): string | null => {
-  const resolved = resolve(VAULT_DIR, normalized);
-  if (!resolved.startsWith(VAULT_DIR + sep)) return null;
-  if (!existsSync(resolved)) return null;
-  const stat = statSync(resolved);
-  if (!stat.isFile()) return null;
-  const real = realpathSync(resolved);
-  const realRoot = realpathSync(VAULT_DIR);
-  if (!real.startsWith(realRoot + sep)) return null;
-  return relative(VAULT_DIR, resolved).split(sep).join("/");
-};
-
-function parseFrontmatter(frontmatter: Frontmatter | null): VaultFrontmatter {
-  if (!frontmatter || frontmatter.kind !== "yaml") {
-    throw new Error("missing YAML frontmatter block");
-  }
-  const data = loadYaml(frontmatter.value) as VaultFrontmatter;
-  if (!data || typeof data !== "object" || Array.isArray(data)) {
-    throw new Error("frontmatter block did not parse to an object");
-  }
-  return data;
-}
-
-async function renderFragment(
-  source: string,
-  fileURL: URL,
-): Promise<{
-  html: string;
-  headings: Array<{ depth: number; slug: string; text: string }>;
-  frontmatter: Frontmatter | null;
-}> {
-  const { html: raw, frontmatter } = await markdownToHtml(source, {
-    mdastPlugins: [satteriPangu(), sectionize(), katex(), satteriDirective()],
-    hastPlugins: [
-      satteriGithubAlerts(),
-      satteriHeadingIdsPlugin(),
-      satteriSanitize(),
-      expressiveCode(ecConfig as SatteriExpressiveCodeOptions),
-    ],
-    features: FEATURES,
-    fileURL,
-  });
-
-  const html = raw;
-
-  const headings: Array<{ depth: number; slug: string; text: string }> = [];
-  const headingRe = /<h([1-6]) id="([^"]*)"[^>]*>([^<]*)<\/h\1>/g;
-  for (const match of html.matchAll(headingRe)) {
-    const depth = Number(match[1]);
-    const slug = match[2];
-    const text = match[3];
-    if (depth && slug) headings.push({ depth, slug, text });
-  }
-
-  return { html, headings, frontmatter };
-}
-
-async function renderQuestionHtml(question: string): Promise<string> {
-  const { html } = await markdownToHtml(question.trim(), {
-    mdastPlugins: [satteriPangu(), sectionize(), katex(), satteriDirective()],
-    hastPlugins: [
-      satteriGithubAlerts(),
-      satteriHeadingIdsPlugin(),
-      satteriSanitize(),
-      expressiveCode(ecConfig as SatteriExpressiveCodeOptions),
-    ],
-    features: FEATURES,
-  });
-  return html;
-}
-
-function collectAssets(
-  fragment: string,
-  slug: string,
-): {
-  html: string;
-  assets: Map<string, string>;
-} {
-  const assets = new Map<string, string>();
-  const add = (value: string): string => {
-    const withoutQuery = value.split(/[?#]/)[0] ?? "";
-    if (!withoutQuery) return value;
-    const r2Key = isLocalFile(withoutQuery);
-    if (!r2Key) return value;
-    if (!isSafeAssetKey(r2Key)) {
-      throw new Error(
-        `${slug}: asset name not deployable: ${r2Key} — rename using only [A-Za-z0-9._-/]`,
-      );
-    }
-    const source = join(VAULT_DIR, ...r2Key.split("/"));
-    assets.set(r2Key, source);
-    return `/api/vault/${r2Key}`;
-  };
-
-  const urlAttr = /((?:src|href|poster|data-src)=)("([^"]*)"|'([^']*)')/g;
-  let html = fragment.replace(
-    urlAttr,
-    (full, prefix: string, _q: string, dq: string, sq: string) => {
-      const value = (dq ?? sq ?? "").trim();
-      if (!value) return full;
-      if (
-        /^(https?:)?\/\//.test(value) ||
-        value.startsWith("/api/") ||
-        value.startsWith("#") ||
-        value.startsWith("data:") ||
-        value.startsWith("mailto:")
-      ) {
-        return full;
-      }
-      return `${prefix}"${add(value)}"`;
-    },
-  );
-
-  const srcsetAttr = /srcset=("([^"]*)"|'([^']*)')/g;
-  html = html.replace(
-    srcsetAttr,
-    (full, _q: string, dq: string, sq: string) => {
-      const value = dq ?? sq ?? "";
-      const candidates = value.split(",").map((c) => c.trim());
-      const rewritten = candidates.map((candidate) => {
-        const [url, descriptor] = candidate.split(/\s+/, 2);
-        if (!url) return candidate;
-        const rewrittenUrl = add(url);
-        if (rewrittenUrl === url) return candidate;
-        return descriptor ? `${rewrittenUrl} ${descriptor}` : rewrittenUrl;
-      });
-      return full.replace(value, rewritten.join(", "));
-    },
-  );
-
-  return { html, assets };
-}
-
-interface PreparedVault {
-  slug: string;
-  html: string;
-  headings: unknown[];
-  frontmatter: {
-    slug: string;
-    title: string;
-    publishedAt: string;
-    displayDate?: string;
-    category: string;
-    thumb: string | undefined;
-    description: string;
-  };
-}
+import { isSafeAssetKey } from "../src/lib/vault.ts";
+import { STAGING_DIR, VAULT_DIR, STUB_DIR } from "./config.ts";
+import { renderMarkdown } from "./lib/markdown.ts";
+import {
+  parseFrontmatter,
+  validateFrontmatter,
+  type VaultFrontmatter,
+} from "./lib/frontmatter.ts";
+import { collectAssets, isLocalFile } from "./lib/assets.ts";
+import {
+  writeAssets,
+  writeEnvelopes,
+  writeStubs,
+  writeManifest,
+  type VaultEnvelope,
+  type VaultStub,
+} from "./lib/staging.ts";
 
 async function runPrepare(): Promise<void> {
   rmSync(STAGING_DIR, { recursive: true, force: true });
@@ -222,9 +39,9 @@ async function runPrepare(): Promise<void> {
   }
 
   const stagedAssets = new Map<string, string>();
-  const envelopes = new Map<string, PreparedVault>();
+  const envelopes = new Map<string, VaultEnvelope>();
   const hashes = new Map<string, string>();
-  const stubs: Array<Record<string, unknown>> = [];
+  const stubs: VaultStub[] = [];
 
   const entries = readdirSync(VAULT_DIR).filter((name) =>
     existsSync(join(VAULT_DIR, name, "index.md")),
@@ -238,52 +55,45 @@ async function runPrepare(): Promise<void> {
     }
 
     const source = readFileSync(join(VAULT_DIR, slug, "index.md"), "utf8");
-    const { html, headings, frontmatter } = await renderFragment(
-      source,
-      pathToFileURL(join(VAULT_DIR, slug, "index.md")),
-    );
+    const {
+      html,
+      headings,
+      frontmatter: rawFrontmatter,
+    } = await renderMarkdown(source, {
+      fileURL: pathToFileURL(join(VAULT_DIR, slug, "index.md")),
+    });
 
-    let fm: VaultFrontmatter;
+    let frontmatter: VaultFrontmatter;
     try {
-      fm = parseFrontmatter(frontmatter);
+      frontmatter = parseFrontmatter(rawFrontmatter);
     } catch (error) {
       throw new Error(`${entry}: ${(error as Error).message}`, {
         cause: error,
       });
     }
 
-    if (fm.draft === true) {
+    if (frontmatter.draft === true) {
       console.log(`skip ${entry}: draft`);
       continue;
     }
 
-    const violations: string[] = [];
-    if (fm.pinned === true) violations.push(`"pinned" must not be true`);
-    if (fm.protected === false) violations.push(`"protected" must be true`);
-    if ("password" in fm)
-      violations.push(
-        `"password" is no longer allowed; use "passwordHash" instead`,
-      );
-    if (!fm.passwordHash?.trim()) violations.push(`"passwordHash" is required`);
-    if (fm.slug !== slug)
-      violations.push(`"slug" must match the directory name`);
-    if (!fm.title?.trim()) violations.push(`"title" is required`);
-    if (!fm.description?.trim()) violations.push(`"description" is required`);
+    const violations = validateFrontmatter(frontmatter, entry);
     if (violations.length > 0) {
       throw new Error(
         `${entry}: invalid vault frontmatter:\n  - ${violations.join("\n  - ")}`,
       );
     }
 
-    const { html: withAssets, assets } = collectAssets(html, entry);
+    const { html: htmlWithAssets, assets } = collectAssets(html, entry);
     for (const [key, sourcePath] of assets) stagedAssets.set(key, sourcePath);
 
-    const questionHtml = await renderQuestionHtml(
-      fm.question?.trim() || vaultConfig.genericQuestion,
-    );
+    const questionSource = (
+      frontmatter.question?.trim() || vaultConfig.genericQuestion
+    ).trim();
+    const { html: questionHtml } = await renderMarkdown(questionSource);
 
     const thumb =
-      fm.thumb?.replace(/^\.\//, "").replace(/^\//, "") || undefined;
+      frontmatter.thumb?.replace(/^\.\//, "").replace(/^\//, "") || undefined;
     if (thumb) {
       const r2Key = isLocalFile(thumb);
       if (r2Key) {
@@ -300,29 +110,29 @@ async function runPrepare(): Promise<void> {
 
     envelopes.set(slug, {
       slug,
-      html: withAssets,
+      html: htmlWithAssets,
       headings,
       frontmatter: {
         slug,
-        title: fm.title,
-        publishedAt: fm.publishedAt,
-        displayDate: fm.displayDate,
-        category: fm.category,
+        title: frontmatter.title,
+        publishedAt: frontmatter.publishedAt,
+        displayDate: frontmatter.displayDate,
+        category: frontmatter.category,
         thumb,
-        description: fm.description,
+        description: frontmatter.description,
       },
     });
 
-    const stub: Record<string, unknown> = {
+    const stub: VaultStub = {
       slug,
-      publishedAt: fm.publishedAt,
-      category: fm.category,
+      publishedAt: frontmatter.publishedAt,
+      category: frontmatter.category,
     };
-    if (fm.displayDate) stub.displayDate = fm.displayDate;
+    if (frontmatter.displayDate) stub.displayDate = frontmatter.displayDate;
     if (questionHtml) stub.questionHtml = questionHtml;
     stubs.push(stub);
 
-    hashes.set(slug, fm.passwordHash);
+    hashes.set(slug, frontmatter.passwordHash);
     console.log(`prepared ${slug}`);
   }
 
@@ -330,36 +140,16 @@ async function runPrepare(): Promise<void> {
     console.log("no vault posts to prepare");
   }
 
-  for (const [key, sourcePath] of stagedAssets) {
-    const dest = join(STAGING_DIR, "assets", ...key.split("/"));
-    mkdirSync(dirname(dest), { recursive: true });
-    copyFileSync(sourcePath, dest);
-    chmodSync(dest, 0o600);
-  }
-  for (const [slug, envelope] of envelopes) {
-    const dest = join(STAGING_DIR, ENVELOPE_PREFIX, `${slug}.json`);
-    mkdirSync(dirname(dest), { recursive: true });
-    writeFileSync(dest, JSON.stringify(envelope), { mode: 0o600 });
-  }
+  writeAssets(stagedAssets);
+  writeEnvelopes(envelopes);
   console.log(
     `staged ${stagedAssets.size} assets + ${envelopes.size} envelopes in ${STAGING_DIR}`,
   );
 
-  for (const stub of stubs) {
-    writeFileSync(join(STUB_DIR, `${stub.slug}.json`), JSON.stringify(stub), {
-      mode: 0o644,
-    });
-  }
+  writeStubs(stubs);
   console.log(`wrote ${stubs.length} stubs to ${STUB_DIR}`);
 
-  writeFileSync(
-    MANIFEST_PATH,
-    JSON.stringify({
-      slugs: [...hashes.keys()],
-      hashes: Object.fromEntries(hashes),
-    }),
-    { mode: 0o600 },
-  );
+  writeManifest([...hashes.keys()], hashes);
 }
 
 runPrepare().catch((error) => {

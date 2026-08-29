@@ -1,13 +1,9 @@
 import { confirm, input, password, select } from "@inquirer/prompts";
-import argon2 from "argon2";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { EOL } from "node:os";
 import { join } from "node:path";
-import {
-  ARGON2_OPTIONS,
-  DEFAULT_VAULT_QUESTION,
-  VAULT_CATEGORIES,
-} from "./config.ts";
+import { DEFAULT_VAULT_QUESTION, VAULT_CATEGORIES } from "./config.ts";
+import { hashWithArgon2 } from "./lib/password.ts";
 
 const CONTENT_ROOT = join(process.cwd(), "src", "content");
 
@@ -200,10 +196,7 @@ async function main(): Promise<void> {
       "password",
     );
 
-    const hash = await argon2.hash(plainPassword, {
-      secret: Buffer.from(pepper, "utf8"),
-      ...ARGON2_OPTIONS,
-    });
+    const hash = await hashWithArgon2(plainPassword, pepper);
     fields.passwordHash = hash;
   }
 

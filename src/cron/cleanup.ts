@@ -2,7 +2,7 @@
 import type { VaultEnv } from "../lib/vault";
 import { logEvent, logError } from "./shared";
 
-export async function cleanupExpiredUnlocks(
+export async function deleteExpiredUnlocks(
   vaultEnv: VaultEnv,
 ): Promise<number> {
   // Durable-sql: delete every unlock row whose TTL has elapsed.
@@ -16,8 +16,8 @@ export async function cleanupExpiredUnlocks(
 // scheduled invocation is marked failed on error.
 export async function runUnlockCleanup(vaultEnv: VaultEnv): Promise<void> {
   try {
-    const removedUnlockCount = await cleanupExpiredUnlocks(vaultEnv);
-    logEvent("vault_unlock_cleanup_ok", { removed: removedUnlockCount });
+    const deletedUnlockCount = await deleteExpiredUnlocks(vaultEnv);
+    logEvent("vault_unlock_cleanup_ok", { removed: deletedUnlockCount });
   } catch (error) {
     logError("vault_unlock_cleanup_failed", error);
     throw error;

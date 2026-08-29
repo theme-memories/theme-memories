@@ -10,6 +10,8 @@ export const D1_BINDING = "DB";
 
 export const MANIFEST_PATH = join(ROOT, ".vault-manifest.json");
 export const STAGING_DIR = join(ROOT, ".vault-staging");
+export const VAULT_DIR = join(ROOT, "src", "content", "vault");
+export const STUB_DIR = join(ROOT, "src", "content", "vault-json");
 
 // --- rclone (install-rclone) ---
 

@@ -24,10 +24,10 @@ export interface WeatherSyncResult {
   ok: boolean;
   fetchedAt: number;
   alertsCount: number;
-  keys: string[];
+  objectKeys: string[];
 }
 
-interface WeatherEntry {
+interface WeatherCondition {
   description?: string;
   icon?: string;
 }
@@ -46,7 +46,7 @@ interface CurrentWeather {
   wind_deg?: number;
   visibility?: number;
   wind_gust?: number;
-  weather?: WeatherEntry[];
+  weather?: WeatherCondition[];
   rain?: { "1h"?: number };
   snow?: { "1h"?: number };
 }
@@ -95,11 +95,13 @@ function pickFields<T extends object>(
 
 // Sanitizers: coerce loose API values into the stored shape. Missing or
 // wrong-typed values degrade to null rather than poisoning the payload.
-function numberOrNull(value: number | undefined): number | null {
+function toNumberOrNull(value: number | undefined): number | null {
   return typeof value === "number" ? value : null;
 }
 
-function hourlyPrecipMm(precip: { "1h"?: number } | undefined): number | null {
+function hourlyPrecipitationMm(
+  precip: { "1h"?: number } | undefined,
+): number | null {
   const amount = precip?.["1h"];
   return typeof amount === "number" ? amount : null;
 }
@@ -109,7 +111,10 @@ function sanitizeIcon(icon: string | undefined): string {
   return typeof icon === "string" && /^[0-9]{2}[dn]$/.test(icon) ? icon : "01d";
 }
 
-async function fetchJson(url: string, signal: AbortSignal): Promise<unknown> {
+async function fetchOpenWeatherJson(
+  url: string,
+  signal: AbortSignal,
+): Promise<unknown> {
   const response = await fetch(url, {
     signal,
     redirect: "manual",
@@ -124,22 +129,20 @@ async function fetchJson(url: string, signal: AbortSignal): Promise<unknown> {
   return response.json();
 }
 
-function buildQueryParams(openWeatherApiKey: string): URLSearchParams {
+function buildQueryParams(apiKey: string): URLSearchParams {
   const { lat, lon } = weatherConfig;
   return new URLSearchParams({
     lat: String(lat),
     lon: String(lon),
     units: "metric",
     lang: "ja",
-    appid: openWeatherApiKey,
+    appid: apiKey,
   });
 }
 
-async function fetchCurrentWeather(
-  openWeatherApiKey: string,
-): Promise<CurrentWeather> {
-  const queryParams = buildQueryParams(openWeatherApiKey);
-  const response = (await fetchJson(
+async function fetchCurrentWeather(apiKey: string): Promise<CurrentWeather> {
+  const queryParams = buildQueryParams(apiKey);
+  const response = (await fetchOpenWeatherJson(
     `${CURRENT_WEATHER_URL}?${queryParams}`,
     AbortSignal.timeout(REQUEST_TIMEOUT_MS),
   )) as OneCallCurrentResponse;
@@ -152,13 +155,11 @@ async function fetchCurrentWeather(
   return currentWeather;
 }
 
-async function fetchWeatherAlerts(
-  openWeatherApiKey: string,
-): Promise<WeatherAlert[]> {
-  const queryParams = buildQueryParams(openWeatherApiKey);
+async function fetchWeatherAlerts(apiKey: string): Promise<WeatherAlert[]> {
+  const queryParams = buildQueryParams(apiKey);
   queryParams.set("exclude", "current,minutely,hourly,daily");
   try {
-    const response = (await fetchJson(
+    const response = (await fetchOpenWeatherJson(
       `${ALERTS_URL}?${queryParams}`,
       AbortSignal.timeout(REQUEST_TIMEOUT_MS),
     )) as OneCallAlertsResponse;
@@ -172,16 +173,16 @@ async function fetchWeatherAlerts(
 function buildWeatherPayload(
   currentWeather: CurrentWeather,
   weatherAlerts: WeatherAlert[],
-  syncedAt: number,
+  fetchedAt: number,
 ) {
   const [primaryWeather] = currentWeather.weather ?? [];
   return {
-    fetchedAt: syncedAt,
+    fetchedAt: fetchedAt,
     ...pickFields(currentWeather, CURRENT_WEATHER_FIELDS),
-    visibility: numberOrNull(currentWeather.visibility),
-    wind_gust: numberOrNull(currentWeather.wind_gust),
-    rain: hourlyPrecipMm(currentWeather.rain),
-    snow: hourlyPrecipMm(currentWeather.snow),
+    visibility: toNumberOrNull(currentWeather.visibility),
+    wind_gust: toNumberOrNull(currentWeather.wind_gust),
+    rain: hourlyPrecipitationMm(currentWeather.rain),
+    snow: hourlyPrecipitationMm(currentWeather.snow),
     ...(primaryWeather?.description
       ? { description: primaryWeather.description }
       : {}),
@@ -193,25 +194,25 @@ function buildWeatherPayload(
 export async function syncWeather(
   env: WeatherSyncEnv,
 ): Promise<WeatherSyncResult> {
-  const openWeatherApiKey = await env.OPENWEATHERMAP_API_KEY.get();
-  if (!openWeatherApiKey) {
+  const apiKey = await env.OPENWEATHERMAP_API_KEY.get();
+  if (!apiKey) {
     throw new Error("weather-sync: API key is not configured");
   }
 
   // Both calls are independent, so run them concurrently.
   const [currentWeather, weatherAlerts] = await Promise.all([
-    fetchCurrentWeather(openWeatherApiKey),
-    fetchWeatherAlerts(openWeatherApiKey),
+    fetchCurrentWeather(apiKey),
+    fetchWeatherAlerts(apiKey),
   ]);
 
-  const syncedAt = Math.floor(Date.now() / 1000);
-  const weatherPayload = buildWeatherPayload(
+  const fetchedAt = Math.floor(Date.now() / 1000);
+  const weatherSnapshot = buildWeatherPayload(
     currentWeather,
     weatherAlerts,
-    syncedAt,
+    fetchedAt,
   );
 
-  const payloadJson = JSON.stringify(weatherPayload);
+  const payloadJson = JSON.stringify(weatherSnapshot);
   if (payloadJson.length > MAX_PAYLOAD_BYTES) {
     throw new Error("weather-sync: payload too large");
   }
@@ -225,9 +226,9 @@ export async function syncWeather(
 
   return {
     ok: true,
-    fetchedAt: syncedAt,
+    fetchedAt: fetchedAt,
     alertsCount: weatherAlerts.length,
-    keys: [WEATHER_OBJECT_KEY],
+    objectKeys: [WEATHER_OBJECT_KEY],
   };
 }
 
