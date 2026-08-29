@@ -1,3 +1,10 @@
+// Vault frontmatter contract.
+//
+// parseFrontmatter turns the markdown YAML block into a typed object;
+// validateFrontmatter enforces the publish contract that post-upload.ts relies on
+// (vault posts MUST be protected:true with a passwordHash, no plaintext `password`,
+// slug must match the directory). Returning a violation list (instead of throwing
+// per-field) lets the prepare step report every problem at once.
 import { load as loadYaml } from "js-yaml";
 import type { Frontmatter } from "satteri";
 

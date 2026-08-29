@@ -25,9 +25,10 @@ export interface CollectedAssets {
   assets: Map<string, string>;
 }
 
-// Rewrite local vault asset URLs in rendered HTML to signed `/api/vault/...`
-// paths, and collect the referenced source files for staging. External,
-// anchor, data:, and `/api/` URLs are left untouched.
+// Rewrite local vault asset URLs in rendered HTML to `/api/vault/...` paths and
+// collect the referenced source files for staging. External, anchor, data:, and
+// already-rewritten `/api/` URLs are left untouched; the /api/vault URLs are signed
+// at request time by src/lib/vault.ts (signAssetUrlsInHtml).
 export function collectAssets(fragment: string, slug: string): CollectedAssets {
   const assets = new Map<string, string>();
   const registerLocalAsset = (value: string): string => {

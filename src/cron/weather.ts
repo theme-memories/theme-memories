@@ -11,8 +11,12 @@ const CURRENT_WEATHER_URL =
   "https://api.openweathermap.org/data/4.0/onecall/current";
 const ALERTS_URL = "https://api.openweathermap.org/data/3.0/onecall";
 const REQUEST_TIMEOUT_MS = 10_000;
+// Hard cap on the stored snapshot. OpenWeatherMap is stable but a runaway response
+// must never blow up the R2 object; we refuse to publish if it exceeds this.
 const MAX_PAYLOAD_BYTES = 64 * 1024;
 const WEATHER_OBJECT_KEY = "weather.json";
+// Edge caching for weather.json: short max-age with stale-while-revalidate so the
+// public site can read it cheaply between the 10-minute cron runs.
 const CACHE_CONTROL = "public, max-age=300, stale-while-revalidate=600";
 
 export interface WeatherSyncEnv {

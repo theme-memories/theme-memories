@@ -1,3 +1,8 @@
+// Shared build/deploy configuration for the scripts/ tooling.
+//
+// Paths are computed relative to the repo root. wrangler.jsonc is read at import
+// time to resolve the R2 bucket and D1 database names — if either binding is
+// missing the process refuses to start (no fallback to production resources).
 import { readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { parse as parseJsonc } from "jsonc-parser";
@@ -36,6 +41,10 @@ export const VAULT_CATEGORIES = [
 export const DEFAULT_VAULT_QUESTION =
   "この投稿を読むためのパスワードを入力してください";
 
+// argon2id cost parameters. MUST stay in sync with how post-new.ts hashes
+// passwords: post-upload.ts refuses to publish any hash whose params differ
+// (argon2.needsRehash), so changing these silently breaks every existing post
+// until re-hashed.
 export const ARGON2_OPTIONS = {
   memoryCost: 19456,
   timeCost: 2,

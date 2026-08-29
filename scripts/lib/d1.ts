@@ -1,3 +1,9 @@
+// D1 (Cloudflare SQLite) helpers for the vault password-hash sync.
+//
+// buildVaultSyncCommands batches upserts to stay under wrangler's `--command`
+// size limit (each batch is one execute). Only slugs whose hash CHANGED versus D1
+// are upserted; stale rows (and their unlocks) are revoked so a removed post stops
+// being advertised AND its previous unlocks are invalidated.
 import { runWrangler } from "./wrangler.ts";
 
 const SLUG_RE = /^[a-zA-Z0-9_-]+$/;

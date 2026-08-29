@@ -1,4 +1,8 @@
 // Cron task: purge expired vault unlocks (runs daily at 00:00).
+//
+// Invoked from src/workers.ts for the "1 0 * * *" schedule. The DB row TTL is the
+// single source of truth for unlock expiry — this just garbage-collects rows whose
+// expires_at has passed so the unlocks table stays small.
 import type { VaultEnv } from "../lib/vault";
 import { logEvent, logError } from "./shared";
 

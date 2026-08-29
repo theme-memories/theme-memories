@@ -1,3 +1,10 @@
+// argon2id hash validation for publish safety (post-upload.ts).
+//
+// Two guards: (1) every hash must be a well-formed, canonical argon2id PHC string
+// whose cost parameters match ARGON2_OPTIONS — otherwise needsRehash throws, so we
+// never publish a hash the verifier would reject; (2) no password hash may be
+// shared by more than one slug (detectReusedHashes), so one password can't unlock
+// multiple posts.
 import { ARGON2_OPTIONS } from "../config.ts";
 
 export const MAX_TARGET_LENGTH = 128;

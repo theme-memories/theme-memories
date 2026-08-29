@@ -1,3 +1,8 @@
+// Interactive scaffolder for new posts (pnpm post:new).
+//
+// Creates src/content/<type>/<slug>/index.md with a YAML frontmatter. For vault
+// posts it prompts for the argon2 pepper + password and writes passwordHash; the
+// `protected: true` it sets is later enforced by scripts/lib/frontmatter.ts.
 import { confirm, input, password, select } from "@inquirer/prompts";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { EOL } from "node:os";

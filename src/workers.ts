@@ -1,3 +1,8 @@
+// Cloudflare Worker entrypoint.
+//
+// `fetch` (via @astrojs/cloudflare/handler) serves the built Astro site and the
+// /api/* vault endpoints; `scheduled` dispatches cron triggers to the matching
+// handler below. Unknown schedules are logged and ignored on purpose.
 import { handle } from "@astrojs/cloudflare/handler";
 import { runWeatherSync } from "./cron/weather";
 import { runUnlockCleanup } from "./cron/cleanup";

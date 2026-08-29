@@ -1,3 +1,8 @@
+// Writes the prepare-stage outputs to disk.
+//
+// Modes matter: envelopes and the manifest contain secret-adjacent data (the
+// manifest holds real argon2 hashes), so they are written 0600; public stubs are
+// 0644 and committed into src/content/vault-json for the build.
 import { chmodSync, copyFileSync, mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { ENVELOPE_PREFIX } from "../../src/lib/vault.ts";

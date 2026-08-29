@@ -1,3 +1,8 @@
+// Shared markdown rendering for vault posts (used by post-prepare.ts).
+//
+// The plugin/feature set is fixed on purpose so rendered envelopes are reproducible
+// across builds. renderMarkdown returns the HTML, extracted heading anchors, and
+// the raw frontmatter (parsed separately by lib/frontmatter.ts).
 import { markdownToHtml } from "satteri";
 import type { Frontmatter } from "satteri";
 import expressiveCode from "satteri-expressive-code";

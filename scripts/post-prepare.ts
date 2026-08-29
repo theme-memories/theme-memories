@@ -1,3 +1,16 @@
+// Build-time prepare step (runs via `pnpm post:prepare`, also part of `pnpm build`).
+//
+// For every non-draft post under src/content/vault/<slug>/index.md it:
+//   1. renders markdown -> HTML (satteri plugins),
+//   2. validates the frontmatter publish contract (lib/frontmatter.ts),
+//   3. rewrites local asset URLs to /api/vault/... paths and stages the files,
+//   4. writes a secret-safe "envelope" (post HTML + public metadata) to
+//      .vault-staging/data/<slug>.json, a public "stub" to src/content/vault-json,
+//      and the real password hashes to .vault-manifest.json (chmod 600).
+//
+// post-upload.ts later syncs .vault-staging to the private R2 bucket and D1.
+// Envelopes intentionally exclude passwordHash/protected/question — only the D1
+// row written by post-upload.ts gates access.
 import { pathToFileURL } from "node:url";
 import {
   existsSync,

@@ -1,3 +1,7 @@
+// rclone wrapper for the R2 sync in post-upload.ts.
+//
+// The binary is installed by scripts/install-rclone.ts into .tools/rclone and is
+// driven entirely via RCLONE_CONFIG_* env vars (no rclone.conf on disk).
 import { existsSync } from "node:fs";
 import { execFileSync } from "node:child_process";
 import { RCLONE_BINARY_PATH } from "../config.ts";

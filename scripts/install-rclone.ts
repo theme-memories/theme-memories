@@ -1,3 +1,8 @@
+// Installs a pinned rclone binary into .tools/rclone (pnpm install:rclone).
+//
+// The release checksum is pinned (RCLONE_PINNED_CHECKSUM in config.ts) and verified
+// against both the published SHA256SUMS and the downloaded archive — a supply-chain
+// guard before post-upload.ts trusts the binary.
 import {
   chmodSync,
   copyFileSync,

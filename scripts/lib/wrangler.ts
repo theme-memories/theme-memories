@@ -1,3 +1,8 @@
+// Thin wrapper around the `wrangler` CLI used by post-upload.ts.
+//
+// Resolution order: pnpm > local node_modules bin > PATH. An ENOENT on one
+// candidate falls through to the next, so the script works in both local (pnpm)
+// and CI setups. With captureStdout it returns stdout as a string.
 import { execFileSync } from "node:child_process";
 import { join } from "node:path";
 import { ROOT } from "../config.ts";

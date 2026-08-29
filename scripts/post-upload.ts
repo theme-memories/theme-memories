@@ -1,3 +1,16 @@
+// Deploy step (runs via `pnpm post:upload` after `pnpm post:prepare`).
+//
+// Syncs .vault-staging -> the private R2 bucket, applies pending D1 migrations,
+// then diff-syncs vault password hashes into D1. Order is deliberate: assets are
+// uploaded BEFORE any D1 hash is advertised, so a post is never listed/unlockable
+// without its assets present.
+//
+// HINT: `rclone sync` makes the remote match the local staging dir. If staging is
+// empty (e.g. every post is a draft), the sync deletes ALL objects in the bucket
+// and the D1 cleanup wipes both tables — a publish with zero posts unpublishes
+// everything.
+//
+// Requires CLOUDFLARE_ACCOUNT_ID plus rclone R2 access key/secret in the env.
 import { existsSync, readFileSync, rmSync } from "node:fs";
 import {
   MANIFEST_PATH,
