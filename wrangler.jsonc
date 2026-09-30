@@ -10,7 +10,12 @@
     {
       "pattern": "amia.work",
       "custom_domain": true,
+    },
+    {
+      "pattern": "git.amia.work",
+      "custom_domain": true,
       "previews_enabled": true,
+      "enabled": false,
     },
   ],
   "observability": {
