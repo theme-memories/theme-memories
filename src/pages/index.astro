@@ -1,0 +1,157 @@
+---
+import { Image } from "astro:assets";
+import CategoryBadge from "../components/CategoryBadge.astro";
+import FormattedDate from "../components/FormattedDate.astro";
+import PostEntry from "../components/PostEntry.astro";
+import WeatherWidget from "../components/WeatherWidget.astro";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { SITE_DESCRIPTION, SITE_TITLE } from "../consts";
+import { byPinnedThenDate, getArticles, getVaultEntries } from "../utils/posts";
+import { toSrcset } from "../utils/srcset";
+/*
+ * The masthead art is two pictures, not one: a portrait frame for phones and a
+ * landscape frame for wide screens, the way the site this borrows from art
+ * directs its main visual. Astro's <Picture> only swaps *formats* per <source>,
+ * so the media query has to be written out by hand.
+ */
+import HeroPhone from "../assets/index/hero.webp";
+import HeroPc from "../assets/index/hero-pc.webp";
+
+const articles = (await getArticles()).sort(byPinnedThenDate);
+const [lead, ...rest] = articles;
+const index = rest.slice(0, 5);
+
+/*
+ * The count and the year describe the whole archive rather than the articles
+ * this page happens to list: the vault entries are posts too, and they reach
+ * further back than any article, so a figure taken from the articles alone
+ * would understate both.
+ */
+const archive = [...articles, ...(await getVaultEntries())];
+const since =
+  archive.length === 0
+    ? undefined
+    : Math.min(...archive.map((post) => post.data.pubDate.getFullYear()));
+
+/*
+ * The `md` breakpoint. The portrait frame is drawn for a phone, so past this
+ * width it stops being a phone picture and starts being an 1100px wall that
+ * pushes the description off the screen.
+ */
+const PC_BREAKPOINT = "48rem";
+const PC_WIDTHS = [1024, 1440, 1920, 2560];
+
+const heroPcSrcset = await toSrcset(HeroPc, PC_WIDTHS);
+---
+
+<BaseLayout title={SITE_TITLE} description={SITE_DESCRIPTION}>
+  <!--
+    The masthead.
+
+    The art carries the whole block and the description sits under it on the page
+    surface. The description was briefly set on top of the art behind a dark
+    scrim, and the scrim is gone because the two are the same decision: every band
+    of both frames contains near-black pixels (line-art outlines, dark clothing,
+    the buildings), so measured against either the lightest or the darkest text
+    colour there is no band wide enough to hold a headline. The choice was a scrim
+    or the page surface, and the art is the reason this block exists.
+
+    The last of the image still dissolves into the page rather than ending on a
+    hard seam. That is a mask, not a colour, so it lands on whatever the page
+    surface is in either theme.
+  -->
+  <section class="bg-base-100">
+    <picture>
+      <source
+        media={`(min-width: ${PC_BREAKPOINT})`}
+        srcset={heroPcSrcset}
+        sizes="100vw"
+        type="image/webp"
+      />
+      <Image
+        src={HeroPhone}
+        alt=""
+        widths={[480, 750, 1125, 1500]}
+        sizes="100vw"
+        loading="eager"
+        fetchpriority="high"
+        class="mask-b-from-92% block max-h-[70svh] w-full object-cover lg:h-[min(59.375vw,70svh)] lg:max-h-none"
+      />
+    </picture>
+
+    <div class="site-container pt-8 pb-8">
+      <div class="rule-ink"></div>
+      <div class="mt-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between sm:gap-8">
+        <h1 class="display-title max-w-3xl text-balance">{SITE_DESCRIPTION}</h1>
+        <p class="data shrink-0">
+          {archive.length} 件{since !== undefined && <>（{since}年以降）</>}
+        </p>
+      </div>
+    </div>
+  </section>
+
+  {lead && (
+    <section class="bg-base-200">
+      <div class="site-container py-12 sm:py-14">
+        <article
+          class:list={[
+            "grid gap-8 lg:gap-12",
+            lead.data.heroImage && "lg:grid-cols-2 lg:items-center",
+          ]}
+        >
+          <div>
+            <p class="label">最新</p>
+            <div class="mt-5 flex flex-wrap items-baseline gap-x-4 gap-y-2">
+              <CategoryBadge category={lead.data.category} />
+              <span class="data">
+                <FormattedDate date={lead.data.pubDate} />
+              </span>
+            </div>
+            <h2 class="display-title mt-4">
+              <a
+                href={`/${lead.collection}/${lead.data.slug}`}
+                class="hover:text-[color:var(--ink-accent)] transition-colors"
+              >
+                {lead.data.title}
+              </a>
+            </h2>
+            <p class="page-lead mt-5">{lead.data.description}</p>
+          </div>
+
+          {lead.data.heroImage && (
+            <figure class="media-frame">
+              <Image
+                width={720}
+                height={480}
+                src={lead.data.heroImage}
+                alt=""
+                loading="eager"
+                class="h-full w-full object-cover"
+              />
+            </figure>
+          )}
+        </article>
+      </div>
+    </section>
+  )}
+
+  <section class="site-container pt-14 pb-20 sm:pt-16">
+    <div class="grid gap-12 lg:grid-cols-[minmax(0,1fr)_22rem] lg:gap-16">
+      <div>
+        <div class="flex items-baseline justify-between gap-4">
+          <h2 class="section-title">一覧</h2>
+          <a href="/posts" class="link-quiet text-sm">
+            すべての記事 →
+          </a>
+        </div>
+        <div class="border-base-300 mt-6 border-t">
+          {index.map((post) => (
+            <PostEntry post={post} level={3} />
+          ))}
+        </div>
+      </div>
+
+      <WeatherWidget />
+    </div>
+  </section>
+</BaseLayout>

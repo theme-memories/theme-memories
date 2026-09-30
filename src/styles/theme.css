@@ -1,0 +1,239 @@
+@theme inline {
+  --font-sans:
+    var(--font-mplus), var(--font-emoji), ui-sans-serif, system-ui, sans-serif;
+  --font-mono:
+    var(--font-mplus-code), var(--font-emoji), ui-monospace, monospace;
+  --font-icon: var(--font-symbol);
+}
+
+/*
+ * Motion.
+ *
+ * The whole movement vocabulary: three curves, a short ladder of durations, the
+ * beats a staged sequence steps by, and the one reveal every arriving element
+ * shares. Nothing here is decorative. Each value answers a question about how
+ * long the eye needs to follow a change, so a rule that reaches for a raw number
+ * instead of a name is the thing to fix.
+ *
+ * The curves are plain custom properties rather than theme values because every
+ * one of them is consumed by a rule in a stylesheet, and Tailwind only emits a
+ * theme value it can see a utility asking for.
+ *
+ * The two decelerating curves carry everything that arrives or changes in place.
+ * By the time the eye has followed an element to where it is going, the movement
+ * has shed its speed; an ease that arrives gently reads as hesitation instead.
+ * Colour settling into place does not need either and keeps the browser default.
+ *
+ * The third is the exception, and it is named rather than restated for that
+ * reason: the loader's veil *leaving* is the one motion on the site that is not
+ * an arrival. It accelerates out of the start and decelerates into the end, so
+ * it could not borrow either of the others without changing how the veil feels.
+ * `--motion-veil` and `--ease-leave` are that motion's two values, given names
+ * so the rule that uses them is not the only place they are written down.
+ *
+ * It is `--ease-leave` and not `--ease-in-out` because Tailwind's own default
+ * theme already defines the latter, for its utility of that name. A second
+ * declaration here would shadow more than a stray value — it would quietly
+ * change what `ease-in-out` means the day any rule reaches for the utility.
+ */
+:root {
+  --motion-tap: 100ms; /* a control acknowledging a press */
+  --motion-exit: 150ms; /* something leaving, or settling into a new colour */
+  --motion-state: 200ms; /* a control changing state under the pointer */
+  --motion-reveal: 280ms; /* an element arriving in space already held for it */
+  --motion-veil: 300ms; /* the loader's veil leaving the viewport */
+  --motion-swap: 320ms; /* the character page changing era */
+  --motion-stagger: 80ms; /* one step of a staged entrance */
+  --motion-beat: 140ms; /* the panel arriving behind the art */
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-leave: cubic-bezier(0.2, 0, 0, 1);
+
+  /* How far back ink is held. All three are argued below. */
+  --ink-muted: color-mix(in oklab, var(--color-base-content) 74%, transparent);
+  --ink-mark: color-mix(in oklab, var(--color-base-content) 55%, transparent);
+  --ink-accent: color-mix(
+    in oklab,
+    var(--color-primary) 55%,
+    var(--color-base-content)
+  );
+
+  /* The theme that wants the character page's art held back sets it below. */
+  --stage-art-wash: transparent;
+}
+
+/*
+ * The one value in the stylesheets that has to be told which theme it is in.
+ *
+ * The character page's art is drawn light and stays light in both themes, so in
+ * the dark theme it needs holding back or it reads as a hole punched in the
+ * page. Everything else here reads a daisyUI token that already carries both
+ * values, which is why this is a named declaration in the one file that owns
+ * theme values rather than a `[data-theme]` selector in a component stylesheet —
+ * and why a third theme would override this one line and inherit the rest.
+ */
+:root[data-theme="night"] {
+  --stage-art-wash: color-mix(in oklab, var(--color-base-100) 62%, transparent);
+}
+
+/*
+ * The arrival. Anything that appears in space its parent already reserved fades
+ * up into it: enough to say that it arrived, too little to carry meaning on its
+ * own. Shared rather than restated, so a filtered row, a weather reading and an
+ * era panel all arrive the same way and the page reads as one surface.
+ *
+ * Filled `backwards`, so an element given a delay is held at its start state for
+ * the whole of it. That is what lets a sequence stagger without a flash of the
+ * finished state first.
+ */
+@keyframes reveal-rise {
+  from {
+    opacity: 0;
+    transform: translateY(0.5rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/*
+ * Two muted tiers, and why they stop where they do.
+ *
+ * Secondary text is held back from full contrast so it never competes with the
+ * writing, but "held back" cannot mean "under the floor", and the brief already
+ * calls contrast a floor rather than a preference. Measured against the page
+ * surface, base-content at 55% reads 3.06:1 in nord and 4.09:1 in night, and at
+ * 60% reads 3.49:1 and 4.70:1. The light theme fails AA for text at both, which
+ * is where every label, date, nav link, caption and lead paragraph on this site
+ * sat.
+ *
+ * 74% is the lowest value that clears 4.5:1 on every surface the tier is laid
+ * on, not only on the page. It was first cut at 70%, which does clear on
+ * `base-100`, 4.59:1 in nord, and that is the surface it was measured against.
+ * But the footer, the latest-post lane and a pressed index row all put
+ * `base-200` underneath muted text, where the same value reads 4.42:1, and
+ * `base-300` reads 4.22:1. Calibrating against one surface left the other two
+ * under the floor, which is a drift the "declared once" rule cannot catch
+ * because the value itself was fine. At 74% the tier reads 5.10:1 on
+ * `base-100`, 4.97:1 on `base-200` and 4.63:1 on `base-300` in nord, and
+ * 6.48:1 / 6.61:1 / 6.70:1 in night, so a call site can move between them
+ * without re-measuring. It still sits well under the body's 10.84:1, so it
+ * reads as secondary rather than as competing, which is the whole reason it is
+ * held back.
+ *
+ * The row marker is a glyph rather than text, so it answers to 3:1 instead, and
+ * 55% measures 3.06:1 in nord and 4.09:1 in night. It was 35%, or 1.95:1, which
+ * is why the arrows down the index were barely there.
+ *
+ * The third is the accent, and only where it carries text. On its own it
+ * measures 3.5:1 against this page, which is fine for a border, a focus ring or
+ * a one-pixel rule and not fine for a word. Mixed 55/45 toward the body ink it
+ * measures 5.8:1 in nord and 8.5:1 in night, and keeps enough of the hue to
+ * still read as the accent. prose.css found this first, for links; it is named
+ * here because the current entry in the table of contents, the hovered index
+ * row and the quiet link all put the accent on words too.
+ *
+ * One value per tier, declared once, so a rule cannot drift; and written as
+ * `color-mix` over `transparent` because that is exactly what Tailwind's `/NN`
+ * opacity modifier emits. These are the numbers the call sites already spoke,
+ * given a name and moved onto the floor.
+ *
+ * The declarations live in the `:root` above, beside the motion tokens, because
+ * a stylesheet may only carry one block per selector. Tailwind writes its own
+ * fallback for engines without `color-mix`, where the tier degrades to full
+ * contrast rather than to no colour at all.
+ */
+
+/*
+ * The loader's arrival, the one staged sequence on the site. Declared as a
+ * theme value so the loader consumes it as an ordinary `animate-*` utility
+ * rather than as a one-off rule.
+ */
+@theme {
+  --animate-loader-rise: loader-rise 420ms var(--ease-out-expo) backwards;
+
+  @keyframes loader-rise {
+    from {
+      opacity: 0;
+      transform: translateY(0.5rem);
+      filter: blur(4px);
+    }
+
+    to {
+      opacity: 1;
+      transform: none;
+      filter: blur(0);
+    }
+  }
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    text-size-adjust: 100%;
+  }
+
+  body {
+    @apply font-sans antialiased;
+  }
+
+  /*
+   * The page speaks in one typeface, so hierarchy has to come from weight and
+   * size alone. M PLUS 1 carries the full 100-900 range and headings take the
+   * heavy end of it: Japanese glyphs gain little from letterform contrast, but
+   * they read very clearly when set noticeably heavier than the body around
+   * them.
+   */
+  :where(h1, h2, h3, h4) {
+    font-weight: 700;
+    letter-spacing: 0.01em;
+  }
+
+  code,
+  kbd,
+  pre,
+  samp {
+    @apply font-mono;
+  }
+
+  ::selection {
+    background-color: var(--color-primary);
+    color: var(--color-primary-content);
+  }
+
+  /*
+   * Every control gets the same visible ring. It is drawn with the accent so
+   * it survives both themes, and offset so it never touches the control's own
+   * hairline border.
+   */
+  :focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+
+  /*
+   * A tap on a control should not have to wait out the double-tap-zoom delay
+   * before it acts. Pinch-to-zoom is untouched, and so is the page around them:
+   * this is on the elements that are meant to be tapped, not on the text beside
+   * them.
+   */
+  :where(a, button, label, summary, input, select, textarea) {
+    touch-action: manipulation;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}

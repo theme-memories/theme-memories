@@ -1,0 +1,107 @@
+---
+import { categories, categoryKeys } from "../data/categories";
+import { FILTER_ALL } from "../utils/post-filter";
+
+interface Props {
+  years: number[];
+}
+
+const { years } = Astro.props;
+---
+
+<!--
+  Radio groups rather than daisyUI's `filter` component: that one collapses the
+  unselected options, which makes switching between categories a two-step job.
+  Each option is a real radio wrapped in its own label, so the choice keeps its
+  native semantics and the whole chip is the hit area.
+
+  A selected chip inverts to ink rather than taking the accent, and grows a
+  filled marker, so the state survives grayscale and does not spend the accent
+  on something that is not an action.
+-->
+<div
+  class="border-base-300 flex flex-wrap items-center justify-between gap-x-8 gap-y-4 border-y py-4"
+  data-post-filter
+>
+  <div class="flex flex-wrap items-center gap-x-8 gap-y-4">
+    <div class="flex flex-wrap items-center gap-3">
+      <span id="post-filter-category-label" class="label">
+        カテゴリー
+      </span>
+      <div
+        class="flex flex-wrap gap-1.5"
+        role="radiogroup"
+        aria-labelledby="post-filter-category-label"
+      >
+        <label class="filter-chip">
+          <input
+            class="sr-only"
+            type="radio"
+            name="post-category"
+            value={FILTER_ALL}
+            data-filter-group="category"
+            checked
+          />
+          <span>すべて</span>
+        </label>
+        {categoryKeys.map((key) => (
+          <label class="filter-chip">
+            <input
+              class="sr-only"
+              type="radio"
+              name="post-category"
+              value={key}
+              data-filter-group="category"
+            />
+            <span>{categories[key].name}</span>
+          </label>
+        ))}
+      </div>
+    </div>
+
+    {years.length > 1 && (
+      <div class="flex flex-wrap items-center gap-3">
+        <span id="post-filter-year-label" class="label">
+          年
+        </span>
+        <div
+          class="flex flex-wrap gap-1.5"
+          role="radiogroup"
+          aria-labelledby="post-filter-year-label"
+        >
+          <label class="filter-chip">
+            <input
+              class="sr-only"
+              type="radio"
+              name="post-year"
+              value={FILTER_ALL}
+              data-filter-group="year"
+              checked
+            />
+            <span>すべて</span>
+          </label>
+          {years.map((year) => (
+            <label class="filter-chip">
+              <input
+                class="sr-only"
+                type="radio"
+                name="post-year"
+                value={year}
+                data-filter-group="year"
+              />
+              <span>{year}</span>
+            </label>
+          ))}
+        </div>
+      </div>
+    )}
+  </div>
+
+  <p class="data" data-post-filter-count aria-live="polite"></p>
+</div>
+
+<script>
+  import { enhancePostFilter } from "../scripts/post-filter";
+
+  enhancePostFilter();
+</script>

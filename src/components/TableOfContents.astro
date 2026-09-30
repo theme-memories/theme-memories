@@ -1,0 +1,105 @@
+---
+import type { MarkdownHeading } from "astro";
+import { buildToc } from "../utils/toc";
+
+interface Props {
+  headings: MarkdownHeading[];
+}
+
+const { headings } = Astro.props;
+const items = buildToc(headings);
+---
+
+{items.length > 0 && (
+  <aside class="article-toc">
+    <nav class="toc" aria-labelledby="toc-heading" data-toc>
+      <h2 id="toc-heading" class="label mb-3">
+        目次
+      </h2>
+      <ul>
+        {items.map((item) => (
+          <li>
+            <a class="toc-link" href={`#${item.heading.slug}`}>
+              {item.heading.text}
+            </a>
+            {item.children.length > 0 && (
+              <ul>
+                {item.children.map((child) => (
+                  <li>
+                    <a class="toc-link toc-link-nested" href={`#${child.slug}`}>
+                      {child.text}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </li>
+        ))}
+      </ul>
+    </nav>
+  </aside>
+)}
+
+<script>
+  const toc = document.querySelector<HTMLElement>("[data-toc]");
+
+  if (toc) {
+    const entries: { link: HTMLAnchorElement; element: HTMLElement }[] = [];
+
+    for (const link of toc.querySelectorAll<HTMLAnchorElement>(
+      "a[href^='#']",
+    )) {
+      const id = decodeURIComponent(link.hash.slice(1));
+      const element = id === "" ? null : document.getElementById(id);
+      if (element) entries.push({ link, element });
+    }
+
+    if (entries.length > 0) {
+      // A heading an anchor link scrolled to settles at its `scroll-margin-top`,
+      // so that is the point past which it counts as the current section.
+      const anchorOffset = Number.parseFloat(
+        getComputedStyle(entries[0].element).scrollMarginTop,
+      );
+      const header = document.querySelector("header");
+      const offset =
+        anchorOffset > 0
+          ? anchorOffset + 1
+          : (header?.getBoundingClientRect().height ?? 64) + 24;
+      let activeId = "";
+
+      const update = () => {
+        let current = entries[0].element.id;
+        for (const { element } of entries) {
+          if (element.getBoundingClientRect().top - offset <= 0) {
+            current = element.id;
+          } else {
+            break;
+          }
+        }
+        if (current === activeId) return;
+        activeId = current;
+        for (const { link, element } of entries) {
+          if (element.id === activeId)
+            link.setAttribute("aria-current", "location");
+          else link.removeAttribute("aria-current");
+        }
+      };
+
+      let queued = false;
+      const schedule = () => {
+        if (queued) return;
+        queued = true;
+        requestAnimationFrame(() => {
+          queued = false;
+          update();
+        });
+      };
+
+      window.addEventListener("scroll", schedule, { passive: true });
+      window.addEventListener("hashchange", schedule);
+      window.addEventListener("resize", schedule);
+
+      update();
+    }
+  }
+</script>

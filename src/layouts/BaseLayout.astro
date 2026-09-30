@@ -1,0 +1,204 @@
+---
+import type { ImageMetadata } from "astro";
+import BaseHead from "../components/BaseHead.astro";
+import Footer from "../components/Footer.astro";
+import Header from "../components/Header.astro";
+import HeaderLink from "../components/HeaderLink.astro";
+import Icon from "../components/Icon.astro";
+import { NAV_ITEMS, SITE_TITLE } from "../consts";
+
+interface Props {
+  title: string;
+  description: string;
+  image?: ImageMetadata;
+  noindex?: boolean;
+}
+
+const { title, description, image, noindex = false } = Astro.props;
+const drawerId = "site-drawer";
+---
+
+<!doctype html>
+<html lang="ja">
+  <head>
+    <BaseHead
+      title={title}
+      description={description}
+      image={image}
+      noindex={noindex}
+    />
+
+    <script is:inline>
+      /*
+       * Every page gets the loader, the way the site this borrows from does.
+       *
+       * The one line below is the whole switch, and it is deliberately a script
+       * rather than a stylesheet default: the veil is only ever shown to a
+       * browser that can also take it away again. With scripting off, the veil
+       * stays `display: none` and the page is simply readable, which is the only
+       * safe failure mode for something that covers the whole viewport.
+       */
+      document.documentElement.dataset.loader = "on";
+    </script>
+  </head>
+  <body class="min-h-dvh">
+    <div class="loader" id="page-loader" aria-hidden="true">
+      <div class="loader-inner">
+        <div
+          class="loader-chunk loader-anim"
+          id="page-loader-anim"
+          hidden
+        ></div>
+        <p class="loader-chunk loader-name">{SITE_TITLE}</p>
+        <div class="loader-chunk loader-track">
+          <div class="loader-fill" id="page-loader-fill"></div>
+        </div>
+        <div class="loader-chunk loader-meta">
+          <span class="label">読み込み中</span>
+          <span class="data" id="page-loader-pct">
+            0%
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      import { enhancePageLoader } from "../scripts/page-loader";
+
+      enhancePageLoader();
+    </script>
+    <!--
+      The click burst. It sits over the whole page, takes no pointer events, and
+      is decoration the page never depends on: the script drops it entirely for a
+      reader who has asked for less motion, and nothing here is reachable by
+      keyboard or announced to a screen reader.
+    -->
+    <canvas class="fireworks" aria-hidden="true"></canvas>
+
+    <script>
+      import { enhanceFireworks } from "../scripts/fireworks";
+
+      enhanceFireworks();
+    </script>
+    <div class="drawer">
+      <input
+        id={drawerId}
+        type="checkbox"
+        class="drawer-toggle"
+        tabindex="-1"
+        aria-hidden="true"
+      />
+      <div class="drawer-content flex min-h-dvh flex-col">
+        <!--
+          First in the tab order, so the chrome below it can be stepped over.
+          The header carries the wordmark, three nav links and the theme toggle
+          on every page, and the drawer button as well on a phone.
+
+          The destination is focusable because a skip link that only scrolls
+          leaves the reader's focus behind in the header, where the next Tab
+          would carry them back into the nav they just skipped.
+        -->
+        <a class="skip-link" href="#main">
+          本文へスキップ
+        </a>
+        <Header />
+        <main id="main" tabindex="-1" class="flex-1">
+          <slot />
+        </main>
+        <Footer />
+      </div>
+      <nav class="drawer-side z-50" aria-label="モバイルナビゲーション">
+        <label
+          for={drawerId}
+          id="drawer-overlay"
+          class="drawer-overlay"
+          aria-label="ナビゲーションを閉じる"
+        ></label>
+        <div
+          id="drawer-panel"
+          class="bg-base-100 border-base-300 flex min-h-full w-72 max-w-[80vw] flex-col gap-2 border-e p-5"
+        >
+          <div class="flex items-center justify-between gap-2">
+            <a href="/" class="wordmark">
+              {SITE_TITLE}
+            </a>
+            <button
+              id="drawer-close"
+              type="button"
+              class="btn btn-ghost btn-square btn-sm min-h-11 min-w-11"
+              aria-label="ナビゲーションを閉じる"
+            >
+              <Icon name="close" class="text-[1.25rem]" />
+            </button>
+          </div>
+          <ul class="mt-6 grow">
+            {NAV_ITEMS.map((item) => (
+              <li>
+                <HeaderLink
+                  href={item.href}
+                  match={item.match}
+                  class="block py-3 text-lg"
+                >
+                  {item.label}
+                </HeaderLink>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </nav>
+    </div>
+
+    <script is:inline>
+      (() => {
+        const toggle = document.getElementById("site-drawer");
+        const openButton = document.getElementById("drawer-open");
+        const closeButton = document.getElementById("drawer-close");
+        const overlay = document.getElementById("drawer-overlay");
+        const panel = document.getElementById("drawer-panel");
+        if (
+          !(toggle instanceof HTMLInputElement) ||
+          !(openButton instanceof HTMLButtonElement)
+        )
+          return;
+
+        /*
+         * The open drawer covers the page, so the page has to stop answering.
+         * Without this, Tab walks out of the open drawer and into the header
+         * button and wordmark sitting behind it. `inert` also takes the covered
+         * page out of the accessibility tree, which is the same promise a dialog
+         * makes, and it is why no focus trap is hand-rolled here.
+         *
+         * The attribute comes off before the trigger is refocused, because the
+         * trigger lives inside the subtree being made interactive again.
+         */
+        const content = document.querySelector(".drawer-content");
+
+        const setOpen = (open) => {
+          toggle.checked = open;
+          openButton.setAttribute("aria-expanded", String(open));
+          if (open) {
+            content?.setAttribute("inert", "");
+            window.setTimeout(() => {
+              if (!toggle.checked) return;
+              const first = panel?.querySelector("a, button");
+              if (first instanceof HTMLElement) first.focus();
+            }, 250);
+          } else {
+            content?.removeAttribute("inert");
+            openButton.focus();
+          }
+        };
+
+        openButton.addEventListener("click", () => setOpen(!toggle.checked));
+        closeButton?.addEventListener("click", () => setOpen(false));
+        overlay?.addEventListener("click", (event) => {
+          event.preventDefault();
+          setOpen(false);
+        });
+        document.addEventListener("keydown", (event) => {
+          if (event.key === "Escape" && toggle.checked) setOpen(false);
+        });
+      })();
+    </script>
+  </body>
+</html>

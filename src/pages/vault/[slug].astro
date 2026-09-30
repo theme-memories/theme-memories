@@ -1,0 +1,47 @@
+---
+export const prerender = false; // Not needed in 'server' mode
+
+import { render } from "astro:content";
+import { env } from "cloudflare:workers";
+import BlogPost from "../../layouts/BlogPost.astro";
+import { NO_STORE, noStore } from "../../utils/http";
+import { getVaultEntry } from "../../utils/posts";
+import { isUnlocked } from "../../utils/vault-auth";
+
+/*
+ * The body is gated per session, so nothing on the way to the reader may hold a
+ * copy of this page.
+ */
+Astro.response.headers.set("Cache-Control", "no-store");
+
+const { slug } = Astro.params;
+if (slug === undefined) {
+  return noStore(Astro.redirect("/404"));
+}
+
+const post = await getVaultEntry(slug);
+if (post === undefined) {
+  return new Response(null, { status: 404, headers: NO_STORE });
+}
+
+const userid = await Astro.session?.get("userid");
+const nowSeconds = Math.floor(Date.now() / 1000);
+
+if (
+  userid === undefined ||
+  !(await isUnlocked(env.DB, userid, slug, nowSeconds))
+) {
+  return noStore(Astro.redirect(`/login/${slug}`));
+}
+
+const { Content, headings, remarkPluginFrontmatter } = await render(post);
+---
+
+<BlogPost
+  {...post.data}
+  headings={headings}
+  minutesRead={remarkPluginFrontmatter.minutesRead}
+  noindex
+>
+  <Content />
+</BlogPost>

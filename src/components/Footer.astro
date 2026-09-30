@@ -1,0 +1,27 @@
+---
+import { SITE_TITLE } from "../consts";
+
+const today = new Date();
+---
+
+<!--
+  Two lines of small print do not need a 40px frame. daisyUI's own default row
+  gap is 2.5rem, which is most of the height this footer used to carry, so both
+  the gap and the padding come down together.
+-->
+<footer class="footer footer-horizontal footer-center bg-base-200 text-base-content mt-auto gap-x-6 gap-y-3 px-6 py-6">
+  <nav class="grid grid-flow-col gap-4" aria-label="購読とサイト案内">
+    <a class="link link-hover" href="/rss.xml">
+      RSS
+    </a>
+    <a class="link link-hover" href="/sitemap-index.xml">
+      SITEMAP
+    </a>
+  </nav>
+
+  <aside>
+    <p class="text-[color:var(--ink-muted)]">
+      &copy; {today.getFullYear()} {SITE_TITLE}. All rights reserved.
+    </p>
+  </aside>
+</footer>

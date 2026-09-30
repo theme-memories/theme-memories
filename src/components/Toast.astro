@@ -1,0 +1,21 @@
+---
+interface Props {
+  variant?: "error" | "success" | "info";
+  message?: string;
+  visible?: boolean;
+}
+
+const { variant = "error", message = "", visible = false } = Astro.props;
+---
+
+<div
+  id="toast"
+  class="toast toast-end z-50"
+  role="status"
+  aria-live="polite"
+  hidden={!visible}
+>
+  <div id="toast-body" class={`alert alert-${variant}`}>
+    <span id="toast-message">{message}</span>
+  </div>
+</div>

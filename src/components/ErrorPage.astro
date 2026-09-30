@@ -1,0 +1,51 @@
+---
+import { Image } from "astro:assets";
+import type { ImageMetadata } from "astro";
+import BaseLayout from "../layouts/BaseLayout.astro";
+
+/*
+ * The 404 and the 500 are the same page: an illustration on one side, the code,
+ * the title and a way home on the other. They are authored here rather than
+ * twice so the pair cannot drift — the only things that differ are the picture
+ * and the words, and the 500 adds its development message through the slot.
+ */
+interface Props {
+  code: string;
+  /** Serves as both the document title and the visible heading. */
+  title: string;
+  /** The meta description, which is a shorter line than the visible lead. */
+  metaDescription: string;
+  lead: string;
+  image: ImageMetadata;
+  alt: string;
+}
+
+const { code, title, metaDescription, lead, image, alt } = Astro.props;
+---
+
+<BaseLayout title={title} description={metaDescription}>
+  <section class="site-container py-16 sm:py-24">
+    <div class="grid gap-10 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] sm:items-center sm:gap-16">
+      <figure class="media-frame">
+        <Image
+          src={image}
+          alt={alt}
+          widths={[375, 750]}
+          sizes="(width >= 40rem) 30rem, 100vw"
+          loading="eager"
+          class="h-auto w-full object-cover"
+        />
+      </figure>
+
+      <div>
+        <p class="label font-mono">{code}</p>
+        <h1 class="page-title mt-4">{title}</h1>
+        <p class="page-lead mt-5">{lead}</p>
+        <slot />
+        <a href="/" class="btn btn-primary mt-8">
+          ホームへ戻る
+        </a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

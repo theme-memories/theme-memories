@@ -1,0 +1,32 @@
+---
+/*
+ * Icons are ligatures from the Material Symbols font, not inline SVG paths, so
+ * the whole set costs one subsetted webfont instead of a growing pile of `d`
+ * attributes to keep in sync.
+ *
+ * The component keeps its own vocabulary and maps it to ligature names here, so
+ * call sites never depend on the icon font's naming. The size is the font size,
+ * matching Material Symbols' 24px em box, and is set by the caller; the glyph
+ * itself inherits `currentColor`.
+ */
+type IconName = "menu" | "close" | "sun" | "moon" | "arrow";
+
+const GLYPHS: Record<IconName, string> = {
+  menu: "menu",
+  close: "close",
+  sun: "light_mode",
+  moon: "dark_mode",
+  arrow: "arrow_forward",
+};
+
+interface Props {
+  name: IconName;
+  class?: string;
+}
+
+const { name, class: className } = Astro.props;
+---
+
+<span class:list={["icon", className]} aria-hidden="true">
+  {GLYPHS[name]}
+</span>

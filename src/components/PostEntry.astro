@@ -1,0 +1,39 @@
+---
+import type { CollectionEntry } from "astro:content";
+import CategoryBadge from "./CategoryBadge.astro";
+import FormattedDate from "./FormattedDate.astro";
+import Icon from "./Icon.astro";
+
+interface Props {
+  post: CollectionEntry<"article"> | CollectionEntry<"vault">;
+  /*
+   * The row is a list item, so its heading belongs one level under whatever
+   * heads the list it sits in. `/posts` has no heading above the rows and takes
+   * the default; the home page's index sits under 一覧 and takes 3, so that
+   * heading scopes its own entries instead of reading as their peer.
+   */
+  level?: 2 | 3;
+}
+
+const { post, level = 2 } = Astro.props;
+const Heading = `h${level}` as "h2" | "h3";
+const { title, pubDate, category } = post.data;
+const href = `/${post.collection}/${post.data.slug}`;
+---
+
+<a
+  href={href}
+  class="post-row"
+  data-post
+  data-category={category}
+  data-year={pubDate.getFullYear()}
+>
+  <Heading class="post-row-title">{title}</Heading>
+  <p class="post-row-meta flex flex-wrap items-baseline gap-x-3 gap-y-1">
+    <span class="data post-row-date">
+      <FormattedDate date={pubDate} />
+    </span>
+    <CategoryBadge category={category} />
+  </p>
+  <Icon name="arrow" class="post-row-mark text-[1.125rem]" />
+</a>

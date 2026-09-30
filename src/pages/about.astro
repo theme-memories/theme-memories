@@ -1,0 +1,362 @@
+---
+import type { ImageMetadata } from "astro";
+import { getImage } from "astro:assets";
+import MizukiGallery from "@components/MizukiGallery.astro";
+import BaseLayout from "@layouts/BaseLayout.astro";
+import NowWorldPc from "../assets/about/now-background-pc.webp";
+import NowWorldPhone from "../assets/about/now-background.webp";
+import NowFigurePc from "../assets/about/now-foreground-pc.webp";
+import NowFigurePhone from "../assets/about/now-foreground.webp";
+import PastWorldPc from "../assets/about/past-background-pc.webp";
+import PastWorldPhone from "../assets/about/past-background.webp";
+import PastFigurePc from "../assets/about/past-foreground-pc.webp";
+import PastFigurePhone from "../assets/about/past-foreground.webp";
+/*
+ * The card this page unfurls into, which is a gallery card rather than one of
+ * the band's layers.
+ *
+ * An OG card wants a landscape frame with a subject in it, and the band cannot
+ * supply one at any era: its world layer is the room with nobody in it, and its
+ * figure layer is a cut-out that is 92% transparent, so neither works alone and
+ * they can only be composited by the page itself. The band's phone frame is
+ * 1500x1400, so the 1200x630 card discards 44% of its height and returns an
+ * empty room either way.
+ *
+ * The gallery's newest card is 2338x1440, which loses 15% to the same crop and
+ * arrives with the character in it. It is also the first card the carousel on
+ * this page shows, so the card and the page lead with the same picture.
+ */
+import OgCard from "../assets/mizuki-gallery/056.webp";
+import { SITE_TITLE } from "../consts";
+import {
+  defaultEra,
+  eras,
+  eraKeys,
+  profile,
+  rows,
+  videoTitle,
+  type Era,
+} from "../data/profile";
+import { toSrcset } from "../utils/srcset";
+
+/*
+ * The two layers of the character band, per era: the world she is standing in,
+ * and the figure standing in it. Each is authored twice, once as a tall phone
+ * frame and once as a wide one, which is why the band swaps its art direction
+ * at `md` the same way the home masthead does.
+ *
+ * Both layers answer to the era. The two figures are drawn with her in the same
+ * part of the frame — measured, she occupies x 20–53% and y 18–94% of both wide
+ * files — so one set of placement values covers the pair.
+ */
+type Layer = { phone: ImageMetadata; pc: ImageMetadata };
+
+const stage = {
+  past: {
+    world: { phone: PastWorldPhone, pc: PastWorldPc },
+    figure: { phone: PastFigurePhone, pc: PastFigurePc },
+  },
+  now: {
+    world: { phone: NowWorldPhone, pc: NowWorldPc },
+    figure: { phone: NowFigurePhone, pc: NowFigurePc },
+  },
+} satisfies Record<Era, { world: Layer; figure: Layer }>;
+
+// Both art directions are wider than any viewport they are shown at, so these
+// widths stay below the source size and nothing is ever upscaled.
+const layers = await Promise.all(
+  eraKeys.map(async (era) => ({
+    era,
+    world: {
+      phone: (
+        await getImage({
+          src: stage[era].world.phone,
+          width: 900,
+          format: "webp",
+        })
+      ).src,
+      pc: await toSrcset(stage[era].world.pc, [1280, 1920, 2560]),
+    },
+    figure: {
+      phone: (
+        await getImage({
+          src: stage[era].figure.phone,
+          width: 750,
+          format: "webp",
+        })
+      ).src,
+      pc: await toSrcset(stage[era].figure.pc, [1024, 1600]),
+    },
+  })),
+);
+
+// Two columns per pair, so the widest row decides the grid and the data can
+// grow a pair without the markup following it.
+const columns = Math.max(...rows.map((row) => row.length)) * 2;
+---
+
+<BaseLayout
+  title={`プロフィール · ${SITE_TITLE}`}
+  description={`${profile.unit}の${profile.role}。`}
+  image={OgCard}
+>
+  <!--
+    The era toggle, and the two views it switches between.
+
+    daisyUI's `tabs` with radio inputs inside labels is the whole mechanism. The
+    component styles the label, drops the input over it, and fills the one that
+    is checked, so the toggle costs no JavaScript and works with scripting off.
+
+    There are no tab roles here on purpose. A tablist whose children are radios
+    rather than tabs is a promise the markup cannot keep, so the semantics are
+    left to the native radio group and only the shape is borrowed.
+
+    The panels are not daisyUI's `.tab-content`. Those have to be the next
+    sibling of the tab that shows them, which would force the bar and everything
+    it controls into one box. Keying the panels off the radios instead, in
+    components.css, is what lets the toggle sit at the top of the page and drive
+    the world, the figure, the sheet, the prose and the film all at once.
+
+    Both eras run the same rows through the same map, so only the values that
+    actually differ change, and the two views cannot drift apart.
+  -->
+  <div class="era">
+    <!--
+      The character band, and the whole of the page above the cards.
+
+      The reference page opens on the character rather than on a heading, so
+      there is no title block: the toggle comes first, then the art, then the
+      card that carries everything else.
+
+      The toggle is on the artwork rather than inside the card, which is where
+      the reference puts it. That costs it the card's opaque backing, so it
+      carries its own surface: the pills are near-white and the artwork is
+      high-key, and the two have no contrast without one.
+
+      The art is `relative` on a phone, where the figure needs a band of its own
+      between the toggle and the card, and `absolute` from `md`, where it
+      becomes the backdrop that the card floats over. `--stage-art` is that
+      phone band's height, set once so the layer and the card's offset stay in
+      step.
+    -->
+    <section class="[--stage-art:112vw] relative isolate overflow-hidden">
+      <!--
+        The toggle sits above the art in paint order, not only in the DOM: the
+        art is positioned and comes later in the source, so without a stacking
+        order of its own the bar would be behind it and invisible.
+      -->
+      <div class="site-container relative z-10 pt-6 md:pt-8">
+        <div class="tabs tabs-box bg-base-100 border-base-300 w-fit border">
+          {eraKeys.map((era) => (
+            <label class="tab min-h-11">
+              <input
+                type="radio"
+                name="era"
+                value={era}
+                checked={era === defaultEra}
+              />
+              {eras[era].label}
+            </label>
+          ))}
+        </div>
+      </div>
+
+      <div
+        class="stage-art relative isolate h-(--stage-art) w-full md:absolute md:inset-0 md:h-full"
+        aria-hidden="true"
+      >
+        <!--
+          The era's world, edge to edge behind everything. `data-layer` says
+          which of the two kinds of picture this is: the stylesheet lets a world
+          dissolve into the other era's, because every pixel of it is opaque, and
+          makes a figure take turns instead, because that one is a cut-out.
+        -->
+        {layers.map(({ era, world }) => (
+          <picture data-era={era} data-layer="world" class="absolute inset-0">
+            <source media="(width >= 48rem)" srcset={world.pc} sizes="100vw" />
+            <img
+              src={world.phone}
+              alt=""
+              class="h-full w-full object-cover"
+              fetchpriority={era === defaultEra ? "high" : "low"}
+            />
+          </picture>
+        ))}
+
+        <!--
+          The era's figure, standing in the world, in the column the card does
+          not use.
+
+          The box is that column and the drawing is made to cover it, so she is
+          as tall as the card rather than as tall as the box is wide. Contained
+          instead, a column this narrow would cap her at about half the size
+          the drawing can carry. Cover crops, and the crop lands on the empty
+          margin the artwork already leaves round her: positioning the box at
+          her own centre (37% across) keeps both her and the card's edge clear
+          of each other.
+        -->
+        <div class="site-container relative h-full">
+          <div class="grid h-full md:grid-cols-2 md:gap-12">
+            <div class="relative h-full">
+              {layers.map(({ era, figure }) => (
+                <picture
+                  data-era={era}
+                  data-layer="figure"
+                  class="absolute inset-0"
+                >
+                  <source
+                    media="(width >= 48rem)"
+                    srcset={figure.pc}
+                    sizes="(width >= 48rem) 50vw, 100vw"
+                  />
+                  <img
+                    src={figure.phone}
+                    alt=""
+                    class="h-full w-full object-contain object-bottom md:object-cover md:object-[37%_100%]"
+                    fetchpriority="low"
+                  />
+                </picture>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!--
+        The card. It carries the name, the sheet, the prose and the film, the
+        way the reference page's data card carries its sheet, so the page below
+        the toggle reads as one surface rather than as a column of loose
+        sections. The left column is left empty because that is where the figure
+        is, and it is the same two columns the art above is laid out on, so the
+        card and she share an edge at every width.
+      -->
+      <div class="site-container relative pb-12 md:pt-14 md:pb-16">
+        <div class="md:grid md:grid-cols-2 md:gap-12">
+          <div class="card border-base-300 border bg-base-100 md:col-start-2">
+            <div class="card-body gap-0">
+              <p class="label">{profile.romanised}</p>
+              <h1 class="display-title mt-3">{profile.name}</h1>
+              <p class="data mt-3">
+                {profile.unit} ／ {profile.role}
+              </p>
+              <p class="data mt-1">CV. {profile.voice}</p>
+
+              {eraKeys.map((era) => (
+                <p data-era={era} class="page-lead mt-6">
+                  {eras[era].quote}
+                </p>
+              ))}
+
+              <!--
+                The spec sheet. It is a real table because the data is: rows
+                hold one name/value pair or two, and that pairing is preserved
+                rather than flattened into a form. A one-pair row spans its
+                value across the remaining columns, so that value stays flush
+                with the right edge either way.
+
+                The rules between rows come from `table` itself. It draws them
+                on the cells rather than on the row, because it sets
+                `border-collapse: separate`, so a border of our own on the <tr>
+                would only fight it.
+
+                The type sits on spans rather than on the cells. `label` is a
+                daisyUI class and it is `inline-flex`, which on a <th> stops it
+                being a table cell and lets the columns collapse to their
+                content.
+
+                The columns are pinned to even quarters so that a pair always
+                owns half the row, which is what makes the pairs line up down
+                the card.
+              -->
+              {eraKeys.map((era) => (
+                <div data-era={era}>
+                  <h2 class="section-title mt-10">プロフィール</h2>
+
+                  <table class="table mt-4">
+                    <colgroup>
+                      {Array.from({ length: columns }).map(() => (
+                        <col class="w-1/4" />
+                      ))}
+                    </colgroup>
+                    <tbody>
+                      {rows.map((row) => (
+                        <tr>
+                          {row.map((cell) => (
+                            <>
+                              <th scope="row">
+                                <span class="label">{cell.label}</span>
+                              </th>
+                              <td
+                                class="text-right"
+                                colspan={
+                                  row.length === 1 ? columns - 1 : undefined
+                                }
+                              >
+                                <span class="data">
+                                  {typeof cell.value === "string"
+                                    ? cell.value
+                                    : cell.value[era]}
+                                </span>
+                              </td>
+                            </>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+
+                  <h2 class="section-title mt-10">紹介</h2>
+
+                  <!--
+                    Running text keeps the site's prose styles, which carry the
+                    Japanese leading the rest of the site is set with.
+                  -->
+                  <div class="prose mt-4">
+                    {eras[era].description.map((paragraph) => (
+                      <p>{paragraph}</p>
+                    ))}
+                  </div>
+
+                  <!--
+                    The film. `preload="metadata"` keeps a video nobody has
+                    pressed play on from costing a full download.
+                  -->
+                  <h2 class="section-title mt-10">{videoTitle}</h2>
+
+                  <figure class="media-frame mt-4" data-media>
+                    <video
+                      class="aspect-video h-auto w-full"
+                      controls
+                      preload="metadata"
+                    >
+                      <source src={eras[era].video.src} />
+                    </video>
+                  </figure>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!--
+      The character cards, at the full width of the art above them rather than
+      on the card's measure. Outside the container, so a card runs edge to edge
+      the way the band behind it does.
+    -->
+    <section class="pb-20">
+      <MizukiGallery />
+    </section>
+  </div>
+</BaseLayout>
+
+<script>
+  import { enhanceMediaPlayers } from "../scripts/media-player";
+
+  /*
+   * The character film is a plain <video controls>, so it plays with scripting
+   * off and Plyr is fetched only in the browser, on this page.
+   */
+  enhanceMediaPlayers("[data-media] video");
+</script>

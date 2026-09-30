@@ -1,0 +1,13 @@
+---
+import ErrorPage from "../components/ErrorPage.astro";
+import NotFoundImage from "../assets/404.jpg";
+---
+
+<ErrorPage
+  code="404"
+  title="ページが見つかりません"
+  metaDescription="お探しのページは存在しません。"
+  lead="この URL にページはありません。移動したか、そもそも存在しなかったようです。猫も何も言いません。"
+  image={NotFoundImage}
+  alt="印刷物の山に隠れている猫"
+/>

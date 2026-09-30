@@ -1,0 +1,127 @@
+/*
+ * Swiper gallery.
+ *
+ * A gallery is plain images inside a `.swiper-gallery` container until the
+ * enhancement script in `src/scripts/swiper-gallery.ts` turns it into a
+ * carousel, so the rules here cover both states: the images stack on their own
+ * when JavaScript is unavailable, and the controls below only exist once Swiper
+ * has been initialised.
+ *
+ * Swiper exposes its appearance through `--swiper-*` custom properties, which
+ * are remapped onto daisyUI color tokens the same way prose.css remaps the
+ * typography plugin and plyr.css themes the media player.
+ */
+
+/*
+ * The typography plugin gives prose images a margin, which inside a slide would
+ * pad the carousel and push the controls off the photo, so it is reset here.
+ *
+ * No corner radius either: a slide runs the full width of the page, the way the
+ * art above it does, and a radius on an edge-to-edge block only cuts notches
+ * out of the corners.
+ */
+.swiper-gallery img {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin: 0;
+}
+
+/*
+ * Only the un-enhanced container needs the stack spacing; once the script adds
+ * `.swiper`, Swiper's own layout takes over.
+ */
+.swiper-gallery:not(.swiper) img + img {
+  margin-top: 0.75rem;
+}
+
+.swiper-gallery {
+  --swiper-theme-color: var(--color-primary);
+  --swiper-navigation-size: 2.25rem;
+  --swiper-navigation-color: var(--color-base-content);
+
+  /* Shared by the arrow buttons and the readout's pill. */
+  --swiper-gallery-control-surface: color-mix(
+    in oklab,
+    var(--color-base-100) 75%,
+    transparent
+  );
+}
+
+/*
+ * The arrows take their box from this one variable, and 2.25rem is sized for a
+ * cursor. A coarse pointer gets the 44px floor instead; the glyph inside is
+ * fixed by the `.swiper-navigation-icon` rule below, so only the box grows. The
+ * swipe gesture remains the primary way through a gallery on touch.
+ */
+@media (pointer: coarse) {
+  .swiper-gallery {
+    --swiper-navigation-size: 2.75rem;
+  }
+}
+
+/*
+ * The controls sit on top of a photo rather than on the page background, so
+ * they carry their own surface instead of using the surrounding color. Bullets
+ * and arrows share it, so they read as one set of controls, and the theme
+ * colors above are legible on top of it whatever the photo is.
+ */
+.swiper-gallery :where(.swiper-button-prev, .swiper-button-next) {
+  border-radius: var(--radius-selector);
+  background-color: var(--swiper-gallery-control-surface);
+  backdrop-filter: blur(0.25rem);
+  transition-property: background-color;
+  transition-duration: var(--motion-exit);
+  transition-timing-function: var(--ease-out-quint);
+}
+
+.swiper-gallery :where(.swiper-button-prev, .swiper-button-next):hover {
+  background-color: var(--color-base-100);
+}
+
+/*
+ * Swiper stretches the arrow to fill its button. Keep it at the size the icon
+ * was drawn for instead.
+ */
+.swiper-gallery .swiper-navigation-icon {
+  width: 0.625rem;
+  height: 1.125rem;
+}
+
+/*
+ * The readout, set in the site's data voice — mono, tracked, tabular — so it
+ * reads as one of the page's own numbers rather than as a widget's. Full
+ * contrast rather than the muted tier, because it sits on the control surface
+ * over a photo, the same way the arrows do.
+ *
+ * Swiper's own pagination is one bullet per slide, which this gallery cannot
+ * use: it holds 41 drawings, so the default is a ruler of 41 eight-pixel dots
+ * whose targets are far below the 44px floor the rest of the site holds to, and
+ * whose current position is carried by colour alone. The fraction says where you
+ * are out of how many, in words, and stays legible however many are added.
+ */
+.swiper-gallery.swiper .swiper-pagination-fraction {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+  color: var(--color-base-content);
+}
+
+/*
+ * Swiper centres the readout by stretching the pagination across the container.
+ * Shrink it to its contents so it can carry the surface as a pill, the way the
+ * arrows do, and the two read as one set of controls.
+ */
+.swiper-gallery.swiper .swiper-pagination {
+  right: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  width: fit-content;
+  margin-inline: auto;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radius-selector);
+  background-color: var(--swiper-gallery-control-surface);
+  backdrop-filter: blur(0.25rem);
+}

@@ -1,0 +1,415 @@
+---
+export const prerender = false;
+
+import { render } from "astro:content";
+import { env } from "cloudflare:workers";
+import Toast from "../../components/Toast.astro";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { NO_STORE, noStore } from "../../utils/http";
+import {
+  PASSWORD_MAX_LENGTH,
+  PASSWORD_MIN_LENGTH,
+  PASSWORD_PATTERN,
+} from "../../utils/password";
+import { getVaultEntry } from "../../utils/posts";
+
+/*
+ * The page carries a session and a challenge token, so neither it nor anything
+ * that diverts away from it may be stored on the way to the reader.
+ */
+Astro.response.headers.set("Cache-Control", "no-store");
+
+const { slug } = Astro.params;
+if (slug === undefined) {
+  return noStore(Astro.redirect("/404"));
+}
+
+const post = await getVaultEntry(slug);
+if (post === undefined) {
+  return new Response(null, { status: 404, headers: NO_STORE });
+}
+
+const { remarkPluginFrontmatter } = await render(post);
+const questionHtml =
+  (remarkPluginFrontmatter.questionHtml as string | undefined) ?? "";
+
+const siteKey = env.TURNSTILE_SITEKEY;
+
+/*
+ * The password rule, worded once. It is the field's tooltip and the line
+ * printed under the field, so the requirement is readable before the field is
+ * used rather than only after it has been rejected.
+ */
+const passwordHint = `${PASSWORD_MIN_LENGTH}〜${PASSWORD_MAX_LENGTH}文字。半角英数字と ! @ # $ % ^ & * が使えます`;
+---
+
+<BaseLayout
+  title={`ロック解除 · ${post.data.title}`}
+  description={post.data.description}
+  noindex
+>
+  <section class="site-container py-14 sm:py-20">
+    <div class="mx-auto flex max-w-md flex-col">
+      <p class="label">限定公開</p>
+      <h1 class="page-title mt-4">{post.data.title}</h1>
+      <p class="page-lead mt-4">質問に答えると本文を読めます。</p>
+
+      {questionHtml && (
+        <div class="plate mt-10">
+          <div class="plate-head">
+            <span class="label">質問</span>
+          </div>
+          <div class="plate-body">
+            <div class="prose">
+              <Fragment set:html={questionHtml} />
+            </div>
+          </div>
+        </div>
+      )}
+
+      <form
+        id="unlock-form"
+        method="POST"
+        action="/api/auth"
+        class="mt-8 flex flex-col gap-5"
+        novalidate
+      >
+        <input type="hidden" name="slug" value={slug} />
+
+        <div class="flex flex-col gap-2">
+          <label class="label" for="unlock-password">
+            {" "}
+            パスワード{" "}
+          </label>
+          <input
+            id="unlock-password"
+            type="password"
+            name="password"
+            class="input input-bordered w-full text-base"
+            autocomplete="current-password"
+            minlength={PASSWORD_MIN_LENGTH}
+            maxlength={PASSWORD_MAX_LENGTH}
+            pattern={PASSWORD_PATTERN.source}
+            title={passwordHint}
+            aria-describedby="unlock-password-hint unlock-password-error"
+            required
+          />
+          <p id="unlock-password-hint" class="unlock-hint text-pretty">
+            {passwordHint}
+          </p>
+          <p id="unlock-password-error" class="unlock-error" hidden></p>
+        </div>
+
+        <div
+          id="turnstile-container"
+          data-sitekey={siteKey}
+          class="min-h-16"
+        ></div>
+
+        <!--
+          The button below stays live.
+
+          It used to be disabled until the challenge answered, which meant a
+          widget that never called back left the page's only action dead with
+          nothing on screen to explain it and nothing to act on. The requirement
+          is stated here instead, and pressing 解除 without it is answered where
+          the reader is already looking.
+        -->
+        <p id="unlock-challenge-note" class="unlock-hint text-pretty">
+          上の認証を完了すると解除できます。
+        </p>
+
+        <button
+          id="unlock-submit"
+          type="submit"
+          class="btn btn-primary min-h-11"
+        >
+          解除
+        </button>
+      </form>
+    </div>
+
+    <Toast />
+  </section>
+</BaseLayout>
+
+<script>
+  import {
+    PASSWORD_MAX_LENGTH,
+    PASSWORD_MIN_LENGTH,
+    findPasswordProblem,
+    type PasswordProblem,
+  } from "../../utils/password";
+
+  const TURNSTILE_SRC =
+    "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+
+  const ERROR_MESSAGES: Record<string, string> = {
+    invalid: "パスワードが違います。",
+    blocked: "認証に失敗しました。もう一度お試しください。",
+    challenge: "上の認証を完了してください。",
+    rate_limited: "試行回数が多すぎます。しばらくしてからお試しください。",
+    server: "エラーが発生しました。もう一度お試しください。",
+  };
+
+  /*
+   * What the field says when it is rejected.
+   *
+   * The rule itself is not restated here: `findPasswordProblem` is the same
+   * function the server's `isValidPassword` is built on, so the field cannot
+   * describe a rule the Worker is not applying. What is written here is only the
+   * wording.
+   *
+   * The check runs in the page rather than being left to the browser because a
+   * `pattern` and a `minlength` are answered with the browser's own bubble,
+   * drawn in the browser's language and outside the page's type: on a page that
+   * speaks Japanese, the likeliest error a reader meets was the one written in a
+   * voice the site does not have. Checking here puts format failures on the same
+   * path as every other failure, written next to the field, in the page's own
+   * words, with the reader's input left alone.
+   */
+  const PASSWORD_PROBLEM_MESSAGES: Record<PasswordProblem, string> = {
+    length: `パスワードは${PASSWORD_MIN_LENGTH}〜${PASSWORD_MAX_LENGTH}文字です。`,
+    characters: "半角英数字と ! @ # $ % ^ & * だけが使えます。",
+  };
+
+  type TurnstileApi = {
+    render: (
+      container: HTMLElement,
+      options: Record<string, unknown>,
+    ) => string;
+    reset: (widgetId: string) => void;
+  };
+
+  const turnstileWindow = window as Window & { turnstile?: TurnstileApi };
+  const form = document.getElementById("unlock-form");
+  const submit = document.getElementById("unlock-submit");
+  const container = document.getElementById("turnstile-container");
+  const toast = document.getElementById("toast");
+  const toastMessage = document.getElementById("toast-message");
+  const fieldError = document.getElementById("unlock-password-error");
+  const challengeNote = document.getElementById("unlock-challenge-note");
+
+  if (
+    !(form instanceof HTMLFormElement) ||
+    !(submit instanceof HTMLButtonElement) ||
+    !(container instanceof HTMLElement)
+  ) {
+    throw new Error("解除フォームの必須要素が見つかりません。");
+  }
+
+  let widgetId: string | undefined;
+  let challengeSolved = false;
+  let submitting = false;
+  let toastTimer: number | undefined;
+
+  const password = form.querySelector<HTMLInputElement>("input[name=password]");
+
+  /*
+   * The toast is the site's error register, but it leaves after six seconds and
+   * the field is where the fix happens. The same message is written beside the
+   * field, so a reader who comes back to it once the toast has gone is still
+   * told what was rejected and why, rather than only that the form did not go
+   * through.
+   */
+  const setFieldError = (message?: string) => {
+    if (!password) return;
+
+    if (message === undefined) {
+      password.removeAttribute("aria-invalid");
+    } else {
+      password.setAttribute("aria-invalid", "true");
+    }
+
+    if (fieldError) {
+      fieldError.textContent = message ?? "";
+      fieldError.hidden = message === undefined;
+    }
+  };
+
+  password?.addEventListener("input", () => setFieldError());
+
+  /*
+   * The button is live from the first paint. Only an in-flight request takes it
+   * out of play, and the note above it says what the challenge still needs, so
+   * its state is never a mystery.
+   */
+  const syncSubmit = () => {
+    submit.disabled = submitting;
+    submit.textContent = submitting ? "確認中…" : "解除";
+    if (challengeNote) {
+      challengeNote.hidden = submitting || challengeSolved;
+    }
+  };
+
+  const showToast = (message: string) => {
+    if (
+      !(toast instanceof HTMLElement) ||
+      !(toastMessage instanceof HTMLElement)
+    ) {
+      return;
+    }
+
+    toastMessage.textContent = message;
+    toast.hidden = false;
+    window.clearTimeout(toastTimer);
+    toastTimer = window.setTimeout(() => {
+      toast.hidden = true;
+    }, 6000);
+  };
+
+  /*
+   * A token is spent by the request that submits it, and expires after five
+   * minutes, so the widget is reset to mint a fresh one whenever it cannot
+   * answer with a live token.
+   */
+  const resetWidget = () => {
+    if (widgetId !== undefined) {
+      turnstileWindow.turnstile?.reset(widgetId);
+    }
+  };
+
+  const renderWidget = () => {
+    if (turnstileWindow.turnstile === undefined) return;
+
+    const sitekey = container.dataset.sitekey;
+    if (sitekey === undefined || sitekey === "") {
+      showToast(ERROR_MESSAGES.server);
+      return;
+    }
+
+    widgetId = turnstileWindow.turnstile.render(container, {
+      sitekey,
+      action: "vault-unlock",
+      /*
+       * The widget writes its own text and follows the visitor's browser
+       * language unless told otherwise. The page is Japanese, so it is pinned
+       * rather than left to detect.
+       */
+      language: "ja",
+      callback: () => {
+        challengeSolved = true;
+        syncSubmit();
+      },
+      /*
+       * Expiry does not reset the widget, so the reset is asked for here; a
+       * challenge that times out resets itself and only needs the flag cleared.
+       */
+      "expired-callback": () => {
+        challengeSolved = false;
+        resetWidget();
+        syncSubmit();
+      },
+      "timeout-callback": () => {
+        challengeSolved = false;
+        syncSubmit();
+      },
+      /*
+       * Every remaining dead end says so. A silently disabled button is the one
+       * failure a reader has no way to act on.
+       */
+      "error-callback": () => {
+        challengeSolved = false;
+        showToast(ERROR_MESSAGES.blocked);
+        resetWidget();
+        syncSubmit();
+      },
+      "unsupported-callback": () => {
+        challengeSolved = false;
+        showToast(ERROR_MESSAGES.blocked);
+        syncSubmit();
+      },
+    });
+  };
+
+  if (turnstileWindow.turnstile !== undefined) {
+    renderWidget();
+  } else {
+    const script = document.createElement("script");
+    script.src = TURNSTILE_SRC;
+    script.async = true;
+    script.addEventListener("load", renderWidget, { once: true });
+    /* A blocked or unreachable widget would otherwise leave the button dead. */
+    script.addEventListener("error", () => showToast(ERROR_MESSAGES.blocked), {
+      once: true,
+    });
+    document.head.appendChild(script);
+  }
+
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    /*
+     * Cheapest and most actionable refusal first: the field is the reader's own
+     * input, and it is answered without spending a request on it.
+     */
+    const problem = findPasswordProblem(password?.value ?? "");
+    if (problem !== undefined) {
+      setFieldError(PASSWORD_PROBLEM_MESSAGES[problem]);
+      password?.focus();
+      return;
+    }
+
+    if (widgetId === undefined) {
+      showToast(ERROR_MESSAGES.blocked);
+      return;
+    }
+
+    if (!challengeSolved) {
+      showToast(ERROR_MESSAGES.challenge);
+      return;
+    }
+
+    submitting = true;
+    syncSubmit();
+
+    try {
+      const response = await fetch(form.action, {
+        method: "POST",
+        body: new FormData(form),
+        headers: { accept: "application/json" },
+      });
+
+      /*
+       * A request the edge blocked, or the Worker limited, need not answer with
+       * JSON at all, so the status is read before the body is.
+       */
+      const data: { ok?: boolean; redirect?: string; error?: string } =
+        response.status === 429
+          ? { error: "rate_limited" }
+          : response.headers.get("content-type")?.includes("application/json")
+            ? await response.json()
+            : { error: "server" };
+
+      if (data.ok === true && typeof data.redirect === "string") {
+        window.location.assign(data.redirect);
+        return;
+      }
+
+      const error = data.error ?? "server";
+      const message = ERROR_MESSAGES[error] ?? ERROR_MESSAGES.server;
+
+      /*
+       * Only a rejected password is the field's problem, so only that one is
+       * written against it; the rest are about the request, not the typing.
+       */
+      if (error === "invalid") {
+        setFieldError(message);
+        password?.focus();
+      } else {
+        setFieldError();
+      }
+
+      showToast(message);
+    } catch {
+      showToast(ERROR_MESSAGES.server);
+    } finally {
+      challengeSolved = false;
+      submitting = false;
+      resetWidget();
+      syncSubmit();
+    }
+  });
+
+  syncSubmit();
+</script>

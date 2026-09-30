@@ -1,0 +1,16 @@
+---
+import { categories, type CategoryKey } from "../data/categories";
+
+interface Props {
+  category: CategoryKey;
+  class?: string;
+}
+
+const { category, class: className } = Astro.props;
+const { name, dot } = categories[category];
+---
+
+<span class:list={["inline-flex items-center gap-2", className]}>
+  <span class:list={["size-1.5 shrink-0", dot]} aria-hidden="true"></span>
+  <span class="label">{name}</span>
+</span>

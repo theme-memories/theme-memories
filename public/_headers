@@ -1,0 +1,27 @@
+# Cache rules for the static files.
+#
+# The Cloudflare adapter prepends its own immutable rule for the hashed build
+# output and merges it with this file, so /_astro/* is deliberately absent here:
+# two rules matching one path have their Cache-Control values comma-joined,
+# which is contradictory.
+#
+# The Worker-rendered responses (/api/*, /vault/*, /login/*) are not covered by
+# this file — it applies to static assets only — and set their own headers.
+
+/weather/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/plyr.svg
+  Cache-Control: public, max-age=604800
+
+/favicon.ico
+  Cache-Control: public, max-age=604800
+
+/rss.xml
+  Cache-Control: public, max-age=3600
+
+/sitemap-index.xml
+  Cache-Control: public, max-age=3600
+
+/sitemap-0.xml
+  Cache-Control: public, max-age=3600

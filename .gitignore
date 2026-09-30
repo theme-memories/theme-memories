@@ -141,3 +141,26 @@ dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
+
+# astro's default gitignore
+
+## generated types
+.astro/
+
+## logs
+pnpm-debug.log*
+
+## macOS-specific files
+.DS_Store
+
+## jetbrains setting folder
+.idea/
+
+## wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
+!.env.example
+
+# custom
+.commandcode

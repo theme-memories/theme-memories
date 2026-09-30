@@ -1,0 +1,177 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "theme-memories",
+  "main": "@astrojs/cloudflare/entrypoints/server",
+  "compatibility_date": "2026-09-08",
+  "compatibility_flags": ["global_fetch_strictly_public"],
+  "workers_dev": false,
+  "preview_urls": false,
+  "routes": [
+    {
+      "pattern": "amia.work",
+      "custom_domain": true,
+      "previews_enabled": true,
+    },
+  ],
+  "observability": {
+    "traces": {
+      "enabled": true,
+      "destinations": ["grafana-traces"],
+      "head_sampling_rate": 1,
+      "persist": true,
+    },
+    "logs": {
+      "enabled": true,
+      "destinations": ["grafana-logs"],
+      "head_sampling_rate": 1,
+      "persist": true,
+    },
+  },
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "html_handling": "drop-trailing-slash",
+  },
+  "placement": {
+    "mode": "smart",
+  },
+  "vars": {
+    "TURNSTILE_SITEKEY": "0x4AAAAAAFJsAr1-Xifsa4LJ",
+  },
+  "kv_namespaces": [
+    {
+      "binding": "SESSION",
+      "id": "b672d59ffaed4734abf1d39e3917b26a",
+    },
+  ],
+  /*
+   * Abuse control for /api/auth, inside the Worker rather than only at the edge
+   * (see the dashboard rule for POST /api/auth, which cannot count per post and
+   * whose block page is not the JSON the unlock form parses).
+   *
+   * Both bindings are plain counters, so every number here is per Cloudflare
+   * location and only eventually consistent: this is abuse control, not a quota.
+   * The address limit sits one below the edge rule's 10 per 10s so this one is
+   * reached first and the reader gets the in-page "too many attempts" message.
+   *
+   * The per-post limit is charged only after the Turnstile check, so it can be
+   * spent only by a request that burned a freshly solved token. That is what
+   * stops junk from exhausting a post's allowance and locking its readers out;
+   * what the counter still does is bound guesses against one entry from many
+   * addresses. Twelve per location per minute is far above what any post sees
+   * from real readers, and the real cost to a guesser is the challenge, not this.
+   */
+  "ratelimits": [
+    {
+      "name": "AUTH_IP_RATE_LIMIT",
+      "namespace_id": "1001",
+      "simple": {
+        "limit": 8,
+        "period": 10,
+      },
+    },
+    {
+      "name": "AUTH_SLUG_RATE_LIMIT",
+      "namespace_id": "1002",
+      "simple": {
+        "limit": 12,
+        "period": 60,
+      },
+    },
+  ],
+  "secrets_store_secrets": [
+    {
+      "binding": "ARGON2_ENDPOINT",
+      "store_id": "c5b03c1fc22547d0bb1ee70629d4b6dd",
+      "secret_name": "AMIA_ARGON2_ENDPOINT",
+    },
+    {
+      "binding": "ARGON2_HMAC_SECRET",
+      "store_id": "c5b03c1fc22547d0bb1ee70629d4b6dd",
+      "secret_name": "AMIA_ARGON2_HMAC_SECRET",
+    },
+    {
+      "binding": "VERCEL_PROTECTION_BYPASS",
+      "store_id": "c5b03c1fc22547d0bb1ee70629d4b6dd",
+      "secret_name": "AMIA_VERCEL_PROTECTION_BYPASS",
+    },
+    {
+      "binding": "TURNSTILE_SECRET",
+      "store_id": "c5b03c1fc22547d0bb1ee70629d4b6dd",
+      "secret_name": "AMIA_TURNSTILE_SECRET",
+    },
+  ],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "theme-memories",
+      "database_id": "44aab7c3-51c6-46f0-96e1-2c711f842216",
+      "migrations_dir": "migrations",
+    },
+  ],
+  "images": {
+    "binding": "IMAGES",
+  },
+  "previews": {
+    "vars": {
+      "TURNSTILE_SITEKEY": "0x4AAAAAAFJsAr1-Xifsa4LJ",
+    },
+    "kv_namespaces": [
+      {
+        "binding": "SESSION",
+        "id": "b672d59ffaed4734abf1d39e3917b26a",
+      },
+    ],
+    "ratelimits": [
+      {
+        "name": "AUTH_IP_RATE_LIMIT",
+        "namespace_id": "1001",
+        "simple": {
+          "limit": 8,
+          "period": 10,
+        },
+      },
+      {
+        "name": "AUTH_SLUG_RATE_LIMIT",
+        "namespace_id": "1002",
+        "simple": {
+          "limit": 12,
+          "period": 60,
+        },
+      },
+    ],
+    "secrets_store_secrets": [
+      {
+        "binding": "ARGON2_ENDPOINT",
+        "store_id": "c5b03c1fc22547d0bb1ee70629d4b6dd",
+        "secret_name": "AMIA_ARGON2_ENDPOINT",
+      },
+      {
+        "binding": "ARGON2_HMAC_SECRET",
+        "store_id": "c5b03c1fc22547d0bb1ee70629d4b6dd",
+        "secret_name": "AMIA_ARGON2_HMAC_SECRET",
+      },
+      {
+        "binding": "VERCEL_PROTECTION_BYPASS",
+        "store_id": "c5b03c1fc22547d0bb1ee70629d4b6dd",
+        "secret_name": "AMIA_VERCEL_PROTECTION_BYPASS",
+      },
+      {
+        "binding": "TURNSTILE_SECRET",
+        "store_id": "c5b03c1fc22547d0bb1ee70629d4b6dd",
+        "secret_name": "AMIA_TURNSTILE_SECRET",
+      },
+    ],
+    "d1_databases": [
+      {
+        "binding": "DB",
+        "database_name": "theme-memories",
+        "database_id": "44aab7c3-51c6-46f0-96e1-2c711f842216",
+        "migrations_dir": "migrations",
+      },
+    ],
+    "images": {
+      "binding": "IMAGES",
+    },
+  },
+}

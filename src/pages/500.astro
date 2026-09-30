@@ -1,0 +1,23 @@
+---
+import ErrorPage from "../components/ErrorPage.astro";
+import ServerErrorImage from "../assets/500.jpg";
+
+interface Props {
+  error?: unknown;
+}
+
+const { error } = Astro.props;
+const message =
+  import.meta.env.DEV && error instanceof Error ? error.message : null;
+---
+
+<ErrorPage
+  code="500"
+  title="サーバーエラー"
+  metaDescription="サーバー側で問題が発生しました。"
+  lead="サーバーがリクエストを処理できませんでした。一時的なものと思われるので、少し時間をおいてもう一度お試しください。"
+  image={ServerErrorImage}
+  alt="開いたパソコンの筐体の中で寝ている猫"
+>
+  {message && <p class="plate data mt-6 px-4 py-3 break-words">{message}</p>}
+</ErrorPage>

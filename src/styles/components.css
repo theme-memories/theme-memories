@@ -1,0 +1,1042 @@
+/*
+ * Two voices, one family.
+ *
+ * The site is set in M PLUS 1. Its companion M PLUS 1 Code is a code face: its
+ * kana and kanji are drawn to a mechanical, uniform width, so Japanese set in it
+ * reads as a terminal rather than as a page. The split below is therefore by
+ * content, not by size. Language takes M PLUS 1; only numbers and Latin data
+ * take the code face, where tabular figures and a specimen feel earn their keep.
+ *
+ * Both voices share the same restraint: small, tracked out, and held back from
+ * full contrast, so metadata never competes with the writing. The colour comes
+ * from the two ink tokens in theme.css, which is where the floor those values
+ * have to clear is measured and argued.
+ *
+ * These two are utilities rather than component classes because they are used
+ * both in markup and inside the component classes below.
+ */
+@utility label {
+  @apply text-xs font-medium tracking-[0.12em];
+
+  color: var(--ink-muted);
+}
+
+@utility data {
+  @apply text-xs tracking-[0.02em];
+
+  color: var(--ink-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/*
+ * One icon system. The glyphs are drawn from the Material Symbols font the font
+ * pipeline already subsets at build time, so there are no inline SVG paths to
+ * keep in sync, and an icon inherits `currentColor` and the text size for free.
+ *
+ * Material Symbols paints the icon into a 24px em box centred on the baseline,
+ * so the size is the font size rather than width and height. Call sites set it
+ * with a font-size utility; nothing here fixes a size, and the boxes are kept
+ * tight so an icon lines up with the text beside it.
+ */
+@utility icon {
+  @apply inline-block shrink-0 leading-none select-none;
+
+  font-family: var(--font-icon);
+  font-weight: 400;
+  font-style: normal;
+  letter-spacing: normal;
+  text-transform: none;
+  white-space: nowrap;
+  overflow-wrap: normal;
+  direction: ltr;
+  font-variation-settings:
+    "FILL" 0,
+    "wght" 400,
+    "GRAD" 0,
+    "opsz" 24;
+  font-feature-settings: "liga";
+}
+
+/*
+ * Reusable class combinations that would otherwise be repeated across templates.
+ *
+ * The page is built from three primitives: a container, a hairline rule, and a
+ * monospaced label. Nothing here casts a shadow or rounds a corner; separation
+ * comes from space first and from a line only where space is too expensive.
+ */
+@layer components {
+  .site-container {
+    @apply mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8;
+  }
+
+  .rule-ink {
+    @apply border-base-content/75 border-t;
+  }
+
+  /*
+   * The skip link. It is the first thing in the tab order and the only way past
+   * the chrome: every page carries the wordmark, three nav links and the theme
+   * toggle before its content, and a phone carries the drawer button as well.
+   *
+   * It is held above the top edge rather than hidden, so it stays in the tab
+   * order and in the accessibility tree; a `display: none` skip link is one no
+   * keyboard user can reach. Its stacking order is above the loader's, so a
+   * reader who tabs during the veil still lands on something real.
+   */
+  .skip-link {
+    @apply bg-base-100 border-base-300 fixed start-4 top-4 z-[200] -translate-y-[calc(100%+1rem)] border px-4 py-3 text-sm font-medium;
+
+    transition-property: transform;
+    transition-duration: var(--motion-exit);
+    transition-timing-function: var(--ease-out-quint);
+  }
+
+  .skip-link:focus-visible {
+    @apply translate-y-0;
+  }
+
+  /*
+   * The skip link's destination. `main` is not a control, so focusing it is a
+   * position rather than an action: a ring here would draw a border around the
+   * whole page, and the content the reader has just arrived at is the feedback.
+   * The scroll offset keeps its first line clear of the running head.
+   */
+  #main {
+    scroll-margin-top: 4rem;
+  }
+
+  #main:focus-visible {
+    outline: none;
+  }
+
+  /*
+   * One typeface, so the scale and the weight both have to carry the hierarchy.
+   * A display title steps up to 800 and the section title stays at 700, which is
+   * the only structural contrast left now that the family contrast is gone.
+   */
+  .display-title {
+    @apply text-3xl leading-tight font-extrabold tracking-tight text-balance sm:text-4xl lg:text-[2.75rem];
+  }
+
+  .page-title {
+    @apply text-3xl leading-tight font-bold tracking-tight text-balance sm:text-4xl;
+  }
+
+  .section-title {
+    @apply text-xl font-bold tracking-tight sm:text-2xl;
+  }
+
+  .page-lead {
+    @apply max-w-prose text-base text-pretty sm:text-lg;
+
+    color: var(--ink-muted);
+  }
+
+  /*
+   * The index row. Every listing on the site is this one shape: the metadata
+   * takes a fixed column so dates line up down the page, the title takes the
+   * rest of the line, and a marker sits in the margin. No thumbnail, no box,
+   * no shadow — an index is scanned, not browsed.
+   *
+   * Below the first break the metadata drops under the title, so the title
+   * keeps the full measure instead of competing with it.
+   *
+   * Its three transitions are declared on three elements because they animate
+   * three different properties, but they share one duration and one curve: the
+   * tint, the title and the marker are a single answer to a single pointer, and
+   * they have to land together rather than in three tempos.
+   */
+  .post-row {
+    @apply border-base-300 grid items-baseline gap-x-6 gap-y-1 border-b py-5;
+
+    transition-property: background-color;
+    transition-duration: var(--motion-state);
+    transition-timing-function: var(--ease-out-quint);
+    grid-template-columns: minmax(0, 1fr) 1.25rem;
+    grid-template-areas:
+      "title mark"
+      "meta  mark";
+  }
+
+  .post-row-meta {
+    grid-area: meta;
+  }
+
+  /*
+   * The date holds a fixed column width, which is what keeps the category marks
+   * in a straight line down the index. Japanese era dates are not a fixed
+   * length: 令和4年7月7日 is a character shorter than 令和4年7月21日, and a bare
+   * flex row lets the category mark follow the date inward on those rows. The
+   * width is sized for a two-digit era year and day together, so it survives the
+   * roll into 令和10年 in 2028 without being re-tuned.
+   */
+  .post-row-date {
+    width: 7.5rem;
+    flex: none;
+  }
+
+  .post-row-title {
+    @apply text-lg leading-snug font-bold tracking-tight text-balance sm:text-xl;
+
+    transition-property: color;
+    transition-duration: var(--motion-state);
+    transition-timing-function: var(--ease-out-quint);
+    grid-area: title;
+  }
+
+  .post-row-mark {
+    @apply self-start;
+
+    transition-property: transform, color;
+    transition-duration: var(--motion-state);
+    transition-timing-function: var(--ease-out-quint);
+    color: var(--ink-mark);
+    grid-area: mark;
+  }
+
+  /*
+   * The row answers a keyboard the way it answers a pointer: the surface tints,
+   * the title and the marker take the accent, and the marker steps in. A focus
+   * ring on its own says where the reader is without saying what the row does.
+   */
+  .post-row:hover,
+  .post-row:focus-visible {
+    @apply bg-base-200/70;
+  }
+
+  .post-row:hover .post-row-title,
+  .post-row:hover .post-row-mark,
+  .post-row:focus-visible .post-row-title,
+  .post-row:focus-visible .post-row-mark {
+    color: var(--ink-accent);
+  }
+
+  .post-row:hover .post-row-mark,
+  .post-row:focus-visible .post-row-mark {
+    transform: translateX(3px);
+  }
+
+  /*
+   * A press has to land before the navigation does, or a tap on a slow
+   * connection reads as a tap that did nothing. The row is far too wide to
+   * scale, so the press deepens the tint the hover already laid down instead.
+   */
+  .post-row:active {
+    @apply bg-base-200;
+  }
+
+  /*
+   * A filtered row arrives rather than appearing. The list is recomposed under
+   * the reader's hands on every chip, and a row that blinks into place says
+   * nothing about whether it was there a moment ago; fading up says it just
+   * came back. Rows that were already on screen hold still, so only the change
+   * moves.
+   *
+   * This costs no script: `hidden` is the only thing the filter changes, and a
+   * `display` change restarts a CSS animation on its own.
+   */
+  [data-post]:not([hidden]) {
+    animation: reveal-rise var(--motion-reveal) var(--ease-out-quint) backwards;
+  }
+
+  @media (width >= 40rem) {
+    .post-row {
+      grid-template-columns: 15rem minmax(0, 1fr) 1.25rem;
+      grid-template-areas: "meta title mark";
+    }
+  }
+
+  /*
+   * The empty result.
+   *
+   * A filter combination can legitimately match nothing, and this is the one
+   * place a reader has to be told what happened and how to get back. It used to
+   * be a single line of `data` type, which is the quietest voice on the page;
+   * set that way, an empty result read as a page that had failed to render
+   * rather than as an answer about the filters.
+   *
+   * It closes on the same hairline the last row would have drawn, so an empty
+   * result still reads as the end of the index rather than as a gap in it.
+   */
+  .post-empty {
+    @apply border-base-300 border-b py-12;
+  }
+
+  .post-empty-title {
+    @apply text-lg leading-snug font-bold tracking-tight text-balance sm:text-xl;
+  }
+
+  /*
+   * A media frame is a hairline box around a single media element: the home
+   * lead image, a post hero, the character film, an error-page illustration. It
+   * has no padding and no head, which is the whole of what separates it from the
+   * plate below.
+   *
+   * The name is qualified because `frame` alone is Expressive Code's: every code
+   * block is a `<figure class="frame">`, so a bare `.frame` here would reach
+   * into the code blocks as well.
+   */
+  .media-frame {
+    @apply border-base-300 border;
+  }
+
+  /*
+   * A plate holds content that genuinely needs containment: a question to
+   * answer, a reading of the weather. It is never nested inside another plate;
+   * a bordered box around media is a `.media-frame` instead.
+   */
+  .plate {
+    @apply border-base-300 border;
+  }
+
+  .plate-head {
+    @apply border-base-300 flex items-baseline justify-between gap-4 border-b px-5 py-3;
+  }
+
+  .plate-body {
+    @apply px-5 py-5;
+  }
+
+  /*
+   * The full reading is a large-screen affordance. On a phone the plate is the
+   * first thing under the writing and thirteen rows of pressure and visibility
+   * push the index off the screen, so the plate keeps only what a glance needs:
+   * the icon, the temperature, the sky, and when it was observed.
+   *
+   * The rule hides the report below the break rather than showing it above, so
+   * it never fights the `hidden` attribute the script sets when a snapshot
+   * carries no readings to list.
+   */
+  .weather-report {
+    display: none;
+  }
+
+  @media (width >= 64rem) {
+    .weather-report {
+      @apply block;
+    }
+  }
+
+  /*
+   * A reading arrives rather than appearing. The plate is on screen as a
+   * skeleton first and the crawl comes back a moment later, so what lands is new
+   * information: fading it up says so, and stops the plate from looking like it
+   * had been holding that number all along. The error line takes the same
+   * arrival, because a failure that never appears to arrive reads as a fault in
+   * the page rather than as an answer about the weather.
+   */
+  [data-weather-content]:not([hidden]),
+  [data-weather-error]:not([hidden]) {
+    animation: reveal-rise var(--motion-reveal) var(--ease-out-quint) backwards;
+  }
+
+  /*
+   * The table of contents is set as a margin index: each entry draws its own
+   * segment of a hairline spine, so the nesting indents without ever breaking
+   * the line, and the current entry is marked by its segment filling in.
+   */
+  .toc {
+    @apply text-sm;
+  }
+
+  .toc-link {
+    @apply hover:text-base-content focus-visible:text-base-content border-base-content/40 -ms-px block border-s border-transparent py-1.5 ps-3 leading-snug transition-colors;
+
+    color: var(--ink-muted);
+  }
+
+  .toc-link-nested {
+    @apply ps-6 text-[0.8125rem];
+  }
+
+  .toc-link[aria-current="location"] {
+    @apply border-primary font-medium;
+
+    color: var(--ink-accent);
+  }
+
+  /*
+   * A text control as the page's inline affordance: tracked monospace, an
+   * underline that is always present, and the accent arriving on hover.
+   */
+  .link-quiet {
+    @apply decoration-base-300 hover:decoration-primary focus-visible:decoration-primary underline decoration-1 underline-offset-4 transition-colors hover:text-[color:var(--ink-accent)] focus-visible:text-[color:var(--ink-accent)];
+
+    color: var(--ink-muted);
+  }
+
+  /*
+   * A filter chip is a real radio inside its own label. The visible box is the
+   * label, so the whole chip is the hit area and it clears the touch minimum
+   * without a pointer-specific rule.
+   *
+   * Selection is carried by three things at once: the surface inverts to ink, a
+   * marker fills in, and the border strengthens. Hue does none of the work, so
+   * the state survives grayscale.
+   *
+   * All four of those changes settle on the shared curve at the same duration,
+   * which is the one place a press and a state change can share a number: at
+   * this size the two are the same event. The press is a scale rather than a
+   * colour, because a control this small should feel like it moved under the
+   * finger before the list underneath it changes.
+   */
+  .filter-chip {
+    @apply label border-base-300 hover:border-base-content/40 hover:text-base-content inline-flex min-h-11 cursor-pointer items-center border px-3;
+
+    transition-property: color, background-color, border-color, scale;
+    transition-duration: var(--motion-exit);
+    transition-timing-function: var(--ease-out-quint);
+  }
+
+  .filter-chip:active {
+    scale: 0.97;
+  }
+
+  .filter-chip span::before {
+    @apply me-2 inline-block align-middle content-[''];
+
+    transition: background-color var(--motion-exit) var(--ease-out-quint);
+    width: 0.4rem;
+    height: 0.4rem;
+    border: 1px solid currentcolor;
+  }
+
+  .filter-chip:has(input:checked) {
+    @apply border-base-content bg-base-content text-base-100;
+  }
+
+  .filter-chip:has(input:checked) span::before {
+    background-color: currentcolor;
+  }
+
+  .filter-chip:has(input:focus-visible) {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+
+  /*
+   * The era toggle on the character page.
+   *
+   * daisyUI's tab panels have to be the next sibling of the tab that shows
+   * them, which would force the bar and the panels into one box: two small
+   * labels at the left end of a full-width grey track. Because the bar has to
+   * hug its labels while the panels keep the full measure, the panels key off
+   * the radios instead, the same way the chips above do.
+   *
+   * The past panel is off in the base rule rather than by exception, so a
+   * browser without `:has()` shows the current era and nothing else, which is
+   * the same state the page opens on.
+   *
+   * The art is two layers per era: the world she stands in, and the figure
+   * standing in it. Both are absolutely placed in their own box, so the later
+   * era is painted over the earlier one.
+   *
+   * The two layers change by different means, because they are not the same
+   * kind of picture. A world is opaque — measured, every pixel of both files
+   * is — so one can dissolve into the other with nothing behind it showing
+   * through, and only the later one has to move: fading it out leaves the
+   * other already there, and fading it back in covers it again. Holding one of
+   * them also keeps the band from going pale, which is what happens when two
+   * layers fade against each other and neither is fully present.
+   *
+   * A figure is cut out of its background: 92% of both files is transparent, so
+   * they can never be on screen together. Stacked, the lower one reads through
+   * the upper one and the reader sees the other outfit standing inside this
+   * one, which is what happens at rest when a world's rule is applied to a
+   * figure. So the figures take turns instead.
+   */
+  .era .stage-art picture[data-layer="world"] {
+    transition: opacity var(--motion-swap) var(--ease-out-expo);
+  }
+
+  .era .stage-art picture[data-layer="world"][data-era="past"] {
+    opacity: 1;
+  }
+
+  .era:has(input[value="past"]:checked)
+    .stage-art
+    picture[data-layer="world"][data-era="now"] {
+    opacity: 0;
+  }
+
+  /*
+   * The handover. The figure leaving goes first and the one arriving follows it
+   * in, so only ever one of them is painted and the reader never sees the two
+   * superimposed.
+   *
+   * The shape is the world's, with the delay moved onto the half that arrives:
+   * whichever era is checked is the one that waits its turn, and the other is
+   * the one already leaving by the time it does. The world behind them is
+   * dissolving throughout, so the band is never empty and the character is
+   * never simply switched off.
+   */
+  .era .stage-art picture[data-layer="figure"] {
+    transition: opacity var(--motion-state) var(--ease-out-expo);
+  }
+
+  .era .stage-art picture[data-layer="figure"][data-era="past"] {
+    opacity: 0;
+  }
+
+  .era:has(input[value="now"]:checked)
+    .stage-art
+    picture[data-layer="figure"][data-era="now"],
+  .era:has(input[value="past"]:checked)
+    .stage-art
+    picture[data-layer="figure"][data-era="past"] {
+    opacity: 1;
+    transition-delay: var(--motion-state);
+  }
+
+  .era:has(input[value="past"]:checked)
+    .stage-art
+    picture[data-layer="figure"][data-era="now"] {
+    opacity: 0;
+  }
+
+  /*
+   * The card holds text in normal flow, where two panels at once would overlap,
+   * so these do use `display`. They arrive on the shared reveal instead: a
+   * `display` change restarts a CSS animation by itself, so the panel that
+   * comes back fades up rather than appearing. Its beat lands the words just
+   * after the art has started to change.
+   */
+  .era .card-body [data-era="past"] {
+    display: none;
+  }
+
+  .era:has(input[value="past"]:checked) .card-body [data-era="past"] {
+    display: block;
+  }
+
+  .era:has(input[value="past"]:checked) .card-body [data-era="now"] {
+    display: none;
+  }
+
+  .era .card-body [data-era] {
+    animation: reveal-rise var(--motion-reveal) var(--ease-out-quint)
+      var(--motion-beat) backwards;
+  }
+
+  /*
+   * The selected era, filled the way a selected chip is.
+   *
+   * daisyUI gives the checked tab the same surface as the box it sits in, so
+   * selection was being carried by the label's opacity alone: a 50% label
+   * against a 100% one, with nothing changing about the surface. On a control
+   * whose entire job is to say which era you are looking at, that is too quiet
+   * to read, and it spends no accent either way.
+   */
+  .era .tab:has(input:checked) {
+    @apply bg-base-content text-base-100;
+  }
+
+  /*
+   * daisyUI draws the focus ring on the tab that is already selected, so tabbing
+   * to the other one shows nothing at all. This is the same ring the filter
+   * chips use, and it goes on the label because the input is invisible.
+   */
+  .era .tab:has(input:focus-visible) {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+
+  /*
+   * The band's art is drawn light and stays light in both themes, so in the dark
+   * theme it needs holding back or it reads as a hole punched in the page. It is
+   * a wash rather than a filter: a token mixed over the layers costs one layer
+   * to composite, where a filter on artwork this size would have to be
+   * rasterised again as it moves.
+   *
+   * Which theme wants the wash is the one theme question in the stylesheets, and
+   * theme.css answers it; here the value is simply transparent when it does not.
+   */
+  .stage-art::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-color: var(--stage-art-wash);
+  }
+
+  /*
+   * The article page. Reading order is breadcrumb, metadata, body, index — so
+   * that is the DOM order, and the grid moves the metadata out into the margin
+   * only once the viewport can spare the column for it.
+   *
+   *   narrow   crumb · metadata · body
+   *   lg       crumb                          | index
+   *            metadata · body
+   *   xl       crumb                          | index
+   *            metadata | body
+   *
+   * The breadcrumb lives inside the grid so it shares a left edge with the
+   * metadata column, rather than with the container the grid is centred in.
+   */
+  .article-grid {
+    @apply grid gap-8;
+
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  /*
+   * Every child needs an explicit `min-width: 0`. A grid item defaults to
+   * `min-width: auto`, which floors its track at the content's min-content
+   * width, and a single long line inside a code block was enough to push this
+   * column to 634px on a 320px screen and drag the whole page sideways. With the
+   * floor removed the wide content scrolls inside its own box instead.
+   */
+  .article-grid > * {
+    min-width: 0;
+  }
+
+  .article-crumbs {
+    grid-column: 1 / -1;
+  }
+
+  .article-meta {
+    @apply flex flex-wrap items-baseline gap-x-5 gap-y-2;
+  }
+
+  .article-meta > div {
+    @apply flex items-baseline gap-2;
+  }
+
+  .article-meta dt {
+    @apply label;
+  }
+
+  .article-meta dd {
+    @apply data;
+  }
+
+  .article-toc {
+    @apply hidden lg:block;
+  }
+
+  @media (width >= 64rem) {
+    .article-grid {
+      grid-template-columns: minmax(0, 65ch) 11rem;
+      column-gap: 3rem;
+      justify-content: center;
+      align-items: start;
+    }
+
+    .article-crumbs {
+      grid-column: 1;
+      grid-row: 1;
+    }
+
+    .article-meta {
+      grid-column: 1;
+      grid-row: 2;
+    }
+
+    .article-body {
+      grid-column: 1;
+      grid-row: 3;
+    }
+
+    .article-toc {
+      position: sticky;
+      top: 6rem;
+      grid-column: 2;
+      grid-row: 1 / span 3;
+      max-height: calc(100dvh - 7rem);
+      overflow-y: auto;
+    }
+  }
+
+  /* With room for a real margin, the metadata leaves the flow and hangs in it. */
+  @media (width >= 80rem) {
+    .article-grid {
+      grid-template-columns: 8rem minmax(0, 65ch) 11rem;
+      column-gap: 2.5rem;
+    }
+
+    .article-crumbs {
+      grid-column: 1 / -1;
+      grid-row: 1;
+    }
+
+    .article-meta {
+      position: sticky;
+      top: 6rem;
+      grid-column: 1;
+      grid-row: 2 / span 2;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1.25rem;
+    }
+
+    .article-meta > div {
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .article-body {
+      grid-column: 2;
+      grid-row: 2;
+    }
+
+    .article-toc {
+      grid-column: 3;
+      grid-row: 2 / span 2;
+    }
+  }
+
+  .nav-list {
+    @apply flex items-center gap-6;
+  }
+
+  .nav-link {
+    @apply hover:text-base-content focus-visible:text-base-content relative py-1 transition-colors;
+
+    color: var(--ink-muted);
+  }
+
+  .nav-link[aria-current="page"] {
+    @apply text-base-content;
+  }
+
+  .nav-link[aria-current="page"]::after {
+    @apply bg-primary absolute start-0 -bottom-0.5 h-px w-full content-[''];
+  }
+
+  /* The site name, in the header and at the head of the drawer. */
+  .wordmark {
+    @apply text-lg font-bold tracking-tight;
+  }
+
+  /*
+   * The click burst. A canvas pinned over the page that the script paints into.
+   *
+   * It takes no pointer events, so the page beneath it answers exactly as it did
+   * before: the burst is decoration, and the only thing it ever covers is itself.
+   *
+   * The size has to be stated, and it is the one thing here that is not obvious.
+   * A canvas is a replaced element, and `inset: 0` does not stretch one: with the
+   * width left to itself it takes its own buffer as its display size, so on a
+   * screen the script scales the buffer for, the element would be drawn at that
+   * larger size and every burst would land at double its distance from the corner.
+   * Percentages resolve against the viewport for a fixed box, so this is the width
+   * the buffer was measured against.
+   */
+  .fireworks {
+    @apply pointer-events-none fixed inset-0 z-[90] block h-full w-full;
+  }
+
+  /*
+   * A reader who has asked for less motion gets no effect at all rather than a
+   * quieter one, which is the same answer the loader's animation gets. The script
+   * does not attach in this case either; the rule is here so the empty canvas can
+   * never be the one thing left over.
+   */
+  @media (prefers-reduced-motion: reduce) {
+    .fireworks {
+      display: none;
+    }
+  }
+
+  /*
+   * The page loader. A veil over the first paint of a session, while the
+   * webfonts and the first images arrive, that lifts once the page is really
+   * loaded and a minimum time has passed.
+   *
+   * It is opt-in from CSS: the veil is `hidden` until the head script sets
+   * `data-loader="on"`. With no JavaScript it therefore never appears and the
+   * page is simply visible, so the loader can only ever stand in front of
+   * content that a script has already decided to cover.
+   *
+   * The rule is the site's own hairline filling with the accent, and the
+   * animation above it is an enhancement the script adds when it arrives.
+   */
+  .loader {
+    @apply bg-base-100 fixed inset-0 z-[100] hidden place-items-center p-6;
+  }
+
+  html[data-loader="on"] .loader {
+    @apply grid;
+  }
+
+  .loader-inner {
+    @apply w-full max-w-[26rem];
+  }
+
+  /*
+   * The animation's box. It is revealed only once there is something in it, so a
+   * failed or unreachable animation leaves the composition exactly as it was.
+   * The animation scales to fit, so a square box suits whatever shape it is.
+   */
+  .loader-anim {
+    @apply mx-auto mb-8 size-28 sm:size-36;
+  }
+
+  .loader-name {
+    @apply text-center text-2xl font-extrabold tracking-tight sm:text-3xl;
+  }
+
+  .loader-track {
+    @apply bg-base-300 mt-10 h-0.5 w-full overflow-hidden;
+  }
+
+  /*
+   * Driven a frame at a time from the script, so it carries no transition: a
+   * transition and a per-frame transform would fight each other and stutter.
+   */
+  .loader-fill {
+    @apply bg-primary h-full w-full origin-left scale-x-0;
+  }
+
+  .loader-meta {
+    @apply mt-3 flex items-baseline justify-between gap-4;
+  }
+
+  /*
+   * Arrival is a short staged rise: the animation, the mark, the rule, then the
+   * readout, one `--motion-stagger` apart. The entrance is over in about two
+   * thirds of a second, which leaves the rest of the minimum time to the
+   * progress itself.
+   */
+  @media (prefers-reduced-motion: no-preference) {
+    html[data-loader="on"] .loader-chunk {
+      @apply animate-loader-rise;
+    }
+
+    /*
+     * `animation-delay`, not the `delay-*` utility: these chunks are animated
+     * rather than transitioned, and the utility writes `transition-delay`, so
+     * every chunk arrived together and the stagger the note above describes
+     * never happened.
+     */
+    html[data-loader="on"] .loader-chunk:nth-child(2) {
+      animation-delay: var(--motion-stagger);
+    }
+
+    html[data-loader="on"] .loader-chunk:nth-child(3) {
+      animation-delay: calc(var(--motion-stagger) * 2);
+    }
+
+    html[data-loader="on"] .loader-chunk:nth-child(4) {
+      animation-delay: calc(var(--motion-stagger) * 3);
+    }
+  }
+
+  /*
+   * Leaving is faster than arriving. The script adds `is-done`, the veil fades
+   * and its contents lift a little, and the element is removed once the fade has
+   * run so it can never hold a click or a tab stop.
+   *
+   * Both halves take the veil's own two values rather than either of the
+   * decelerating curves, because this is the one motion on the site that is a
+   * departure rather than an arrival.
+   */
+  .loader.is-done {
+    @apply pointer-events-none opacity-0;
+
+    transition-property: opacity;
+    transition-duration: var(--motion-veil);
+    transition-timing-function: var(--ease-leave);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .loader.is-done .loader-inner {
+      @apply -translate-y-3;
+
+      transition-property: transform;
+      transition-duration: var(--motion-veil);
+      transition-timing-function: var(--ease-leave);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .loader.is-done {
+      transition-duration: var(--motion-exit);
+    }
+  }
+}
+
+/*
+ * A disabled control still has to be legible. daisyUI drops the label to 20% of
+ * the text colour, which on paper composites to roughly 1.1:1 — and on the
+ * unlock form that is the state every visitor arrives to. The label is held at
+ * 70% instead, so the control reads as unavailable without becoming unreadable.
+ *
+ * Intentionally unlayered, the same way prose.css overrides the typography
+ * plugin: daisyUI emits its button rules into the `components` layer, and
+ * unlayered rules always win whatever order the two are applied in.
+ */
+.btn:disabled,
+.btn[disabled] {
+  background-color: var(--color-base-200);
+  border-color: var(--color-base-300);
+  color: color-mix(in oklab, var(--color-base-content) 70%, transparent);
+}
+
+/*
+ * The footer's two links are the smallest targets on the site: a 20px line box
+ * each, sized for a cursor. A coarse pointer gets the 44px floor as padding
+ * rather than as a box, so the text does not move and only the touch case
+ * grows. Unlayered for the same reason as the rule above: daisyUI emits `.link`
+ * into the `components` layer.
+ */
+@media (pointer: coarse) {
+  .footer nav a {
+    padding-block: 0.75rem;
+  }
+}
+
+/*
+ * The touch floor for the controls that were sized for a cursor: a 40px theme
+ * toggle, a 32px nav link, a 31px index entry, a 16px breadcrumb link.
+ *
+ * Padding is what grows, never the box and never the text, so nothing moves on
+ * screen and only the touch case changes. The breadcrumb grows on the vertical
+ * axis alone: its links sit 8px apart in a row, so widening them would either
+ * collide with the neighbour or push the crumb off the left edge the article
+ * grid aligns it to.
+ *
+ * Unlayered for the same reason as the rules above: these elements carry `py-*`
+ * and `size-*` utilities, which live in the `utilities` layer and would beat a
+ * layered rule here whatever its specificity.
+ */
+@media (pointer: coarse) {
+  .theme-toggle {
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+  }
+
+  .nav-link {
+    padding-block: 0.625rem;
+  }
+
+  .toc-link {
+    padding-block: 0.7813rem;
+  }
+
+  .article-crumbs a {
+    padding-block: 0.875rem;
+  }
+}
+
+/*
+ * The theme toggle's own interaction states.
+ *
+ * The toggle is a label wrapping a checkbox, so the ring lands on the input
+ * inside it while the surface being pressed and hovered is the label's. Without
+ * these, the toggle's hover treatment would have no focus counterpart, and its
+ * press would be the only silent control in the header.
+ *
+ * Unlayered because the label carries `border-base-300` and `transition-colors`
+ * as utilities, and a layered rule here loses to both; that is how this arrived
+ * with the surface changing and the border standing still.
+ */
+.theme-toggle {
+  transition-property: color, background-color, border-color, scale;
+  transition-duration: var(--motion-exit);
+  transition-timing-function: var(--ease-out-quint);
+}
+
+.theme-toggle:active {
+  scale: 0.97;
+}
+
+.theme-toggle:has(input:focus-visible) {
+  border-color: color-mix(in oklab, var(--color-base-content) 40%, transparent);
+  background-color: var(--color-base-200);
+}
+
+/*
+ * The era that is not selected, which the fill below never covered.
+ *
+ * daisyUI paints an unselected tab's label at 50% of base-content and the rule
+ * below only ever addressed the checked half, so the resting label sat at
+ * 2.74:1 in nord and 3.65:1 in night against the `base-100` track: under AA in
+ * both, and under even the 3:1 a glyph is held to in nord. daisyUI also repaints
+ * `:hover` at full contrast, so the label cleared the floor only while a pointer
+ * was over it and stayed under it the rest of the time, which is the state a
+ * touch reader never leaves.
+ *
+ * The muted tier is the value here, and it is the same one the footer and the
+ * latest-post lane are held to: 5.10:1 in nord and 6.48:1 in night on this
+ * surface. Resting on the tier and spending the full ink on hover keeps the
+ * pointer feedback the library was already giving, without letting the label
+ * fall under the floor to get it. The hover rule takes the `:not` because the
+ * checked tab's label is base-100 on a base-content fill, where full ink would
+ * erase it.
+ *
+ * Unlayered for the same reason as the rules around it: daisyUI emits its tab
+ * rules into its own layer, which outranks this file's components layer whatever
+ * the specificity.
+ */
+.era .tab {
+  color: var(--ink-muted);
+}
+
+@media (hover: hover) {
+  .era .tab:not(:has(input:checked)):hover {
+    color: var(--color-base-content);
+  }
+}
+
+/*
+ * The selected era, filled the way a selected chip is.
+ *
+ * daisyUI's `tabs-box` paints the checked tab with `--tab-bg`, which for a box
+ * sitting on `base-100` is `base-100` again. The toggle's own markup sets the
+ * track to `bg-base-100` for the same reason, so the fill landed on the exact
+ * colour it was meant to stand out from, and selection was being carried by the
+ * label's opacity alone: 50% against 100%, with nothing changing about the
+ * surface. On a control whose entire job is to say which era you are looking at,
+ * that is too quiet to read, and it spends no accent either way.
+ *
+ * Inverting to ink is what the filter chips do, and the toggle is the same kind
+ * of thing, a radio group: the state survives grayscale and does not spend the
+ * accent on something that is not an action.
+ *
+ * Unlayered for the reason above: daisyUI emits its tab rules into its own layer,
+ * which outranks the components layer whatever the specificity, so a layered
+ * rule here measured as never applied at all.
+ */
+.era .tab:has(input:checked) {
+  background-color: var(--color-base-content);
+  color: var(--color-base-100);
+}
+
+/*
+ * The unlock form's two lines of guidance, and its rejected state.
+ *
+ * A hint and an error are instructional text rather than metadata, so they take
+ * the body's smaller size instead of the `data` face every date and reading on
+ * the site wears. The hint uses the muted tier, which is the floor the rest of
+ * the secondary text clears; the error uses the field's own colour mixed toward
+ * the body ink, the same way prose.css and the ink tokens handle the accent
+ * wherever it has to carry words.
+ *
+ * `aria-invalid` has been set on a rejected password since the form was written,
+ * but nothing ever drew it: the attribute reached a screen reader and stopped
+ * there, so the reader who came back to the field after the toast had left saw
+ * an ordinary input. The border marks which field, the message beside it says
+ * what to do, and neither is the only signal.
+ *
+ * Unlayered for the same reason as the rules above: daisyUI emits `.input` into
+ * its own layer, which outranks this file's components layer whatever the
+ * specificity.
+ */
+.unlock-hint {
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--ink-muted);
+}
+
+.unlock-error {
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.6;
+  text-wrap: pretty;
+  color: color-mix(in oklab, var(--color-error) 75%, var(--color-base-content));
+}
+
+#unlock-password[aria-invalid="true"] {
+  border-color: var(--color-error);
+  background-color: color-mix(in oklab, var(--color-error) 8%, transparent);
+}

@@ -1,0 +1,99 @@
+---
+// Import the global.css file here so that it is included on
+// all pages through the use of the <BaseHead /> component.
+import "../styles/global.css";
+import type { ImageMetadata } from "astro";
+import FallbackImage from "../assets/index/hero-pc.webp";
+import { SITE_TITLE } from "../consts";
+import { Font, getImage } from "astro:assets";
+
+interface Props {
+  title: string;
+  description: string;
+  image?: ImageMetadata;
+  noindex?: boolean;
+}
+
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+
+const {
+  title,
+  description,
+  image = FallbackImage,
+  noindex = false,
+} = Astro.props;
+
+/*
+ * The card a link unfurls into. A post carries its own hero and every other page
+ * falls back to the masthead, which is the one picture that says what this site
+ * is. Astro's starter placeholder used to sit here, so the most-shared surface
+ * on the site was the framework's own banner.
+ *
+ * The card is cut to a 1.91:1 frame rather than served at the art's own size:
+ * the masthead is 3200px wide and 810KB, which is weight no crawler should
+ * carry to draw a thumbnail. `cover` keeps the frame full whatever aspect the
+ * post's hero arrives in.
+ */
+const ogImage = await getImage({
+  src: image,
+  width: 1200,
+  height: 630,
+  fit: "cover",
+  format: "webp",
+});
+---
+
+<!-- Resolve the theme before first paint to avoid a flash of the wrong palette. -->
+<script is:inline>
+  (() => {
+    let theme = null;
+    try {
+      theme = localStorage.getItem("theme");
+    } catch {
+      theme = null;
+    }
+    if (theme !== "nord" && theme !== "night") {
+      theme = window.matchMedia("(prefers-color-scheme: dark)").matches
+        ? "night"
+        : "nord";
+    }
+    document.documentElement.dataset.theme = theme;
+  })();
+</script>
+
+<!-- Global Metadata -->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<link rel="icon" href="/favicon.ico" />
+<link rel="sitemap" href="/sitemap-index.xml" />
+<link
+  rel="alternate"
+  type="application/rss+xml"
+  title={SITE_TITLE}
+  href={new URL("rss.xml", Astro.site)}
+/>
+<meta name="generator" content={Astro.generator} />
+
+<Font cssVariable="--font-mplus" />
+<Font cssVariable="--font-mplus-code" />
+<Font cssVariable="--font-symbol" />
+<Font cssVariable="--font-emoji" />
+
+<!-- Canonical URL -->
+<link rel="canonical" href={canonicalURL} />
+
+{noindex && <meta name="robots" content="noindex, nofollow" />}
+
+<!-- Primary Meta Tags -->
+<title>{title}</title>
+<meta name="description" content={description} />
+
+<!-- Open Graph / Facebook -->
+<meta property="og:type" content="website" />
+<meta property="og:url" content={Astro.url} />
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:image" content={new URL(ogImage.src, Astro.url)} />
+
+<!-- Twitter -->
+<meta name="twitter:card" content="summary_large_image" />

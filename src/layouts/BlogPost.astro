@@ -1,0 +1,226 @@
+---
+import type { MarkdownHeading } from "astro";
+import { Image } from "astro:assets";
+import type { CollectionEntry } from "astro:content";
+import FormattedDate from "../components/FormattedDate.astro";
+import TableOfContents from "../components/TableOfContents.astro";
+import BaseLayout from "./BaseLayout.astro";
+import { categories } from "../data/categories";
+
+type Props = CollectionEntry<"article">["data"] & {
+  headings: MarkdownHeading[];
+  minutesRead?: string;
+  noindex?: boolean;
+};
+type Crumb = { href?: string; label: string };
+
+const {
+  title,
+  description,
+  pubDate,
+  updatedDate,
+  heroImage,
+  category,
+  headings,
+  minutesRead,
+  noindex = false,
+} = Astro.props;
+
+const crumbs: Crumb[] = Astro.url.pathname.startsWith("/article")
+  ? [
+      { href: "/", label: "ホーム" },
+      { href: "/posts", label: "記事" },
+      { label: title },
+    ]
+  : [{ href: "/", label: "ホーム" }, { label: title }];
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  image={heroImage}
+  noindex={noindex}
+>
+  <article class="site-container py-10 sm:py-14">
+    <div class="article-grid">
+      <nav class="article-crumbs" aria-label="パンくずリスト">
+        <ol class="data flex flex-wrap items-center gap-x-2 gap-y-1">
+          {crumbs.map((crumb, position) => (
+            <li class="flex min-w-0 items-center gap-2">
+              {position > 0 && (
+                <span class="text-[color:var(--ink-mark)]" aria-hidden="true">
+                  /
+                </span>
+              )}
+              {crumb.href ? (
+                <a href={crumb.href} class="link-quiet">
+                  {crumb.label}
+                </a>
+              ) : (
+                <span
+                  class="text-[color:var(--ink-muted)] max-w-[18rem] truncate"
+                  aria-current="page"
+                >
+                  {crumb.label}
+                </span>
+              )}
+            </li>
+          ))}
+        </ol>
+      </nav>
+
+      <dl class="article-meta">
+        <div>
+          <dt>カテゴリー</dt>
+          <dd>{categories[category].name}</dd>
+        </div>
+        <div>
+          <dt>公開</dt>
+          <dd>
+            <FormattedDate date={pubDate} />
+          </dd>
+        </div>
+        {updatedDate && (
+          <div>
+            <dt>更新</dt>
+            <dd>
+              <FormattedDate date={updatedDate} />
+            </dd>
+          </div>
+        )}
+        {minutesRead && (
+          <div>
+            <dt>読了</dt>
+            <dd>{minutesRead}</dd>
+          </div>
+        )}
+      </dl>
+
+      <div class="article-body">
+        <header>
+          <h1 class="display-title">{title}</h1>
+          <p class="page-lead mt-5">{description}</p>
+        </header>
+
+        {heroImage && (
+          <>
+            {/* The lead and the banner are different kinds of thing: a sentence
+                of prose and a picture. daisyUI's divider separates them without
+                inventing a heading or a box for either. */}
+            <div class="divider"></div>
+
+            <figure class="media-frame">
+              <Image
+                width={1020}
+                height={680}
+                src={heroImage}
+                alt=""
+                loading="eager"
+                class="aspect-[3/2] h-auto w-full object-cover"
+              />
+            </figure>
+          </>
+        )}
+
+        <div class="prose mt-10">
+          <slot />
+        </div>
+      </div>
+
+      <TableOfContents headings={headings} />
+    </div>
+  </article>
+</BaseLayout>
+
+<script>
+  import PhotoSwipeDynamicCaption from "photoswipe-dynamic-caption-plugin";
+  import PhotoSwipeLightbox from "photoswipe/lightbox";
+
+  // Astro resolves markdown images to their optimised URLs while rendering,
+  // which is after the markdown plugins have run, so the lightbox is wired up
+  // here in the browser. PhotoSwipe reads the large image and its dimensions
+  // from the link around each thumbnail, so wrap every content image in one and
+  // carry the rendered size across as data attributes.
+  const gallery = document.querySelector<HTMLElement>(".prose");
+  const images = gallery?.querySelectorAll<HTMLImageElement>("img") ?? [];
+
+  for (const image of images) {
+    if (image.closest("a")) continue;
+
+    // A gallery image belongs to its carousel, and the carousel owns the click
+    // that drags it, so it is left out of the post's lightbox.
+    if (image.closest(".swiper-gallery")) continue;
+
+    const width = Number(image.getAttribute("width")) || image.naturalWidth;
+    const height = Number(image.getAttribute("height")) || image.naturalHeight;
+    if (!width || !height) continue;
+
+    const link = document.createElement("a");
+    link.className = "pswp-item";
+    link.href = image.currentSrc || image.src;
+    link.dataset.pswpWidth = String(width);
+    link.dataset.pswpHeight = String(height);
+
+    image.replaceWith(link);
+    link.appendChild(image);
+  }
+
+  if (gallery?.querySelector("a.pswp-item")) {
+    const lightbox = new PhotoSwipeLightbox({
+      gallery,
+      children: "a.pswp-item",
+      pswpModule: () => import("photoswipe"),
+      /*
+       * PhotoSwipe labels its own chrome in English and has no locale files, so
+       * the words the gallery speaks are set here.
+       */
+      closeTitle: "閉じる",
+      zoomTitle: "拡大",
+      arrowPrevTitle: "前の画像",
+      arrowNextTitle: "次の画像",
+    });
+
+    // Captions fall back to each image's `alt` text and are placed beside or
+    // below the photo depending on the space the viewport has for them.
+    new PhotoSwipeDynamicCaption(lightbox, { type: "auto" });
+
+    // PhotoSwipe has to be initialised after its plugins are attached.
+    lightbox.init();
+  }
+</script>
+
+<script>
+  // Expressive Code makes wide code blocks horizontally scrollable. Without a
+  // tab stop they cannot be scrolled by keyboard, so mark the overflowing ones
+  // focusable and keep that in sync as the viewport changes.
+  const codeBlocks = document.querySelectorAll<HTMLElement>(
+    ".expressive-code pre",
+  );
+  const syncFocusable = (block: HTMLElement) => {
+    block.tabIndex = block.scrollWidth > block.clientWidth ? 0 : -1;
+  };
+  const observer = new ResizeObserver((entries) => {
+    for (const entry of entries) syncFocusable(entry.target as HTMLElement);
+  });
+  for (const block of codeBlocks) {
+    syncFocusable(block);
+    observer.observe(block);
+  }
+</script>
+
+<script>
+  import { enhanceMediaPlayers } from "../scripts/media-player";
+
+  // Markdown emits raw <audio>/<video> elements, so Plyr is wired up in the
+  // browser, only on pages that actually contain media.
+  enhanceMediaPlayers(".prose audio, .prose video");
+</script>
+
+<script>
+  // Galleries are authored in Markdown as plain images inside a container, so
+  // the carousel is built up here rather than by an Astro component the Markdown
+  // pipeline cannot import.
+  import { enhanceSwiperGalleries } from "../scripts/swiper-gallery";
+
+  enhanceSwiperGalleries();
+</script>

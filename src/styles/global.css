@@ -1,0 +1,53 @@
+@import "tailwindcss";
+@import "katex/dist/katex.min.css";
+@import "photoswipe/style.css";
+@import "photoswipe-dynamic-caption-plugin/photoswipe-dynamic-caption-plugin.css";
+@import "plyr/dist/plyr.css";
+@import "swiper/css";
+@import "swiper/css/navigation";
+@import "swiper/css/pagination";
+@import "swiper/css/a11y";
+@import "./theme.css";
+@import "./prose.css";
+@import "./plyr.css";
+@import "./swiper.css";
+@import "./components.css";
+
+@plugin "@tailwindcss/typography";
+
+/*
+ * daisyUI's own themes, chosen for reading comfort and for agreeing with each
+ * other.
+ *
+ * `nord` is the most comfortable light theme in the set. Its surface sits at
+ * 95% lightness rather than pure white, so a long page does not glare, and its
+ * ink carries almost no chroma, so body text has no hue cast to tire the eye.
+ * It measures 10.84:1 against the page.
+ *
+ * `night` is the dark half: the same blue-grey ground (surface hues 260.7deg and
+ * 265.8deg) and an accent in the same blue family, so toggling the theme changes
+ * the light level rather than the palette. The obvious alternative, `dim`, reads
+ * marginally softer at 7.88:1 but its accent sits 114deg away in green, which
+ * would flip every link, focus ring and button hue on toggle.
+ */
+@plugin "daisyui" {
+  themes:
+    nord --default,
+    night --prefersdark;
+}
+
+/*
+ * nord and night disagree about corner radius: night's fields and boxes are
+ * twice as round as nord's, so toggling the theme visibly reshapes every button
+ * and panel. night is re-pointed at nord's tighter scale so the pair stays one
+ * design, and daisyUI inherits every other value from the built-in theme.
+ */
+@plugin "daisyui/theme" {
+  name: "night";
+  default: false;
+  prefersdark: true;
+  color-scheme: dark;
+
+  --radius-field: 0.25rem;
+  --radius-box: 0.5rem;
+}
