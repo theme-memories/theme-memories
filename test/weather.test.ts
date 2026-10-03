@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   buildDetails,
+  formatDateTime,
   formatPercent,
   formatPressure,
   formatTemperature,
@@ -166,6 +167,12 @@ describe("times", () => {
     expect(formatTime(1789475291)).toBe("21:28");
     expect(formatTime(1789415790)).toBe("04:56");
     expect(formatTime(undefined)).toBeUndefined();
+  });
+
+  it("renders date and time together", () => {
+    expect(formatDateTime(1789475291)).toBe("09/15 21:28");
+    expect(formatDateTime(1789415790)).toBe("09/15 04:56");
+    expect(formatDateTime(undefined)).toBeUndefined();
   });
 
   it("exposes a machine readable observation time", () => {

@@ -11,8 +11,8 @@ import {
   WEATHER_ENDPOINT,
   WEATHER_PLACEHOLDER,
   buildDetails,
+  formatDateTime,
   formatTemperature,
-  formatTime,
   hasWeather,
   parseWeather,
   toDateTime,
@@ -118,7 +118,7 @@ export const enhanceWeatherWidget = () => {
 
     const updated = query<HTMLElement>(root, "[data-weather-updated]");
     const observed = query<HTMLTimeElement>(root, "[data-weather-observed]");
-    const observedLabel = formatTime(weather.dt);
+    const observedLabel = formatDateTime(weather.dt);
     if (updated && observed && observedLabel) {
       const dateTime = toDateTime(weather.dt);
       observed.textContent = observedLabel;
