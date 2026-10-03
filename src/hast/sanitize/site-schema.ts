@@ -9,6 +9,13 @@
 
 export const SITE_TAG_NAMES: readonly string[] = [
   /*
+   * Prose elements an author writes by hand. Both are inert, carry no URL and
+   * take no attribute beyond the global `title` on `<abbr>`; without them the
+   * sanitiser unwraps the element and keeps the bare text.
+   */
+  "mark",
+  "abbr",
+  /*
    * Media is plain HTML in the source, so the browser's own player stays as the
    * no-JS fallback until Plyr upgrades it.
    */

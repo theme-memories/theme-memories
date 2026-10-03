@@ -119,6 +119,18 @@ describe("sanitizeHtml", () => {
     );
   });
 
+  it("keeps the inline prose elements authors write by hand", () => {
+    // The Markdown guide documents both, so a raw `<abbr>` keeps its `title`
+    // and a `<mark>` keeps wrapping its run rather than being unwrapped.
+    expect(
+      sanitizeHtml(
+        '<abbr title="Graphics Interchange Format">GIF</abbr> is <mark>legacy</mark>.',
+      ),
+    ).toBe(
+      '<abbr title="Graphics Interchange Format">GIF</abbr> is <mark>legacy</mark>.',
+    );
+  });
+
   /*
    * `mdast-katex` emits KaTeX as raw HTML, so its MathML tree and its HTML
    * layout layer both have to come through untouched or every formula breaks.
