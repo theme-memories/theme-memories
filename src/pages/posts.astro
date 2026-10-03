@@ -13,15 +13,16 @@ const years = getPostYears(posts.map(toFilterablePost));
 ---
 
 <BaseLayout title={`記事 · ${SITE_TITLE}`} description={SITE_DESCRIPTION}>
-  <header class="site-container pt-14 pb-8 sm:pt-20">
-    <h1 class="page-title">記事</h1>
+  <header class="site-container pt-16 pb-10 sm:pt-20">
+    <span class="eyebrow">記事一覧</span>
+    <h1 class="page-title mt-4">記事</h1>
     <p class="data mt-4">全 {posts.length} 件</p>
   </header>
 
   <section class="site-container pb-20">
     <PostFilter years={years} />
 
-    <div class="border-base-300 mt-10 border-t" data-post-grid>
+    <div class="post-grid" data-post-grid>
       {posts.map((post) => (
         <PostEntry post={post} />
       ))}

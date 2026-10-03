@@ -9,7 +9,16 @@
  * matching Material Symbols' 24px em box, and is set by the caller; the glyph
  * itself inherits `currentColor`.
  */
-type IconName = "menu" | "close" | "sun" | "moon" | "arrow";
+type IconName =
+  | "menu"
+  | "close"
+  | "sun"
+  | "moon"
+  | "arrow"
+  | "back"
+  | "up"
+  | "share"
+  | "copy";
 
 const GLYPHS: Record<IconName, string> = {
   menu: "menu",
@@ -17,6 +26,10 @@ const GLYPHS: Record<IconName, string> = {
   sun: "light_mode",
   moon: "dark_mode",
   arrow: "arrow_forward",
+  back: "arrow_back",
+  up: "arrow_upward",
+  share: "share",
+  copy: "content_copy",
 };
 
 interface Props {

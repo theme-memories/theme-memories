@@ -1,27 +1,35 @@
 ---
-import { SITE_TITLE } from "../consts";
+import { SITE_DESCRIPTION, SITE_TITLE } from "../consts";
 
 const today = new Date();
 ---
 
 <!--
-  Two lines of small print do not need a 40px frame. daisyUI's own default row
-  gap is 2.5rem, which is most of the height this footer used to carry, so both
-  the gap and the padding come down together.
+  The colophon. A heavy top rule, the site line on the left and the two
+  machine-facing links on the right, so the foot of the page reads as the end of
+  a publication rather than as a second navigation block.
 -->
-<footer class="footer footer-horizontal footer-center bg-base-200 text-base-content mt-auto gap-x-6 gap-y-3 px-6 py-6">
-  <nav class="grid grid-flow-col gap-4" aria-label="購読とサイト案内">
-    <a class="link link-hover" href="/rss.xml">
-      RSS
-    </a>
-    <a class="link link-hover" href="/sitemap-index.xml">
-      SITEMAP
-    </a>
-  </nav>
+<footer class="colophon">
+  <div class="site-container">
+    <div class="colophon-inner">
+      <p class="colophon-site">
+        {SITE_TITLE}
+        <span class="colophon-note ms-2">{SITE_DESCRIPTION}</span>
+      </p>
 
-  <aside>
-    <p class="text-[color:var(--ink-muted)]">
-      &copy; {today.getFullYear()} {SITE_TITLE}. All rights reserved.
+      <nav class="colophon-links" aria-label="購読とサイト案内">
+        <a class="link-quiet" href="/rss.xml">
+          RSS
+        </a>
+        <a class="link-quiet" href="/sitemap-index.xml">
+          SITEMAP
+        </a>
+      </nav>
+    </div>
+
+    <p class="colophon-note pb-6">
+      &copy; {today.getFullYear()}
+      {SITE_TITLE}. All rights reserved.
     </p>
-  </aside>
+  </div>
 </footer>

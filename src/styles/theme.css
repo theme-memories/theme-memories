@@ -60,6 +60,64 @@
 
   /* The theme that wants the character page's art held back sets it below. */
   --stage-art-wash: transparent;
+
+  /*
+   * The type scale, in seven steps.
+   *
+   * One family carries the whole page, so rank has to come from size and weight
+   * alone, and a fixed scale cannot hold a 320px phone and a 2560px monitor at
+   * the same time: a heading that reads as a heading on a phone reads as a
+   * paragraph on a wide screen. Each step is therefore fluid, rising with the
+   * viewport between a floor and a ceiling, and the fluid part is carried by the
+   * `vw` term so the scale keeps its proportions on every width in between.
+   *
+   * The steps are tuned for Japanese, where a glyph is roughly square and fills
+   * its em box: a CJK heading that is 1.2x the body is already a head taller
+   * than the same step in Latin, so the gaps between steps are wider than a
+   * Latin scale would need and the display end stops short of the poster sizes a
+   * Latin nameplate would reach.
+   *
+   * Declared as plain custom properties rather than as Tailwind `--text-*`
+   * theme values, so the default `text-sm` / `text-lg` utilities keep their
+   * familiar sizes for interface chrome while the page's own named steps
+   * (`.display-title`, `.page-title`, `.section-title`, `.eyebrow`) draw from
+   * this one ladder.
+   */
+  --step-xs: clamp(0.8125rem, 0.79rem + 0.11vw, 0.875rem);
+  --step-sm: clamp(1rem, 0.97rem + 0.15vw, 1.0625rem);
+  --step-md: clamp(1.1875rem, 1.135rem + 0.26vw, 1.3125rem);
+  --step-lg: clamp(1.4375rem, 1.34rem + 0.5vw, 1.6875rem);
+  --step-xl: clamp(1.75rem, 1.57rem + 0.9vw, 2.25rem);
+  --step-2xl: clamp(2.125rem, 1.78rem + 1.7vw, 3.125rem);
+  --step-3xl: clamp(2.5rem, 1.9rem + 3vw, 4.25rem);
+
+  /*
+   * The Japanese prose colours that no daisyUI token covers, mixed here rather
+   * than written into prose.css so they follow all four themes the way the ink
+   * tiers above do.
+   *
+   * `<mark>` is the yellow highlighter the browser draws by default, which is
+   * the one piece of prose that still wore a colour from outside the palette.
+   * It is mixed from `warning`, the only token that is warm at every lightness,
+   * toward the page surface so the highlight reads as a wash behind the ink
+   * rather than a block of colour in front of it, and it holds in both the light
+   * and the dark half of each pair because the mix moves the surface with it.
+   *
+   * The 圏点 and the `<abbr>` underline are marks rather than letterforms, so
+   * they answer to the 3:1 glyph floor, not 4.5:1, and both take the ink tiers
+   * already measured to clear it.
+   */
+  --mark-surface: color-mix(
+    in oklab,
+    var(--color-warning) 42%,
+    var(--color-base-100)
+  );
+  --mark-line: color-mix(
+    in oklab,
+    var(--color-warning) 70%,
+    var(--color-base-content)
+  );
+  --em-mark: var(--color-base-content);
 }
 
 /*

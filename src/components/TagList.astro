@@ -1,0 +1,35 @@
+---
+import { categories, type CategoryKey } from "../data/categories";
+
+interface Tag {
+  label: string;
+  href: string;
+  /* When set, the tag wears that category's mark before its label. */
+  category?: CategoryKey;
+}
+
+interface Props {
+  tags: Tag[];
+  class?: string;
+}
+
+const { tags, class: className } = Astro.props;
+---
+
+{tags.length > 0 && (
+  <ul class:list={["tag-list", className]} aria-label="タグ">
+    {tags.map((tag) => (
+      <li>
+        <a class="tag" href={tag.href}>
+          {tag.category && (
+            <span
+              class:list={["tag-mark", categories[tag.category].dot]}
+              aria-hidden="true"
+            />
+          )}
+          {tag.label}
+        </a>
+      </li>
+    ))}
+  </ul>
+)}

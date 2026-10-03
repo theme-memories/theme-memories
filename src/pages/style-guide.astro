@@ -1,5 +1,9 @@
 ---
 import { Image } from "astro:assets";
+import PostNav from "@components/PostNav.astro";
+import RelatedPosts from "@components/RelatedPosts.astro";
+import ShareLinks from "@components/ShareLinks.astro";
+import TagList from "@components/TagList.astro";
 import BaseLayout from "@layouts/BaseLayout.astro";
 import ImgA from "../assets/mizuki-gallery/003.webp";
 import ImgB from "../assets/mizuki-gallery/026.webp";
@@ -16,6 +20,17 @@ import ImgD from "../assets/mizuki-gallery/056.webp";
  * component cannot be linked to without being shown.
  */
 const groups = [
+  {
+    name: "エディトリアル",
+    items: [
+      { id: "jp-typography", label: "日本語組版" },
+      { id: "editorial-heading", label: "見出し" },
+      { id: "editorial-tags", label: "タグ" },
+      { id: "editorial-nav", label: "前後の記事" },
+      { id: "editorial-related", label: "関連記事" },
+      { id: "editorial-share", label: "シェア" },
+    ],
+  },
   {
     name: "Actions",
     items: [
@@ -168,6 +183,139 @@ const groups = [
         ))}
       </div>
     </nav>
+
+    <!-- エディトリアル -->
+    <h2
+      id="editorial"
+      class="section-title border-base-300 mt-16 border-b pb-3 scroll-mt-24"
+    >
+      エディトリアル
+    </h2>
+
+    <section class="mt-8">
+      <h3 id="jp-typography" class="font-bold scroll-mt-24">
+        日本語組版
+      </h3>
+      <p class="page-lead mt-4">
+        記事本文（<code>.prose</code>）が使う日本語の組版。色はすべて daisyUI
+        のトークンから取ります。
+      </p>
+      <div class="prose mt-6 max-w-2xl">
+        <h2>見出しレベル2</h2>
+        <p>
+          h2
+          は上に長い罫線を伴います。日本語は字面が大きいので、見出しは欧文より広めの余白を取ります。
+        </p>
+        <h3>見出しレベル3</h3>
+        <p>
+          強調は圏点（<em>強調</em>）で示します。日本語には斜体がないため、
+          <strong>太字</strong>と圏点で書き分けます。略語は
+          <abbr title="HyperText Markup Language">HTML</abbr>
+          のように点線の下線で示します。<mark>重要な語</mark>
+          はテーマの警告色から作ったマーカーで塗ります。 ルビは{" "}
+          <ruby>
+            漢字<rt>かんじ</rt>
+          </ruby>{" "}
+          のように親文字の上に載ります。
+        </p>
+        <blockquote>
+          <p>引用は左の罫線と出典で示します。</p>
+          <footer>— 出典</footer>
+        </blockquote>
+      </div>
+      <p class="label mt-8">
+        字下げ（<code>.prose-indent</code>）
+      </p>
+      <div class="prose prose-indent mt-3 max-w-2xl">
+        <p>字下げを有効にすると、段落の一行目が一字下がります。</p>
+        <p>段落の間隔は詰まり、字下げが段落の切れ目を示します。</p>
+      </div>
+    </section>
+
+    <section class="mt-8">
+      <h3 id="editorial-heading" class="font-bold scroll-mt-24">
+        見出し
+      </h3>
+      <div class="mt-4 flex flex-col gap-8">
+        <div>
+          <span class="eyebrow">肩書き</span>
+          <p class="data mt-2">.eyebrow — 見出しに付く小さなラベル</p>
+        </div>
+        <div>
+          <div class="section-head">
+            <h4 class="section-title">セクション見出し</h4>
+            <a class="link-quiet text-sm" href="#editorial-heading">
+              補助リンク →
+            </a>
+          </div>
+          <p class="data mt-2">.section-head — 見出しと罫線</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="mt-8">
+      <h3 id="editorial-tags" class="font-bold scroll-mt-24">
+        タグ
+      </h3>
+      <div class="mt-4">
+        <TagList
+          tags={[
+            { label: "技術", href: "#editorial-tags", category: "tech" },
+            { label: "生活", href: "#editorial-tags", category: "life" },
+            { label: "雑記", href: "#editorial-tags", category: "notes" },
+          ]}
+        />
+      </div>
+    </section>
+
+    <section class="mt-8">
+      <h3 id="editorial-nav" class="font-bold scroll-mt-24">
+        前後の記事
+      </h3>
+      <div class="mt-4">
+        <PostNav
+          prev={{
+            href: "#editorial-nav",
+            title: "前の記事のタイトルが入ります",
+          }}
+          next={{
+            href: "#editorial-nav",
+            title: "次の記事のタイトルが入ります",
+          }}
+        />
+      </div>
+    </section>
+
+    <section class="mt-8">
+      <h3 id="editorial-related" class="font-bold scroll-mt-24">
+        関連記事
+      </h3>
+      <div class="mt-4">
+        <RelatedPosts
+          posts={[
+            {
+              href: "#editorial-related",
+              title: "関連する記事のタイトル",
+              date: new Date("2026-01-05"),
+            },
+            {
+              href: "#editorial-related",
+              title: "もう一つの関連する記事",
+              date: new Date("2025-12-24"),
+            },
+          ]}
+        />
+      </div>
+    </section>
+
+    <section class="mt-8">
+      <h3 id="editorial-share" class="font-bold scroll-mt-24">
+        シェア
+      </h3>
+      <div class="mt-4">
+        <ShareLinks url="https://amia.work" title="Theme Memories" />
+      </div>
+    </section>
 
     <!-- Actions -->
     <h2
