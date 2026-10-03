@@ -1,5 +1,9 @@
 import { defineEcConfig } from "astro-expressive-code";
-import { pluginCollapsibleSections } from "@expressive-code/plugin-collapsible-sections";
+import {
+  pluginCollapsibleSections,
+  pluginCollapsibleSectionsTexts,
+} from "@expressive-code/plugin-collapsible-sections";
+import { pluginFramesTexts } from "@expressive-code/plugin-frames";
 import { pluginLineNumbers } from "@expressive-code/plugin-line-numbers";
 import { ecThemes } from "./ec.themes.mjs";
 
@@ -16,8 +20,35 @@ import { ecThemes } from "./ec.themes.mjs";
  * dark themes coexist, where the old `type`-based mapping could only tell day
  * from night.
  */
+/*
+ * Expressive Code's own UI strings — the copy button, the terminal window's
+ * fallback title and the "N collapsed lines" summary — are not config values:
+ * each plugin keeps a `PluginTexts` singleton, so the Japanese locale is
+ * registered on the two plugins that have one and `defaultLocale` selects it.
+ * `addLocale` wants the plugin's full set of keys, which is why the frames trio
+ * is written together.
+ */
+pluginFramesTexts.addLocale("ja", {
+  terminalWindowFallbackTitle: "ターミナル",
+  copyButtonTooltip: "コードをコピー",
+  copyButtonCopied: "コピーしました",
+});
+pluginCollapsibleSectionsTexts.addLocale("ja", {
+  collapsedLines: "{lineCount}行を省略",
+});
+
 export default defineEcConfig({
   plugins: [pluginCollapsibleSections(), pluginLineNumbers()],
+  defaultLocale: "ja",
+  defaultProps: {
+    /*
+     * A terminal transcript is output, not a file, so the line-number gutter
+     * annotates nothing and only adds width.
+     */
+    overridesByLang: {
+      "bash,sh,shell,zsh,fish,console,ansi,cmd": { showLineNumbers: false },
+    },
+  },
   themes: ecThemes,
   useDarkModeMediaQuery: false,
   themeCssSelector: (theme) => `[data-theme="${theme.name}"]`,

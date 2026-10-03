@@ -26,6 +26,9 @@ importers:
       '@expressive-code/plugin-collapsible-sections':
         specifier: ^0.44.2
         version: 0.44.2
+      '@expressive-code/plugin-frames':
+        specifier: ^0.44.2
+        version: 0.44.2
       '@expressive-code/plugin-line-numbers':
         specifier: ^0.44.2
         version: 0.44.2

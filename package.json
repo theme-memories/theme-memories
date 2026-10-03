@@ -20,6 +20,7 @@
     "@astrojs/rss": "^4.0.19",
     "@astrojs/sitemap": "^3.7.4",
     "@expressive-code/plugin-collapsible-sections": "^0.44.2",
+    "@expressive-code/plugin-frames": "^0.44.2",
     "@expressive-code/plugin-line-numbers": "^0.44.2",
     "@tailwindcss/typography": "^0.5.20",
     "@tailwindcss/vite": "^4.3.3",
