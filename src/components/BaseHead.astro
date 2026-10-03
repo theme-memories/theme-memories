@@ -4,7 +4,7 @@
 import "../styles/global.css";
 import type { ImageMetadata } from "astro";
 import FallbackImage from "../assets/index/hero-pc.webp";
-import { SITE_TITLE } from "../consts";
+import { SITE_TITLE, THEMES } from "../consts";
 import { Font, getImage } from "astro:assets";
 
 interface Props {
@@ -43,21 +43,57 @@ const ogImage = await getImage({
 });
 ---
 
+<!--
+  The palette map, rendered from the same `THEMES` the switch reads, so the two
+  can never disagree about which themes exist.
+-->
+<script
+  type="application/json"
+  id="theme-map"
+  is:inline
+  set:html={JSON.stringify(THEMES)}
+></script>
+
 <!-- Resolve the theme before first paint to avoid a flash of the wrong palette. -->
 <script is:inline>
   (() => {
-    let theme = null;
+    /*
+     * Resolved inline rather than in `scripts/theme.ts` because a module is
+     * deferred and the wrong palette would paint first. It reads the map above
+     * rather than restating the theme names, so a rename only has to reach
+     * `consts.ts`.
+     */
+    let themes = [];
     try {
-      theme = localStorage.getItem("theme");
+      themes = JSON.parse(
+        document.getElementById("theme-map")?.textContent ?? "[]",
+      );
     } catch {
-      theme = null;
+      themes = [];
     }
-    if (theme !== "nord" && theme !== "night") {
-      theme = window.matchMedia("(prefers-color-scheme: dark)").matches
-        ? "night"
-        : "nord";
+
+    let mode = null;
+    let palette = null;
+    try {
+      mode = localStorage.getItem("theme");
+      palette = localStorage.getItem("palette");
+    } catch {
+      /* storage can be unavailable; fall back to the system preference */
     }
-    document.documentElement.dataset.theme = theme;
+    if (mode !== "light" && mode !== "dark") {
+      mode = window.matchMedia("(prefers-color-scheme: dark)").matches
+        ? "dark"
+        : "light";
+    }
+
+    const entry = themes.find((theme) => theme.id === palette) ?? themes[0];
+    /*
+     * If the map is ever missing the page is left on the CSS default: `ai` is
+     * the `default` theme and `kon` carries `prefersdark`, so a dark-preferring
+     * reader still gets a dark page without this script's help.
+     */
+    if (entry) document.documentElement.dataset.theme = entry[mode];
+    document.documentElement.dataset.mode = mode;
   })();
 </script>
 

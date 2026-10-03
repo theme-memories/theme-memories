@@ -2,6 +2,7 @@
 import { NAV_ITEMS, SITE_TITLE } from "../consts";
 import HeaderLink from "./HeaderLink.astro";
 import Icon from "./Icon.astro";
+import PaletteSwitch from "./PaletteSwitch.astro";
 import ThemeToggle from "./ThemeToggle.astro";
 ---
 
@@ -35,7 +36,14 @@ import ThemeToggle from "./ThemeToggle.astro";
         </ul>
       </nav>
 
-      <div class="ms-auto lg:ms-8">
+      <div class="ms-auto flex items-center gap-2 lg:ms-8">
+        <!--
+          The palette switch needs room the narrowest header cannot spare, so it
+          moves into the drawer below `sm` rather than crowding the wordmark.
+        -->
+        <div class="hidden sm:block">
+          <PaletteSwitch name="palette" />
+        </div>
         <ThemeToggle />
       </div>
     </div>

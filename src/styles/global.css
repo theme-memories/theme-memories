@@ -16,38 +16,178 @@
 @plugin "@tailwindcss/typography";
 
 /*
- * daisyUI's own themes, chosen for reading comfort and for agreeing with each
- * other.
+ * Two authored palettes, each a light/dark pair, replacing the stock theme pair
+ * the site used to run (daisyUI's `nord`/`night`). The complaint that started
+ * this was drift, not taste: the UI wore a cool blue-grey while the code blocks
+ * wore Kanagawa's warm cream and indigo, so a fenced block read as a panel from
+ * another site dropped into the page. Hand-authoring both ends of both layers
+ * from one set of pigments is what closes that.
  *
- * `nord` is the most comfortable light theme in the set. Its surface sits at
- * 95% lightness rather than pure white, so a long page does not glare, and its
- * ink carries almost no chroma, so body text has no hue cast to tire the eye.
- * It measures 10.84:1 against the page.
+ * The pigments are Japanese, and each pair is genuinely two themes rather than
+ * one theme with a variant switch, so they can differ in more than lightness:
  *
- * `night` is the dark half: the same blue-grey ground (surface hues 260.7deg and
- * 265.8deg) and an accent in the same blue family, so toggling the theme changes
- * the light level rather than the palette. The obvious alternative, `dim`, reads
- * marginally softer at 7.88:1 but its accent sits 114deg away in green, which
- * would flip every link, focus ring and button hue on toggle.
+ *   藍 (`ai` / `kon`)      cool indigo. Page surfaces carry almost no chroma so
+ *                          long prose does not glare; the accent is the same 藍
+ *                          as the 技術 category mark.
+ *   朱 (`kinari` / `sumi`) warm washi. The paper is 生成, unbleached; the accent
+ *                          is the vermilion of a seal (朱), set against a 墨
+ *                          near-black at night.
+ *
+ * Every value is OKLCH because its lightness is perceptually uniform: the muted
+ * ink tiers in theme.css are mixed from `base-content` by percentage, and that
+ * only holds across themes if equal lightness steps look equal. `--depth` is 0
+ * on all four, so nothing casts a shadow, which the brief requires. The radii
+ * are the tight scale the old pair settled on (field 0.25rem, box 0.5rem), on
+ * every theme, so switching palette or mode never reshapes a control.
+ *
+ * Contrast is a floor, not a preference: every body and content pair clears AA
+ * (4.5:1) with margin, and the muted/ink tiers in theme.css were re-measured
+ * against these surfaces.
  */
 @plugin "daisyui" {
-  themes:
-    nord --default,
-    night --prefersdark;
+  themes: false;
 }
 
-/*
- * nord and night disagree about corner radius: night's fields and boxes are
- * twice as round as nord's, so toggling the theme visibly reshapes every button
- * and panel. night is re-pointed at nord's tighter scale so the pair stays one
- * design, and daisyUI inherits every other value from the built-in theme.
- */
 @plugin "daisyui/theme" {
-  name: "night";
+  name: "ai";
+  default: true;
+  prefersdark: false;
+  color-scheme: light;
+
+  --color-base-100: oklch(97.2% 0.005 250deg);
+  --color-base-200: oklch(94.6% 0.008 250deg);
+  --color-base-300: oklch(90.2% 0.012 250deg);
+  --color-base-content: oklch(26.8% 0.022 256deg);
+  --color-primary: oklch(52% 0.108 252deg);
+  --color-primary-content: oklch(98.5% 0.004 250deg);
+  --color-secondary: oklch(50% 0.065 238deg);
+  --color-secondary-content: oklch(98.5% 0.004 238deg);
+  --color-accent: oklch(51.5% 0.095 292deg);
+  --color-accent-content: oklch(98.5% 0.004 292deg);
+  --color-neutral: oklch(30% 0.018 256deg);
+  --color-neutral-content: oklch(96% 0.006 250deg);
+  --color-info: oklch(50% 0.105 236deg);
+  --color-info-content: oklch(98.5% 0.004 236deg);
+  --color-success: oklch(51% 0.092 152deg);
+  --color-success-content: oklch(98.5% 0.004 152deg);
+  --color-warning: oklch(70% 0.12 78deg);
+  --color-warning-content: oklch(25% 0.03 78deg);
+  --color-error: oklch(54.5% 0.17 24deg);
+  --color-error-content: oklch(98.5% 0.004 24deg);
+  --radius-selector: 1rem;
+  --radius-field: 0.25rem;
+  --radius-box: 0.5rem;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  --border: 1px;
+  --depth: 0;
+  --noise: 0;
+}
+
+@plugin "daisyui/theme" {
+  name: "kon";
   default: false;
   prefersdark: true;
   color-scheme: dark;
 
+  --color-base-100: oklch(22% 0.02 258deg);
+  --color-base-200: oklch(25.8% 0.022 258deg);
+  --color-base-300: oklch(31.8% 0.024 258deg);
+  --color-base-content: oklch(93% 0.01 250deg);
+  --color-primary: oklch(74.5% 0.098 250deg);
+  --color-primary-content: oklch(18.5% 0.024 258deg);
+  --color-secondary: oklch(68% 0.068 236deg);
+  --color-secondary-content: oklch(17% 0.02 236deg);
+  --color-accent: oklch(76% 0.088 292deg);
+  --color-accent-content: oklch(18% 0.024 292deg);
+  --color-neutral: oklch(80% 0.012 250deg);
+  --color-neutral-content: oklch(20% 0.018 250deg);
+  --color-info: oklch(70% 0.1 236deg);
+  --color-info-content: oklch(17% 0.02 236deg);
+  --color-success: oklch(72% 0.09 152deg);
+  --color-success-content: oklch(17% 0.02 152deg);
+  --color-warning: oklch(80% 0.11 80deg);
+  --color-warning-content: oklch(19% 0.028 80deg);
+  --color-error: oklch(70% 0.15 24deg);
+  --color-error-content: oklch(17% 0.024 24deg);
+  --radius-selector: 1rem;
   --radius-field: 0.25rem;
   --radius-box: 0.5rem;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  --border: 1px;
+  --depth: 0;
+  --noise: 0;
+}
+
+@plugin "daisyui/theme" {
+  name: "kinari";
+  default: false;
+  prefersdark: false;
+  color-scheme: light;
+
+  --color-base-100: oklch(96.4% 0.01 85deg);
+  --color-base-200: oklch(93.6% 0.013 85deg);
+  --color-base-300: oklch(88.8% 0.016 85deg);
+  --color-base-content: oklch(25% 0.016 58deg);
+  --color-primary: oklch(54.5% 0.15 32deg);
+  --color-primary-content: oklch(98.5% 0.006 85deg);
+  --color-secondary: oklch(50% 0.062 138deg);
+  --color-secondary-content: oklch(98.5% 0.006 138deg);
+  --color-accent: oklch(62% 0.105 82deg);
+  --color-accent-content: oklch(16% 0.02 82deg);
+  --color-neutral: oklch(29% 0.016 58deg);
+  --color-neutral-content: oklch(96% 0.01 85deg);
+  --color-info: oklch(50% 0.092 236deg);
+  --color-info-content: oklch(98.5% 0.006 236deg);
+  --color-success: oklch(52% 0.092 148deg);
+  --color-success-content: oklch(98.5% 0.006 148deg);
+  --color-warning: oklch(69% 0.12 78deg);
+  --color-warning-content: oklch(24% 0.03 78deg);
+  --color-error: oklch(54% 0.175 27deg);
+  --color-error-content: oklch(98.5% 0.006 27deg);
+  --radius-selector: 1rem;
+  --radius-field: 0.25rem;
+  --radius-box: 0.5rem;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  --border: 1px;
+  --depth: 0;
+  --noise: 0;
+}
+
+@plugin "daisyui/theme" {
+  name: "sumi";
+  default: false;
+  prefersdark: false;
+  color-scheme: dark;
+
+  --color-base-100: oklch(20.5% 0.01 58deg);
+  --color-base-200: oklch(24.5% 0.012 58deg);
+  --color-base-300: oklch(30.5% 0.014 58deg);
+  --color-base-content: oklch(92% 0.012 85deg);
+  --color-primary: oklch(70% 0.145 34deg);
+  --color-primary-content: oklch(18% 0.018 34deg);
+  --color-secondary: oklch(70% 0.07 140deg);
+  --color-secondary-content: oklch(17% 0.016 140deg);
+  --color-accent: oklch(77.5% 0.1 84deg);
+  --color-accent-content: oklch(18% 0.022 84deg);
+  --color-neutral: oklch(79% 0.012 70deg);
+  --color-neutral-content: oklch(20% 0.012 70deg);
+  --color-info: oklch(70% 0.09 236deg);
+  --color-info-content: oklch(17% 0.018 236deg);
+  --color-success: oklch(71% 0.088 148deg);
+  --color-success-content: oklch(17% 0.018 148deg);
+  --color-warning: oklch(80% 0.11 80deg);
+  --color-warning-content: oklch(19% 0.028 80deg);
+  --color-error: oklch(69% 0.15 27deg);
+  --color-error-content: oklch(17% 0.022 27deg);
+  --radius-selector: 1rem;
+  --radius-field: 0.25rem;
+  --radius-box: 0.5rem;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  --border: 1px;
+  --depth: 0;
+  --noise: 0;
 }

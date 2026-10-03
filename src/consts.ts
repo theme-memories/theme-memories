@@ -31,3 +31,24 @@ export const NAV_ITEMS = [
   { href: "/posts", label: "Posts", match: ["/posts", "/article"] },
   { href: "/about", label: "About", match: ["/about"] },
 ] as const;
+
+/*
+ * The two palettes, and the daisyUI theme each one resolves to per mode.
+ *
+ * Each palette is a light/dark pair drawn from one set of pigments, so the
+ * switch changes the light level rather than the identity. `ai` is 藍, the cool
+ * indigo pair (aizome paper by day, a deep 紺 night); `shu` is 朱, the warm
+ * washi pair (生成 paper by day, a 墨 night) built around the vermilion seal.
+ *
+ * The theme names here are the ones declared in `src/styles/global.css` and
+ * mirrored by the Expressive Code themes in `ec.themes.mjs`; a rename has to
+ * reach all three. This list is what the pre-paint script and the palette
+ * switch both read, so the two can never disagree about which themes exist.
+ */
+export const THEMES = [
+  { id: "ai", label: "藍", light: "ai", dark: "kon" },
+  { id: "shu", label: "朱", light: "kinari", dark: "sumi" },
+] as const;
+
+export type ThemePaletteId = (typeof THEMES)[number]["id"];
+export type ThemeMode = "light" | "dark";

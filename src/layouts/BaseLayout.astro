@@ -5,6 +5,7 @@ import Footer from "../components/Footer.astro";
 import Header from "../components/Header.astro";
 import HeaderLink from "../components/HeaderLink.astro";
 import Icon from "../components/Icon.astro";
+import PaletteSwitch from "../components/PaletteSwitch.astro";
 import { NAV_ITEMS, SITE_TITLE } from "../consts";
 
 interface Props {
@@ -144,6 +145,10 @@ const drawerId = "site-drawer";
               </li>
             ))}
           </ul>
+          <div class="border-base-300 border-t pt-5">
+            <p class="label">配色</p>
+            <PaletteSwitch name="palette-drawer" class="mt-3" />
+          </div>
         </div>
       </nav>
     </div>
@@ -199,6 +204,11 @@ const drawerId = "site-drawer";
           if (event.key === "Escape" && toggle.checked) setOpen(false);
         });
       })();
+    </script>
+    <script>
+      import { enhanceThemeControls } from "../scripts/theme";
+
+      enhanceThemeControls();
     </script>
   </body>
 </html>

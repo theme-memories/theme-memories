@@ -3,8 +3,8 @@
  *
  * Plyr exposes its appearance through `--plyr-*` custom properties. They are
  * remapped here onto daisyUI color tokens, the same way prose.css remaps the
- * typography plugin, so both the nord/night themes and every future theme
- * follow without a `dark:` variant.
+ * typography plugin, so all four themes (藍 and 朱, light and dark) follow
+ * without a `dark:` variant.
  *
  * The remap is unscoped. It was written as `.prose .plyr`, on the reading that
  * Plyr only ever appears in post content, but the character page's film is a
