@@ -97,7 +97,7 @@ Rules:
 
 ## Sibling projects
 
-`../cron` (the weather crawler that writes `weather.json`) and `../argon2` (the verification service) are separate repositories. Treat them as **read-only**: inspect them for context, never edit them from here.
+`../cron` (the weather crawler that writes `current-weather.json`) and `../argon2` (the verification service) are separate repositories. Treat them as **read-only**: inspect them for context, never edit them from here.
 
 ## Documentation
 

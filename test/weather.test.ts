@@ -5,8 +5,6 @@ import {
   formatPressure,
   formatTemperature,
   formatTime,
-  formatTimeRange,
-  formatUvIndex,
   formatVisibility,
   formatWind,
   formatWindDirection,
@@ -26,15 +24,12 @@ const snapshot = {
   feels_like: 15.34,
   pressure: 1016,
   humidity: 78,
-  dew_point: 11.86,
-  uvi: 0,
   clouds: 100,
   visibility: 10000,
   wind_speed: 6.38,
   wind_deg: 91,
   wind_gust: 9.05,
   weather: [{ description: "厚い雲", icon: "04n" }],
-  alerts: [],
 };
 
 describe("parseWeather", () => {
@@ -47,8 +42,6 @@ describe("parseWeather", () => {
       feelsLike: 15.34,
       pressure: 1016,
       humidity: 78,
-      dewPoint: 11.86,
-      uvi: 0,
       clouds: 100,
       visibility: 10000,
       windSpeed: 6.38,
@@ -58,7 +51,6 @@ describe("parseWeather", () => {
       snow: undefined,
       description: "厚い雲",
       icon: "04n",
-      alerts: [],
     });
   });
 
@@ -111,38 +103,6 @@ describe("parseWeather", () => {
       parseWeather({ temp: 15.5, weather: null })?.description,
     ).toBeUndefined();
   });
-
-  it("reads the alerts the crawler merged in", () => {
-    const weather = parseWeather({
-      ...snapshot,
-      alerts: [
-        {
-          event: "大雨警報",
-          start: 1789415790,
-          end: 1789460998,
-          description: "土砂災害に注意してください。",
-          tags: ["Rain"],
-        },
-      ],
-    });
-
-    expect(weather?.alerts).toEqual([
-      {
-        event: "大雨警報",
-        start: 1789415790,
-        end: 1789460998,
-        description: "土砂災害に注意してください。",
-      },
-    ]);
-  });
-
-  it("drops alerts and malformed alert entries with nothing to show", () => {
-    expect(parseWeather({ alerts: null })?.alerts).toEqual([]);
-    expect(parseWeather({ alerts: "none" })?.alerts).toEqual([]);
-    expect(
-      parseWeather({ alerts: [null, {}, { event: "  " }] })?.alerts,
-    ).toEqual([]);
-  });
 });
 
 describe("hasWeather", () => {
@@ -156,7 +116,7 @@ describe("hasWeather", () => {
 
   it("rejects an empty snapshot", () => {
     expect(hasWeather(of({}))).toBe(false);
-    expect(hasWeather(of({ alerts: [] }))).toBe(false);
+    expect(hasWeather(of({ wind_speed: 6.38, humidity: 78 }))).toBe(false);
   });
 });
 
@@ -179,14 +139,6 @@ describe("readings", () => {
     expect(formatVisibility(10000)).toBe("10 km");
     expect(formatVisibility(1234)).toBe("1.2 km");
     expect(formatVisibility(0)).toBe("0 km");
-  });
-
-  it("labels the UV index", () => {
-    expect(formatUvIndex(0)).toBe("0 (弱い)");
-    expect(formatUvIndex(3)).toBe("3 (中程度)");
-    expect(formatUvIndex(6)).toBe("6 (強い)");
-    expect(formatUvIndex(8)).toBe("8 (非常に強い)");
-    expect(formatUvIndex(12)).toBe("12 (極端に強い)");
   });
 
   it("names the wind direction on a sixteen point compass", () => {
@@ -220,13 +172,6 @@ describe("times", () => {
     expect(toDateTime(1789475291)).toBe("2026-09-15T12:28:11.000Z");
     expect(toDateTime(undefined)).toBeUndefined();
   });
-
-  it("pairs alert start and end, falling back to whichever exists", () => {
-    expect(formatTimeRange(1789415790, 1789460998)).toBe("04:56 – 17:29");
-    expect(formatTimeRange(1789415790, undefined)).toBe("04:56");
-    expect(formatTimeRange(undefined, 1789460998)).toBe("17:29");
-    expect(formatTimeRange(undefined, undefined)).toBeUndefined();
-  });
 });
 
 describe("weatherIconUrl", () => {
@@ -249,11 +194,9 @@ describe("buildDetails", () => {
     expect(details).toEqual([
       { label: "体感温度", value: "15.3°C" },
       { label: "湿度", value: "78%" },
-      { label: "露点", value: "11.9°C" },
       { label: "気圧", value: "1016 hPa" },
       { label: "雲量", value: "100%" },
       { label: "視程", value: "10 km" },
-      { label: "UV指数", value: "0 (弱い)" },
       { label: "風", value: "6.4 m/s E (91°)" },
       { label: "突風", value: "9.1 m/s" },
       { label: "日の出", value: "04:56" },

@@ -81,8 +81,6 @@ const { location = "根室市" } = Astro.props;
           更新 <time data-weather-observed></time>
         </p>
       </div>
-
-      <div class="mt-5 space-y-3" data-weather-alerts hidden></div>
     </div>
 
     <!--
@@ -129,17 +127,6 @@ const { location = "根室市" } = Astro.props;
         class="text-right font-medium"
         style="font-variant-numeric: tabular-nums"
       ></dd>
-    </div>
-  </template>
-
-  <template data-weather-alert-template>
-    <div class="border-warning/50 bg-warning/10 border p-3" role="status">
-      <p class="text-sm font-semibold" data-alert-event></p>
-      <p class="data mt-1" data-alert-time></p>
-      <p
-        class="text-[color:var(--ink-muted)] mt-1 text-sm text-pretty whitespace-pre-line"
-        data-alert-description
-      ></p>
     </div>
   </template>
 </section>

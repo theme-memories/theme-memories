@@ -13,13 +13,11 @@ import {
   buildDetails,
   formatTemperature,
   formatTime,
-  formatTimeRange,
   hasWeather,
   parseWeather,
   toDateTime,
   weatherIconUrl,
   type Weather,
-  type WeatherAlert,
 } from "../utils/weather";
 
 const ROOT_SELECTOR = "[data-weather]";
@@ -37,19 +35,6 @@ const query = <T extends Element>(root: QueryRoot, selector: string) =>
 
 const setText = (element: Element | null, text: string) => {
   if (element) element.textContent = text;
-};
-
-/* Renders a templated row, dropping the parts the snapshot has no value for. */
-const fill = (
-  node: DocumentFragment,
-  selector: string,
-  text: string | undefined,
-) => {
-  const element = node.querySelector<HTMLElement>(selector);
-  if (!element) return;
-
-  if (text === undefined) element.remove();
-  else element.textContent = text;
 };
 
 const renderIcon = (container: Element | null, weather: Weather) => {
@@ -88,26 +73,6 @@ const renderDetails = (root: QueryRoot, weather: Weather) => {
     }),
   );
   report.hidden = false;
-};
-
-const renderAlerts = (root: QueryRoot, alerts: WeatherAlert[]) => {
-  const container = query<HTMLElement>(root, "[data-weather-alerts]");
-  const template = query<HTMLTemplateElement>(
-    root,
-    "[data-weather-alert-template]",
-  );
-  if (!container || !template || alerts.length === 0) return;
-
-  container.replaceChildren(
-    ...alerts.map((alert) => {
-      const node = template.content.cloneNode(true) as DocumentFragment;
-      fill(node, "[data-alert-event]", alert.event);
-      fill(node, "[data-alert-time]", formatTimeRange(alert.start, alert.end));
-      fill(node, "[data-alert-description]", alert.description);
-      return node;
-    }),
-  );
-  container.hidden = false;
 };
 
 export const enhanceWeatherWidget = () => {
@@ -162,7 +127,6 @@ export const enhanceWeatherWidget = () => {
     }
 
     renderDetails(root, weather);
-    renderAlerts(root, weather.alerts);
 
     if (loading) loading.hidden = true;
     if (error) error.hidden = true;
@@ -177,10 +141,10 @@ export const enhanceWeatherWidget = () => {
      * back rather than leaving the failed line on screen while the request it
      * just replaced is still in flight.
      *
-     * The reading, the details and any alerts all land in the one live region,
-     * and a polite region announces each insertion as it arrives. Holding the
-     * region busy across the request batches them into a single announcement of
-     * the finished reading, which is the thing worth hearing once. Set from here
+     * The reading and the details both land in the one live region, and a
+     * polite region announces each insertion as it arrives. Holding the region
+     * busy across the request batches them into a single announcement of the
+     * finished reading, which is the thing worth hearing once. Set from here
      * rather than in the markup, so a browser without scripting is never left
      * holding a region that is permanently busy.
      */

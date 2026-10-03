@@ -8,7 +8,7 @@
  */
 
 /** Public object URL the crawler writes to. */
-export const WEATHER_ENDPOINT = "https://object.amia.work/weather.json";
+export const WEATHER_ENDPOINT = "https://object.amia.work/current-weather.json";
 
 /** The crawler is configured for coordinates in Hokkaido, so readings are shown in JST. */
 const WEATHER_TIME_ZONE = "Asia/Tokyo";
@@ -38,13 +38,6 @@ const WEATHER_ICON_CODES = [
   "50n",
 ] as const;
 
-export interface WeatherAlert {
-  event?: string;
-  start?: number;
-  end?: number;
-  description?: string;
-}
-
 export interface Weather {
   /** Observation time, as a Unix timestamp in seconds. */
   dt?: number;
@@ -55,8 +48,6 @@ export interface Weather {
   feelsLike?: number;
   pressure?: number;
   humidity?: number;
-  dewPoint?: number;
-  uvi?: number;
   clouds?: number;
   visibility?: number;
   windSpeed?: number;
@@ -67,7 +58,6 @@ export interface Weather {
   description?: string;
   /** OpenWeatherMap icon code, one of `WEATHER_ICON_CODES`. */
   icon?: string;
-  alerts: WeatherAlert[];
 }
 
 interface WeatherDetail {
@@ -89,28 +79,6 @@ const toText = (value: unknown): string | undefined => {
   return text === "" ? undefined : text;
 };
 
-/* An alert the crawler could not describe is dropped rather than rendered blank. */
-const toAlerts = (value: unknown): WeatherAlert[] => {
-  if (!Array.isArray(value)) return [];
-
-  return value.flatMap((entry) => {
-    const alert = toRecord(entry);
-    if (!alert) return [];
-
-    const normalised: WeatherAlert = {
-      event: toText(alert.event),
-      start: toNumber(alert.start),
-      end: toNumber(alert.end),
-      description: toText(alert.description),
-    };
-
-    return normalised.event === undefined &&
-      normalised.description === undefined
-      ? []
-      : [normalised];
-  });
-};
-
 /** Normalise a crawled snapshot, or `null` when the payload is not an object. */
 export const parseWeather = (payload: unknown): Weather | null => {
   const record = toRecord(payload);
@@ -128,8 +96,6 @@ export const parseWeather = (payload: unknown): Weather | null => {
     feelsLike: fromRecord("feels_like"),
     pressure: fromRecord("pressure"),
     humidity: fromRecord("humidity"),
-    dewPoint: fromRecord("dew_point"),
-    uvi: fromRecord("uvi"),
     clouds: fromRecord("clouds"),
     visibility: fromRecord("visibility"),
     windSpeed: fromRecord("wind_speed"),
@@ -139,7 +105,6 @@ export const parseWeather = (payload: unknown): Weather | null => {
     snow: fromRecord("snow"),
     description: toText(condition?.description),
     icon: toText(condition?.icon),
-    alerts: toAlerts(record.alerts),
   };
 };
 
@@ -173,19 +138,6 @@ export const formatPercent = (percent?: number): string | undefined =>
 
 export const formatVisibility = (metres?: number): string | undefined =>
   metres === undefined ? undefined : `${round(metres / 1000, 1)} km`;
-
-const describeUvIndex = (index: number): string => {
-  if (index >= 11) return "極端に強い";
-  if (index >= 8) return "非常に強い";
-  if (index >= 6) return "強い";
-  if (index >= 3) return "中程度";
-  return "弱い";
-};
-
-export const formatUvIndex = (index?: number): string | undefined =>
-  index === undefined
-    ? undefined
-    : `${Math.round(index)} (${describeUvIndex(index)})`;
 
 const COMPASS_POINTS = [
   "N",
@@ -243,17 +195,6 @@ export const toDateTime = (unixSeconds?: number): string | undefined =>
     ? undefined
     : new Date(unixSeconds * 1000).toISOString();
 
-export const formatTimeRange = (
-  start?: number,
-  end?: number,
-): string | undefined => {
-  const from = formatTime(start);
-  const to = formatTime(end);
-
-  if (from && to) return `${from} – ${to}`;
-  return from ?? to;
-};
-
 /** Every reading the snapshot carries, in the order they are shown on wide screens. */
 export const buildDetails = (weather: Weather): WeatherDetail[] => {
   const details: WeatherDetail[] = [];
@@ -264,11 +205,9 @@ export const buildDetails = (weather: Weather): WeatherDetail[] => {
 
   add("体感温度", formatTemperature(weather.feelsLike));
   add("湿度", formatPercent(weather.humidity));
-  add("露点", formatTemperature(weather.dewPoint));
   add("気圧", formatPressure(weather.pressure));
   add("雲量", formatPercent(weather.clouds));
   add("視程", formatVisibility(weather.visibility));
-  add("UV指数", formatUvIndex(weather.uvi));
   add("風", formatWind(weather.windSpeed, weather.windDeg));
   add("突風", formatSpeed(weather.windGust));
   add("日の出", formatTime(weather.sunrise));
