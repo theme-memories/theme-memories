@@ -48,6 +48,32 @@
   --tw-prose-pre-bg: var(--color-base-200);
   --tw-prose-th-borders: var(--color-base-content);
   --tw-prose-td-borders: var(--color-base-300);
+
+  /*
+   * Japanese typesetting, the four rules that do the most work and cost the
+   * least.
+   *
+   * `line-break: strict` stops the browser from starting a line with a small
+   * kana, a closing bracket or a middle dot, which is the one line-breaking rule
+   * every Japanese reader notices when it is broken.
+   *
+   * `word-break: auto-phrase` breaks between phrases rather than between any two
+   * glyphs, so a line does not orphan a particle or split a compound the way the
+   * default `normal` does in CJK. Where it is unsupported it is ignored and the
+   * default applies, so nothing regresses for a browser without it.
+   *
+   * `text-spacing-trim` takes back the half-em of empty space a full-width
+   * bracket or comma carries at the start and end of a line, which is otherwise
+   * a visible dent in the left and right margins of every paragraph.
+   *
+   * `overflow-wrap: anywhere` is deliberately absent: it would break a URL only
+   * where it cannot be helped, which is what `break-word` already does for the
+   * Latin runs inside the prose, while `auto-phrase` governs the kana and kanji.
+   */
+  line-break: strict;
+  word-break: auto-phrase;
+  text-spacing-trim: space-all;
+  overflow-wrap: break-word;
 }
 
 /*
@@ -60,13 +86,193 @@
 }
 
 /*
+ * An opt-in 字下げ: Japanese books indent the first line of a paragraph by one em
+ * and drop the blank line between paragraphs, because the indent is what marks
+ * the new paragraph rather than the space above it.
+ *
+ * It is a modifier rather than the default because the page also carries Latin
+ * runs and lists, where a 1em indent reads as a mistake, and because the site's
+ * whole rhythm is built on space between blocks. A post that is pure running
+ * Japanese prose can wear `prose--indent` and get the printed-book cadence; the
+ * rest keep the measured space.
+ *
+ * The rule pulls the paragraph's own top margin back so the indent does not
+ * stack under the plugin's spacing, and `hanging` is not used: a hanging indent
+ * only makes sense at the left edge, which a centred measure already guarantees.
+ */
+.prose-indent :where(p) {
+  text-indent: 1em;
+}
+
+.prose-indent :where(p + p) {
+  margin-top: 0;
+}
+
+/*
+ * The heading ladder.
+ *
+ * The plugin's defaults are tuned for Latin, where a bold sans heading needs
+ * little help to read as a heading. In one Japanese family, at these sizes, a
+ * heading competes with the body unless two things happen: it steps up the fluid
+ * scale rather than a fixed size, and it is marked as a heading by something
+ * other than weight alone. That mark is a short rule that sits above the h2 and
+ * indents the h3, so the two levels are distinguishable from each other and from
+ * the h4 below them, which carries none.
+ *
+ * The rule is drawn in the ink tier, not the accent: a page of articles would
+ * spend the accent on every heading, and the accent is kept for the one place it
+ * has to mean something (a link, the current TOC entry, the row under the
+ * pointer). The heading text itself is the body ink, so it is never the quiet
+ * voice of the page.
+ *
+ * The margin is larger than the plugin's, because a Japanese heading needs more
+ * air above it than a Latin one: the glyphs fill their em box, so a heading with
+ * the same margin reads as more crowded.
+ */
+.prose :where(h2, h3, h4, h5, h6) {
+  /* The heading clears the running head, and its own mark needs the room. */
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.prose :where(h2) {
+  font-size: var(--step-lg);
+  line-height: 1.4;
+  margin-top: 2.75em;
+}
+
+.prose :where(h3) {
+  font-size: var(--step-md);
+  line-height: 1.45;
+  margin-top: 2.25em;
+}
+
+.prose :where(h4) {
+  font-size: var(--step-sm);
+  line-height: 1.5;
+  margin-top: 2em;
+}
+
+.prose :where(h2)::before {
+  content: "";
+  display: block;
+  width: 2.5rem;
+  height: 2px;
+  margin-bottom: 0.75em;
+  background-color: var(--color-base-content);
+}
+
+.prose :where(h3)::before {
+  content: "";
+  display: block;
+  width: 1.25rem;
+  height: 2px;
+  margin-bottom: 0.6em;
+  background-color: var(--ink-mark);
+}
+
+/*
  * Japanese has no italic. The browser would synthesise an oblique, which on a
  * Mincho face slants every stroke and reads as a rendering fault rather than as
- * emphasis. Italic markup still renders, but upright, and the quote is set off
- * by its rule and the muted attribution instead.
+ * emphasis. Italic markup still renders, but upright, and the emphasis is
+ * carried by the convention Japanese actually uses: 圏点, a dot set over each
+ * emphasised glyph.
+ *
+ * The dots are the body ink rather than the accent, so they read as emphasis in
+ * the text rather than as a second link colour, and Japanese type is set with
+ * `text-emphasis-position: over` in horizontal writing, which is the default.
  */
-.prose :where(blockquote) {
+.prose :where(em) {
   font-style: normal;
+  text-emphasis: filled dot var(--em-mark);
+
+  /* Safari still needs the prefix for emphasis marks; kept deliberately. */
+  /* stylelint-disable-next-line property-no-vendor-prefix */
+  -webkit-text-emphasis: filled dot var(--em-mark);
+}
+
+/*
+ * `<mark>` is the browser's own highlighter, and left alone it paints a yellow
+ * from outside the palette in every theme. It is mixed from `warning` toward the
+ * page surface in theme.css, so it reads as a wash behind the ink; the padding
+ * and the field radius are what keep the wash off the neighbouring glyphs.
+ *
+ * `box-decoration-break: clone` is required rather than cosmetic: a highlight
+ * that runs across a line break is painted as one box by default, so the second
+ * line's wash would start at the margin rather than at the first marked glyph.
+ */
+.prose :where(mark) {
+  padding: 0.05em 0.2em;
+  border-radius: var(--radius-field);
+  background-color: var(--mark-surface);
+  color: var(--color-base-content);
+  box-decoration-break: clone;
+
+  /* Safari still needs the prefix to clone a highlight across a line break. */
+  /* stylelint-disable-next-line property-no-vendor-prefix */
+  -webkit-box-decoration-break: clone;
+}
+
+/*
+ * `<abbr>` is an abbreviation whose expansion is in its `title`. The expansion is
+ * the browser's own tooltip, so the affordance has to be the dotted underline,
+ * which is the one treatment readers already read as "there is more here".
+ *
+ * The decoration era takes the ink tier; the `cursor: help` is the pointer's
+ * half of the same signal. Neither is the only carrier: the `title` is announced
+ * to a screen reader and shown by the browser.
+ */
+.prose :where(abbr[title]) {
+  text-decoration: underline dotted;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+  text-decoration-color: var(--ink-mark);
+  cursor: help;
+}
+
+/*
+ * Ruby, the furigana a Japanese reader needs over a name or a hard kanji.
+ *
+ * The base text has to keep the line, and the annotation sits in the leading the
+ * Japanese measurement already reserves, so the size is halved from the parent
+ * rather than fixed: a ruby inside a heading and a ruby inside a paragraph then
+ * both sit in proportion instead of one of them colliding with the line above.
+ *
+ * `ruby-align: center` is the browser default made explicit, and `rb` is left
+ * alone because the sanitiser does not emit it.
+ */
+.prose :where(ruby) {
+  ruby-position: over;
+  ruby-align: center;
+  ruby-merge: separate;
+}
+
+.prose :where(rt) {
+  font-size: 0.5em;
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: 0.05em;
+  color: var(--ink-muted);
+}
+
+/*
+ * The rare browser that ignores `ruby-position` shows the annotation inline; the
+ * parentheses the parser leaves on `<rp>` are hidden there and shown when ruby
+ * is not rendered, which is exactly what `<rp>` is for.
+ */
+.prose :where(rp) {
+  display: none;
+}
+
+/*
+ * A horizontal rule in prose is a section break, not a divider between two rows
+ * of a table. The plugin draws a hairline; this widens the air around it and
+ * tints the rule with the stone the headings use, so a break reads as a pause
+ * rather than as the edge of a box.
+ */
+.prose :where(hr) {
+  margin-block: 3rem;
+  border-color: var(--color-base-300);
 }
 
 /*
@@ -118,12 +324,13 @@
 /*
  * Links carry an underline rather than a colour alone, so they stay legible in
  * grayscale and under a colorblind filter. The offset keeps the rule clear of
- * the descenders.
+ * the descenders, and a Japanese link needs it a little wider than a Latin one:
+ * the glyphs sit lower in their box.
  */
 .prose :where(a):not(:where(.pswp-item)) {
   text-decoration-line: underline;
   text-decoration-thickness: from-font;
-  text-underline-offset: 0.2em;
+  text-underline-offset: 0.25em;
   text-decoration-color: color-mix(
     in oklab,
     var(--color-primary) 45%,
@@ -195,6 +402,44 @@
  */
 .prose :where(blockquote footer) {
   margin-top: 0.5em;
+  color: var(--ink-muted);
+}
+
+/*
+ * A blockquote is set off by its own rule and the muted attribution, not by an
+ * indent the measured column cannot spare. The rule takes the ink tier so it
+ * reads as a quotation mark rather than as the edge of a box, and the quote
+ * itself is a touch larger than the body, the way a pulled quote is in print.
+ */
+.prose :where(blockquote) {
+  font-style: normal;
+  border-inline-start-width: 2px;
+}
+
+.prose :where(blockquote p:first-of-type)::before,
+.prose :where(blockquote p:last-of-type)::after {
+  content: none;
+}
+
+/*
+ * List markers take the body ink through `::marker` rather than the plugin's
+ * `--tw-prose-bullets`, so a bullet and a numeral read at the same strength as
+ * the words they introduce. The accent stays out of it: an article should not
+ * spend the one rare colour on its bullets.
+ */
+.prose :where(li)::marker {
+  color: var(--color-base-content);
+}
+
+/*
+ * The footnote block is set apart by the rule the plugin already draws, and the
+ * note text is muted so the notes read as apparatus rather than as more article.
+ */
+.prose :where([data-footnotes]) {
+  font-size: 0.875rem;
+}
+
+.prose :where([data-footnotes] li) {
   color: var(--ink-muted);
 }
 

@@ -1,0 +1,49 @@
+---
+import Icon from "./Icon.astro";
+
+interface NavItem {
+  href: string;
+  title: string;
+}
+
+interface Props {
+  /* The older post, if there is one. */
+  prev?: NavItem;
+  /* The newer post, if there is one. */
+  next?: NavItem;
+}
+
+const { prev, next } = Astro.props;
+---
+
+<!--
+  The two steps out of an article. Each half is one link, so the whole half is
+  the hit area, and the half with no post behind it says so rather than being
+  dropped: a single half left alone would sit off to one side and read as a
+  mistake.
+-->
+<nav class="post-nav" aria-label="前後の記事">
+  {prev ? (
+    <a class="post-nav-link" href={prev.href} rel="prev">
+      <span class="post-nav-label">
+        <Icon name="back" class="text-[1rem]" />
+        前の記事
+      </span>
+      <span class="post-nav-title">{prev.title}</span>
+    </a>
+  ) : (
+    <span class="post-nav-empty">これより前の記事はありません</span>
+  )}
+
+  {next ? (
+    <a class="post-nav-link post-nav-link-next" href={next.href} rel="next">
+      <span class="post-nav-label">
+        次の記事
+        <Icon name="arrow" class="text-[1rem]" />
+      </span>
+      <span class="post-nav-title">{next.title}</span>
+    </a>
+  ) : (
+    <span class="post-nav-empty">これより新しい記事はありません</span>
+  )}
+</nav>

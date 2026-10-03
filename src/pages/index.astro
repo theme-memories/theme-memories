@@ -2,10 +2,12 @@
 import { Image } from "astro:assets";
 import CategoryBadge from "../components/CategoryBadge.astro";
 import FormattedDate from "../components/FormattedDate.astro";
+import Icon from "../components/Icon.astro";
 import PostEntry from "../components/PostEntry.astro";
 import WeatherWidget from "../components/WeatherWidget.astro";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { SITE_DESCRIPTION, SITE_TITLE } from "../consts";
+import { categories, categoryKeys } from "../data/categories";
 import { byPinnedThenDate, getArticles, getVaultEntries } from "../utils/posts";
 import { toSrcset } from "../utils/srcset";
 /*
@@ -27,11 +29,24 @@ const index = rest.slice(0, 5);
  * further back than any article, so a figure taken from the articles alone
  * would understate both.
  */
-const archive = [...articles, ...(await getVaultEntries())];
+const vaultEntries = await getVaultEntries();
+const archive = [...articles, ...vaultEntries];
 const since =
   archive.length === 0
     ? undefined
     : Math.min(...archive.map((post) => post.data.pubDate.getFullYear()));
+
+/*
+ * The category rail. It counts the whole archive for the same reason the
+ * masthead does, and it links into the index's own filter, so the home page can
+ * hand a reader to 技術 without a second mechanism beside the one `/posts`
+ * already owns.
+ */
+const categoryCounts = categoryKeys.map((key) => ({
+  key,
+  ...categories[key],
+  count: archive.filter((post) => post.data.category === key).length,
+}));
 
 /*
  * The `md` breakpoint. The portrait frame is drawn for a phone, so past this
@@ -48,7 +63,7 @@ const heroPcSrcset = await toSrcset(HeroPc, PC_WIDTHS);
   <!--
     The masthead.
 
-    The art carries the whole block and the description sits under it on the page
+    The art carries the block and the nameplate sits under it on the page
     surface. The description was briefly set on top of the art behind a dark
     scrim, and the scrim is gone because the two are the same decision: every band
     of both frames contains near-black pixels (line-art outlines, dark clothing,
@@ -59,6 +74,11 @@ const heroPcSrcset = await toSrcset(HeroPc, PC_WIDTHS);
     The last of the image still dissolves into the page rather than ending on a
     hard seam. That is a mask, not a colour, so it lands on whatever the page
     surface is in either theme.
+
+    The nameplate is set after the art rather than over it: the wordmark names
+    the site, and the tagline is the `h1` the first viewport is read by. The rule
+    above the pair is the heavy one a masthead carries, and the archive count
+    sits at the end of it as the publication's own colophon line.
   -->
   <section class="bg-base-100">
     <picture>
@@ -79,12 +99,16 @@ const heroPcSrcset = await toSrcset(HeroPc, PC_WIDTHS);
       />
     </picture>
 
-    <div class="site-container pt-8 pb-8">
-      <div class="rule-ink"></div>
-      <div class="mt-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between sm:gap-8">
-        <h1 class="display-title max-w-3xl text-balance">{SITE_DESCRIPTION}</h1>
-        <p class="data shrink-0">
-          {archive.length} 件{since !== undefined && <>（{since}年以降）</>}
+    <div class="site-container pb-10">
+      <div class="masthead">
+        <div>
+          <h1 class="masthead-line">{SITE_DESCRIPTION}</h1>
+          <span class="masthead-name">{SITE_TITLE}</span>
+        </div>
+
+        <p class="masthead-meta">
+          <span>{archive.length} 件の記事</span>
+          {since !== undefined && <span>{since}年以降</span>}
         </p>
       </div>
     </div>
@@ -92,22 +116,16 @@ const heroPcSrcset = await toSrcset(HeroPc, PC_WIDTHS);
 
   {lead && (
     <section class="bg-base-200">
-      <div class="site-container py-12 sm:py-14">
+      <div class="site-container py-14 sm:py-16">
         <article
           class:list={[
-            "grid gap-8 lg:gap-12",
+            "grid gap-8 lg:gap-14",
             lead.data.heroImage && "lg:grid-cols-2 lg:items-center",
           ]}
         >
           <div>
-            <p class="label">最新</p>
-            <div class="mt-5 flex flex-wrap items-baseline gap-x-4 gap-y-2">
-              <CategoryBadge category={lead.data.category} />
-              <span class="data">
-                <FormattedDate date={lead.data.pubDate} />
-              </span>
-            </div>
-            <h2 class="display-title mt-4">
+            <span class="eyebrow">最新</span>
+            <h2 class="display-title mt-5">
               <a
                 href={`/${lead.collection}/${lead.data.slug}`}
                 class="hover:text-[color:var(--ink-accent)] transition-colors"
@@ -116,6 +134,21 @@ const heroPcSrcset = await toSrcset(HeroPc, PC_WIDTHS);
               </a>
             </h2>
             <p class="page-lead mt-5">{lead.data.description}</p>
+
+            <div class="mt-6 flex flex-wrap items-center gap-x-4 gap-y-2">
+              <CategoryBadge category={lead.data.category} />
+              <span class="data">
+                <FormattedDate date={lead.data.pubDate} />
+              </span>
+            </div>
+
+            <a
+              href={`/${lead.collection}/${lead.data.slug}`}
+              class="btn btn-primary mt-8 min-h-11"
+            >
+              記事を読む
+              <Icon name="arrow" class="text-[1.125rem]" />
+            </a>
           </div>
 
           {lead.data.heroImage && (
@@ -135,23 +168,58 @@ const heroPcSrcset = await toSrcset(HeroPc, PC_WIDTHS);
     </section>
   )}
 
-  <section class="site-container pt-14 pb-20 sm:pt-16">
-    <div class="grid gap-12 lg:grid-cols-[minmax(0,1fr)_22rem] lg:gap-16">
+  <section class="site-container pt-16 pb-20">
+    <div class="grid gap-14 lg:grid-cols-[minmax(0,1fr)_20rem] lg:gap-16">
       <div>
-        <div class="flex items-baseline justify-between gap-4">
+        <div class="section-head">
           <h2 class="section-title">一覧</h2>
           <a href="/posts" class="link-quiet text-sm">
             すべての記事 →
           </a>
         </div>
-        <div class="border-base-300 mt-6 border-t">
+        <div class="post-grid">
           {index.map((post) => (
             <PostEntry post={post} level={3} />
           ))}
         </div>
       </div>
 
-      <WeatherWidget />
+      <div class="flex flex-col gap-12">
+        <WeatherWidget />
+
+        <!--
+          The category rail. It is a second way into the archive beside the
+          index, so it is set as a small tracked list rather than as a block of
+          buttons: the counts are the useful part, and a count belongs to a line
+          of type, not to a chip.
+        -->
+        <nav class="self-start" aria-label="カテゴリー">
+          <h2 class="eyebrow mb-4">カテゴリー</h2>
+          <ul class="flex flex-col">
+            {categoryCounts.map((category) => (
+              <li>
+                <a
+                  class="group border-base-300 hover:border-base-content flex items-center gap-3 border-b py-3 transition-colors"
+                  href={`/posts?category=${category.key}`}
+                >
+                  <span
+                    class:list={["tag-mark", category.dot]}
+                    aria-hidden="true"
+                  />
+                  <span class="group-hover:text-base-content text-base-content/90 font-medium">
+                    {category.name}
+                  </span>
+                  <span class="data ms-auto">{category.count}</span>
+                  <Icon
+                    name="arrow"
+                    class="text-[1rem] text-[color:var(--ink-mark)]"
+                  />
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      </div>
     </div>
   </section>
 </BaseLayout>

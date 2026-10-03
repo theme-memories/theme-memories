@@ -1,0 +1,43 @@
+---
+import FormattedDate from "./FormattedDate.astro";
+
+interface RelatedItem {
+  href: string;
+  title: string;
+  date: Date;
+}
+
+interface Props {
+  posts: RelatedItem[];
+}
+
+const { posts } = Astro.props;
+---
+
+<!--
+  関連記事. A short ruled list of headlines, newest first, drawn from the same
+  category as the article it closes. The number is decorative and pinned to two
+  digits so the titles align down the list.
+-->
+{posts.length > 0 && (
+  <section class="mt-16" aria-labelledby="related-heading">
+    <div class="section-head">
+      <h2 id="related-heading" class="section-title">
+        関連記事
+      </h2>
+    </div>
+    <div class="related-list mt-2">
+      {posts.map((post, index) => (
+        <a class="related-item" href={post.href}>
+          <span class="related-index" aria-hidden="true">
+            {String(index + 1).padStart(2, "0")}
+          </span>
+          <span class="related-title">{post.title}</span>
+          <span class="related-date">
+            <FormattedDate date={post.date} />
+          </span>
+        </a>
+      ))}
+    </div>
+  </section>
+)}
