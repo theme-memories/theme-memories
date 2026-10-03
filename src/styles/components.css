@@ -415,6 +415,52 @@
   }
 
   /*
+   * The palette switch: the two pigments as a bordered pair of labels, mirroring
+   * the theme toggle beside it — the same 2.5rem height, the same square corner,
+   * the same hairline. Selection inverts to ink the way a filter chip does, so
+   * the choice survives grayscale and spends no accent, and the resting label
+   * takes the muted tier, which clears AA on every surface. The input is
+   * visually hidden, so the focus ring is drawn on the label the reader sees.
+   */
+  .palette-switch {
+    @apply border-base-300 flex items-stretch border;
+  }
+
+  .palette-option {
+    @apply flex min-h-10 min-w-10 cursor-pointer items-center justify-center px-2 text-xs font-medium tracking-[0.08em];
+
+    color: var(--ink-muted);
+    transition-property: color, background-color;
+    transition-duration: var(--motion-exit);
+    transition-timing-function: var(--ease-out-quint);
+  }
+
+  .palette-option + .palette-option {
+    border-inline-start: 1px solid var(--color-base-300);
+  }
+
+  .palette-option:hover {
+    color: var(--color-base-content);
+  }
+
+  .palette-option:has(input:checked) {
+    background-color: var(--color-base-content);
+    color: var(--color-base-100);
+  }
+
+  .palette-option:has(input:focus-visible) {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+
+  @media (pointer: coarse) {
+    .palette-option {
+      min-width: 2.75rem;
+      min-height: 2.75rem;
+    }
+  }
+
+  /*
    * The era toggle on the character page.
    *
    * daisyUI's tab panels have to be the next sibling of the tab that shows
@@ -857,7 +903,7 @@
 
 /*
  * A disabled control still has to be legible. daisyUI drops the label to 20% of
- * the text colour, which on paper composites to roughly 1.1:1 — and on the
+ * the text colour, which on paper composites to roughly 1.5:1 — and on the
  * unlock form that is the state every visitor arrives to. The label is held at
  * 70% instead, so the control reads as unavailable without becoming unreadable.
  *
@@ -950,19 +996,19 @@
  *
  * daisyUI paints an unselected tab's label at 50% of base-content and the rule
  * below only ever addressed the checked half, so the resting label sat at
- * 2.74:1 in nord and 3.65:1 in night against the `base-100` track: under AA in
- * both, and under even the 3:1 a glyph is held to in nord. daisyUI also repaints
- * `:hover` at full contrast, so the label cleared the floor only while a pointer
- * was over it and stayed under it the rest of the time, which is the state a
- * touch reader never leaves.
+ * 3.03:1 in the 藍 theme and 3.11:1 in the 朱 theme against the `base-100`
+ * track: under AA in both, and under even the 3:1 a glyph is held to. daisyUI
+ * also repaints `:hover` at full contrast, so the label cleared the floor only
+ * while a pointer was over it and stayed under it the rest of the time, which is
+ * the state a touch reader never leaves.
  *
  * The muted tier is the value here, and it is the same one the footer and the
- * latest-post lane are held to: 5.10:1 in nord and 6.48:1 in night on this
- * surface. Resting on the tier and spending the full ink on hover keeps the
- * pointer feedback the library was already giving, without letting the label
- * fall under the floor to get it. The hover rule takes the `:not` because the
- * checked tab's label is base-100 on a base-content fill, where full ink would
- * erase it.
+ * latest-post lane are held to: 6.19:1 in the 藍 theme and 6.44:1 in the 朱
+ * theme on this surface. Resting on the tier and spending the full ink on hover
+ * keeps the pointer feedback the library was already giving, without letting the
+ * label fall under the floor to get it. The hover rule takes the `:not` because
+ * the checked tab's label is base-100 on a base-content fill, where full ink
+ * would erase it.
  *
  * Unlayered for the same reason as the rules around it: daisyUI emits its tab
  * rules into its own layer, which outranks this file's components layer whatever

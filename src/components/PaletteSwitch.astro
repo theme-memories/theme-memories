@@ -1,0 +1,35 @@
+---
+import { THEMES } from "../consts";
+
+interface Props {
+  /*
+   * Each rendered copy needs its own radio group name. Two groups sharing a
+   * name are one group to the browser, which would let the hidden copy's
+   * selection override the visible one; `theme.ts` keeps the copies in step by
+   * value instead.
+   */
+  name: string;
+  class?: string;
+}
+
+const { name, class: className } = Astro.props;
+---
+
+<div
+  class:list={["palette-switch", className]}
+  role="radiogroup"
+  aria-label="配色"
+>
+  {THEMES.map((theme) => (
+    <label class="palette-option">
+      <input
+        type="radio"
+        name={name}
+        value={theme.id}
+        data-palette
+        class="sr-only"
+      />
+      <span>{theme.label}</span>
+    </label>
+  ))}
+</div>

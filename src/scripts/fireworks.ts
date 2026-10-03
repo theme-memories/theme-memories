@@ -51,8 +51,8 @@ const MAX_DPR = 2;
 /** Assigning to `canvas.width` reallocates the buffer, so a drag waits it out. */
 const RESIZE_DEBOUNCE_MS = 500;
 
-/** nord's accent, reachable only if the token cannot be read at all. */
-const ACCENT_FALLBACK = "#5e81ac";
+/** The 藍 primary, reachable only if the token cannot be read at all. */
+const ACCENT_FALLBACK = "#366ba5";
 
 type Anime = typeof import("animejs");
 type RenderLoop = ReturnType<Anime["createTimer"]>;

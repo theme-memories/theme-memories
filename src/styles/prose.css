@@ -3,7 +3,8 @@
  *
  * @tailwindcss/typography is configured with its defaults in global.css. Here the
  * plugin's theme variables are remapped onto daisyUI color tokens, so article
- * content follows the active nord/dim theme without needing any `dark:` variant.
+ * content follows the active daisyUI theme (藍 or 朱, light or dark) without
+ * needing any `dark:` variant.
  *
  * These rules are intentionally unlayered: the plugin emits its own `.prose`
  * declarations inside the `components` layer, and unlayered rules always win.
@@ -94,9 +95,9 @@
  * never fights the hairline above the caption.
  *
  * The rule is mixed from the body ink rather than written as a black or a white,
- * which is what lets one declaration hold in both themes: the ink is near-black
- * in nord and near-white in night, so each theme keeps the hairline it already
- * had, and a third theme needs nothing here.
+ * which is what lets one declaration hold in all four themes: the ink is
+ * near-black in the light pair and near-white in the dark pair, so each theme
+ * keeps the hairline it already had, and a further theme needs nothing here.
  */
 .prose :where(img, video) {
   outline: 1px solid
@@ -169,7 +170,7 @@
  * Inline code sits on the same panel surface as a fenced block, read straight
  * from the page theme rather than from Expressive Code's own background. The
  * code surface is a theme token in ec.config.mjs (`codeBackground`), so both
- * forms follow nord and dim together and cannot drift apart.
+ * forms follow all four daisyUI themes together and cannot drift apart.
  */
 .prose :where(code):not(:where(pre *)) {
   padding: 0.15em 0.35em;

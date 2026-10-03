@@ -5,8 +5,6 @@ import Icon from "./Icon.astro";
 <label class="theme-toggle border-base-300 hover:border-base-content/40 hover:bg-base-200 swap swap-rotate size-10 border transition-colors">
   <input
     type="checkbox"
-    class="theme-controller"
-    value="night"
     data-theme-toggle
     aria-label="ダークテーマに切り替える"
   />
@@ -14,31 +12,17 @@ import Icon from "./Icon.astro";
   <Icon name="moon" class="swap-on text-[1.125rem]" />
 </label>
 
+<!--
+  The checkbox has to be ticked before paint or a dark-mode reader sees the sun
+  for a frame. The head script already resolved the mode and left it on the root
+  element, so this only has to read it; the shared wiring in `theme.ts` takes
+  over from there.
+-->
 <script is:inline>
   (() => {
     const toggle = document.querySelector("[data-theme-toggle]");
-    if (!(toggle instanceof HTMLInputElement)) return;
-
-    let stored = null;
-    try {
-      stored = localStorage.getItem("theme");
-    } catch {
-      stored = null;
+    if (toggle instanceof HTMLInputElement) {
+      toggle.checked = document.documentElement.dataset.mode === "dark";
     }
-
-    const prefersDark = window.matchMedia(
-      "(prefers-color-scheme: dark)",
-    ).matches;
-    toggle.checked = (stored ?? (prefersDark ? "night" : "nord")) === "night";
-
-    toggle.addEventListener("change", () => {
-      const theme = toggle.checked ? "night" : "nord";
-      try {
-        localStorage.setItem("theme", theme);
-      } catch {
-        /* storage can be unavailable; the theme still applies for this page */
-      }
-      document.documentElement.dataset.theme = theme;
-    });
   })();
 </script>

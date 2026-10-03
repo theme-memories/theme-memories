@@ -65,14 +65,16 @@
 /*
  * The one value in the stylesheets that has to be told which theme it is in.
  *
- * The character page's art is drawn light and stays light in both themes, so in
- * the dark theme it needs holding back or it reads as a hole punched in the
- * page. Everything else here reads a daisyUI token that already carries both
+ * The character page's art is drawn light and stays light in every theme, so in
+ * a dark theme it needs holding back or it reads as a hole punched in the page.
+ * Everything else here reads a daisyUI token that already carries all four
  * values, which is why this is a named declaration in the one file that owns
  * theme values rather than a `[data-theme]` selector in a component stylesheet —
- * and why a third theme would override this one line and inherit the rest.
+ * and why a further theme only has to be added to this selector and inherits the
+ * rest.
  */
-:root[data-theme="night"] {
+:root[data-theme="kon"],
+:root[data-theme="sumi"] {
   --stage-art-wash: color-mix(in oklab, var(--color-base-100) 62%, transparent);
 }
 
@@ -103,37 +105,43 @@
  *
  * Secondary text is held back from full contrast so it never competes with the
  * writing, but "held back" cannot mean "under the floor", and the brief already
- * calls contrast a floor rather than a preference. Measured against the page
- * surface, base-content at 55% reads 3.06:1 in nord and 4.09:1 in night, and at
- * 60% reads 3.49:1 and 4.70:1. The light theme fails AA for text at both, which
- * is where every label, date, nav link, caption and lead paragraph on this site
- * sat.
+ * calls contrast a floor rather than a preference. Because the tier is mixed
+ * from `base-content`, it has to clear AA on every surface of all four themes,
+ * not only on the page. Measured against base-100 / base-200 / base-300:
  *
- * 74% is the lowest value that clears 4.5:1 on every surface the tier is laid
- * on, not only on the page. It was first cut at 70%, which does clear on
- * `base-100`, 4.59:1 in nord, and that is the surface it was measured against.
- * But the footer, the latest-post lane and a pressed index row all put
- * `base-200` underneath muted text, where the same value reads 4.42:1, and
- * `base-300` reads 4.22:1. Calibrating against one surface left the other two
- * under the floor, which is a drift the "declared once" rule cannot catch
- * because the value itself was fine. At 74% the tier reads 5.10:1 on
- * `base-100`, 4.97:1 on `base-200` and 4.63:1 on `base-300` in nord, and
- * 6.48:1 / 6.61:1 / 6.70:1 in night, so a call site can move between them
- * without re-measuring. It still sits well under the body's 10.84:1, so it
- * reads as secondary rather than as competing, which is the whole reason it is
- * held back.
+ *   50%   3.03 / 2.97 / 2.87  藍 paper,   3.11 / 3.04 / 2.92 朱 paper
+ *   55%   3.48 / 3.40 / 3.26  藍 paper,   3.58 / 3.49 / 3.33 朱 paper
+ *   60%   4.02 / 3.91 / 3.72  藍 paper,   4.15 / 4.02 / 3.80 朱 paper
+ *   70%   5.45 / 5.25 / 4.90  藍 paper,   5.66 / 5.43 / 5.04 朱 paper
+ *   74%   6.19 / 5.93 / 5.50  藍 paper,   6.44 / 6.15 / 5.65 朱 paper
+ *   74%   8.20 / 7.59 / 6.48  紺 night,   8.17 / 7.61 / 6.56 墨 night
+ *
+ * The light pair is the hard case: its ink is darker than the dark pairs', so it
+ * has less room to lighten into the paper. 55% and 60%, the values that were in
+ * place before, fail AA on all three surfaces; 70% clears, but on base-300 it
+ * sits at 4.90, a tenth above the line. 74% is the value kept, reading 5.50 or
+ * better on the darkest surface of every theme, which is enough headroom to move
+ * between base-100, base-200 and base-300 without re-measuring. That matters
+ * because the footer, the latest-post lane and a pressed index row all put a
+ * tinted surface under muted text; calibrating against one surface was the drift
+ * this tier was raised to stop. It still sits well under the body's 13.98:1, so
+ * it reads as secondary rather than as competing, which is the whole reason it
+ * is held back.
  *
  * The row marker is a glyph rather than text, so it answers to 3:1 instead, and
- * 55% measures 3.06:1 in nord and 4.09:1 in night. It was 35%, or 1.95:1, which
- * is why the arrows down the index were barely there.
+ * 55% measures 3.48 / 3.40 in the 藍 pair and 3.58 / 3.49 in the 朱 pair on
+ * base-100 / base-200. It clears the glyph floor on every surface it is laid on,
+ * which is why the arrows down the index are visible at all.
  *
- * The third is the accent, and only where it carries text. On its own it
- * measures 3.5:1 against this page, which is fine for a border, a focus ring or
- * a one-pixel rule and not fine for a word. Mixed 55/45 toward the body ink it
- * measures 5.8:1 in nord and 8.5:1 in night, and keeps enough of the hue to
- * still read as the accent. prose.css found this first, for links; it is named
- * here because the current entry in the table of contents, the hovered index
- * row and the quiet link all put the accent on words too.
+ * The third is the accent, and only where it carries text. The raw accent
+ * actually clears AA on both papers now (5.08:1 on the 藍, 4.80:1 on the 朱), but
+ * it is still mixed 55/45 toward the body ink wherever it carries a word: the
+ * mixture measures 8.12 / 7.52 / 6.58 on the 藍 surfaces and 8.16 / 7.51 / 6.48
+ * on the 朱 ones, so the accent on words has margin rather than sitting on the
+ * floor, and it keeps enough of the hue to still read as the accent. prose.css
+ * found this first, for links; it is named here because the current entry in the
+ * table of contents, the hovered index row and the quiet link all put the accent
+ * on words too.
  *
  * One value per tier, declared once, so a rule cannot drift; and written as
  * `color-mix` over `transparent` because that is exactly what Tailwind's `/NN`
