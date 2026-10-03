@@ -1,0 +1,1549 @@
+---
+import { Image } from "astro:assets";
+import BaseLayout from "@layouts/BaseLayout.astro";
+import ImgA from "../assets/mizuki-gallery/003.webp";
+import ImgB from "../assets/mizuki-gallery/026.webp";
+import ImgC from "../assets/mizuki-gallery/055.webp";
+import ImgD from "../assets/mizuki-gallery/056.webp";
+
+/*
+ * A live index of the daisyUI components this theme styles, grouped the way the
+ * daisyUI documentation groups them. The three Layout components the blog
+ * already renders — Divider, Drawer and Footer — are deliberately absent; the
+ * note below says why.
+ *
+ * The index and the sections below are both driven from this list, so a
+ * component cannot be linked to without being shown.
+ */
+const groups = [
+  {
+    name: "Actions",
+    items: [
+      { id: "button", label: "Button" },
+      { id: "dropdown", label: "Dropdown" },
+      { id: "fab", label: "FAB / Speed Dial" },
+      { id: "modal", label: "Modal" },
+      { id: "swap", label: "Swap" },
+      { id: "theme-controller", label: "Theme Controller" },
+    ],
+  },
+  {
+    name: "Data display",
+    items: [
+      { id: "accordion", label: "Accordion" },
+      { id: "avatar", label: "Avatar" },
+      { id: "aura", label: "Aura" },
+      { id: "badge", label: "Badge" },
+      { id: "card", label: "Card" },
+      { id: "carousel", label: "Carousel" },
+      { id: "chat", label: "Chat bubble" },
+      { id: "collapse", label: "Collapse" },
+      { id: "countdown", label: "Countdown" },
+      { id: "diff", label: "Diff" },
+      { id: "hover-3d", label: "Hover 3D Card" },
+      { id: "hover-gallery", label: "Hover Gallery" },
+      { id: "kbd", label: "Kbd" },
+      { id: "list", label: "List" },
+      { id: "stat", label: "Stat" },
+      { id: "status", label: "Status" },
+      { id: "table", label: "Table" },
+      { id: "text-rotate", label: "Text Rotate" },
+      { id: "timeline", label: "Timeline" },
+    ],
+  },
+  {
+    name: "Navigation",
+    items: [
+      { id: "breadcrumbs", label: "Breadcrumbs" },
+      { id: "dock", label: "Dock" },
+      { id: "link", label: "Link" },
+      { id: "megamenu", label: "Megamenu" },
+      { id: "menu", label: "Menu" },
+      { id: "navbar", label: "Navbar" },
+      { id: "pagination", label: "Pagination" },
+      { id: "steps", label: "Steps" },
+      { id: "tab", label: "Tabs" },
+    ],
+  },
+  {
+    name: "Feedback",
+    items: [
+      { id: "alert", label: "Alert" },
+      { id: "loading", label: "Loading" },
+      { id: "progress", label: "Progress" },
+      { id: "radial-progress", label: "Radial Progress" },
+      { id: "skeleton", label: "Skeleton" },
+      { id: "toast", label: "Toast" },
+      { id: "tooltip", label: "Tooltip" },
+    ],
+  },
+  {
+    name: "Data input",
+    items: [
+      { id: "calendar", label: "Calendar" },
+      { id: "checkbox", label: "Checkbox" },
+      { id: "fieldset", label: "Fieldset" },
+      { id: "file-input", label: "File Input" },
+      { id: "filter", label: "Filter" },
+      { id: "label", label: "Label" },
+      { id: "radio", label: "Radio" },
+      { id: "range", label: "Range" },
+      { id: "rating", label: "Rating" },
+      { id: "select", label: "Select" },
+      { id: "input", label: "Input" },
+      { id: "textarea", label: "Textarea" },
+      { id: "toggle", label: "Toggle" },
+      { id: "validator", label: "Validator" },
+      { id: "otp", label: "OTP" },
+    ],
+  },
+  {
+    name: "Layout",
+    items: [
+      { id: "hero", label: "Hero" },
+      { id: "indicator", label: "Indicator" },
+      { id: "join", label: "Join" },
+      { id: "mask", label: "Mask" },
+      { id: "stack", label: "Stack" },
+    ],
+  },
+  {
+    name: "Mockup",
+    items: [
+      { id: "mockup-browser", label: "Browser" },
+      { id: "mockup-code", label: "Code" },
+      { id: "mockup-phone", label: "Phone" },
+      { id: "mockup-window", label: "Window" },
+    ],
+  },
+];
+---
+
+<BaseLayout
+  title="daisyUI Style Guide"
+  description="Every daisyUI component this theme styles, rendered live in the site's own palettes."
+>
+  <header class="site-container pt-14 pb-8 sm:pt-20">
+    <h1 class="page-title">daisyUI Style Guide</h1>
+    <p class="page-lead mt-5">
+      A live reference for how daisyUI renders in this site's authored themes.
+      Switch palette and light/dark in the header to check every component in 藍
+      (ai / kon) and 朱 (kinari / sumi).
+    </p>
+  </header>
+
+  <div class="site-container pb-20">
+    <!--
+      The removed Layout components, and why. daisyUI's Layout category holds
+      eight components; the three the blog already renders are left out rather
+      than duplicated here, so the ones shown live in the page itself.
+    -->
+    <div role="alert" class="alert alert-info alert-soft">
+      <span>
+        <strong>Divider</strong>, <strong>Drawer</strong> and
+        <strong>Footer</strong> are the three Layout components this blog
+        already uses — the post hero divider, the mobile navigation drawer and
+        the site footer. They are omitted here; see the running page for how
+        they look in these themes.
+      </span>
+    </div>
+
+    <!-- The index, built from the same list the sections below are. -->
+    <nav class="mt-10" aria-label="コンポーネント一覧">
+      <h2 class="label mb-3">On this page</h2>
+      <div class="grid gap-x-8 gap-y-6 sm:grid-cols-2 lg:grid-cols-3">
+        {groups.map((group) => (
+          <div>
+            <p class="label mb-2">{group.name}</p>
+            <ul class="space-y-1 text-sm">
+              {group.items.map((item) => (
+                <li>
+                  <a class="link-quiet" href={`#${item.id}`}>
+                    {item.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+    </nav>
+
+    <!-- Actions -->
+    <h2
+      id="actions"
+      class="section-title border-base-300 mt-16 border-b pb-3 scroll-mt-24"
+    >
+      Actions
+    </h2>
+
+    <section class="mt-8">
+      <h3 id="button" class="font-bold scroll-mt-24">
+        Button
+      </h3>
+      <div class="mt-4 flex flex-wrap items-center gap-2">
+        <button class="btn">Default</button>
+        <button class="btn btn-primary">Primary</button>
+        <button class="btn btn-neutral">Neutral</button>
+        <button class="btn btn-outline">Outline</button>
+        <button class="btn btn-ghost">Ghost</button>
+        <button class="btn btn-link">Link</button>
+      </div>
+      <div class="mt-3 flex flex-wrap items-center gap-2">
+        <button class="btn btn-xs">xs</button>
+        <button class="btn btn-sm">sm</button>
+        <button class="btn">md</button>
+        <button class="btn btn-lg">lg</button>
+        <button class="btn btn-square" aria-label="Square">
+          ×
+        </button>
+        <button class="btn btn-circle" aria-label="Circle">
+          +
+        </button>
+      </div>
+    </section>
+
+    <section class="mt-8">
+      <h3 id="dropdown" class="font-bold scroll-mt-24">
+        Dropdown
+      </h3>
+      <div class="mt-4 flex flex-wrap gap-4">
+        <details class="dropdown">
+          <summary class="btn">Open dropdown</summary>
+          <ul class="dropdown-content menu bg-base-100 border-base-300 rounded-box z-10 w-52 border p-2">
+            <li>
+              <a href="#dropdown">Item one</a>
+            </li>
+            <li>
+              <a href="#dropdown">Item two</a>
+            </li>
+            <li>
+              <a href="#dropdown">Item three</a>
+            </li>
+          </ul>
+        </details>
+      </div>
+    </section>
+
+    <section class="mt-8">
+      <h3 id="fab" class="font-bold scroll-mt-24">
+        FAB / Speed Dial
+      </h3>
+      <div class="mt-4 flex items-end gap-8">
+        <!--
+          A FAB is pinned to a screen corner. Shown `static` here so it sits in
+          the flow rather than floating over the page.
+        -->
+        <div class="fab static">
+          <button
+            class="btn btn-lg btn-circle btn-primary"
+            aria-label="Actions"
+          >
+            +
+          </button>
+        </div>
+        <p class="data">Shown in flow; normally fixed to a corner.</p>
+      </div>
+    </section>
+
+    <section class="mt-8">
+      <h3 id="modal" class="font-bold scroll-mt-24">
+        Modal
+      </h3>
+      <div class="mt-4">
+        <button class="btn" popovertarget="sg-modal">
+          Open modal
+        </button>
+        <div class="modal" popover id="sg-modal">
+          <div class="modal-box">
+            <h4 class="text-lg font-bold">Modal title</h4>
+            <p class="py-4">
+              This modal is opened with the popover API, so it needs no script.
+            </p>
+            <div class="modal-action">
+              <button
+                class="btn"
+                popovertarget="sg-modal"
+                popovertargetaction="hide"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+          <div class="modal-backdrop">
+            <button popovertarget="sg-modal" popovertargetaction="hide">
+              close
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="mt-8">
+      <h3 id="swap" class="font-bold scroll-mt-24">
+        Swap
+      </h3>
+      <div class="mt-4 flex items-center gap-6">
+        <label class="swap swap-rotate">
+          <input type="checkbox" aria-label="Toggle swap" />
+          <span class="swap-off">Off</span>
+          <span class="swap-on">On</span>
+        </label>
+        <label class="swap swap-flip">
+          <input type="checkbox" aria-label="Toggle flip" />
+          <span class="swap-off text-xl">🙂</span>
+          <span class="swap-on text-xl">🙃</span>
+        </label>
+      </div>
+    </section>
+
+    <section class="mt-8">
+      <h3 id="theme-controller" class="font-bold scroll-mt-24">
+        Theme Controller
+      </h3>
+      <div class="mt-4">
+        <label class="label cursor-pointer justify-start gap-3">
+          <input type="checkbox" value="ai" class="toggle theme-controller" />
+          <span>Switch to the 藍 (ai) theme</span>
+        </label>
+        <p class="data mt-2">
+          The site's own palette switch mirrors this mechanism so it can pair a
+          palette with the light/dark mode.
+        </p>
+      </div>
+    </section>
+
+    <!-- Data display -->
+    <h2
+      id="data-display"
+      class="section-title border-base-300 mt-16 border-b pb-3 scroll-mt-24"
+    >
+      Data display
+    </h2>
+
+    <section class="mt-8">
+      <h3 id="accordion" class="font-bold scroll-mt-24">
+        Accordion
+      </h3>
+      <div class="join join-vertical mt-4 w-full max-w-lg">
+        <div class="border-base-300 collapse join-item collapse-arrow border">
+          <input type="radio" name="sg-accordion" checked />
+          <div class="collapse-title font-semibold">Item one</div>
+          <div class="collapse-content text-sm">
+            Radio inputs sharing one name make a real accordion: opening one
+            closes the other.
+          </div>
+        </div>
+        <div class="border-base-300 collapse join-item collapse-arrow border">
+          <input type="radio" name="sg-accordion" />
+          <div class="collapse-title font-semibold">Item two</div>
+          <div class="collapse-content text-sm">The second panel.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="mt-8">
+      <h3 id="avatar" class="font-bold scroll-mt-24">
+        Avatar
+      </h3>
+      <div class="mt-4 flex items-center gap-4">
+        <div class="avatar">
+          <div class="w-16 rounded-full">
+            <Image
+              src={ImgA}
+              width={64}
+              height={64}
+              alt=""
+              class="h-full w-full object-cover"
+            />
+          </div>
+        </div>
+        <div class="avatar avatar-online">
+          <div class="w-16 rounded-full">
+            <Image
+              src={ImgB}
+              width={64}
+              height={64}
+              alt=""
+              class="h-full w-full object-cover"
+            />
+          </div>
+        </div>
+        <div class="avatar-group -space-x-6">
+          <div class="avatar">
+            <div class="w-12 rounded-full">
+              <Image
+                src={ImgA}
+                width={48}
+                height={48}
+                alt=""
+                class="h-full w-full object-cover"
+              />
+            </div>
+          </div>
+          <div class="avatar">
+            <div class="w-12 rounded-full">
+              <Image
+                src={ImgC}
+                width={48}
+                height={48}
+                alt=""
+                class="h-full w-full object-cover"
+              />
+            </div>
+          </div>
+          <div class="avatar avatar-placeholder">
+            <div class="bg-neutral text-neutral-content w-12 rounded-full">
+              <span>+3</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="mt-8">
+      <h3 id="aura" class="font-bold scroll-mt-24">
+        Aura
+      </h3>
+      <div class="mt-4">
+        <div class="aura aura-glow rounded-box w-fit">
+          <button class="btn btn-primary">Glowing button</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="mt-8">
+      <h3 id="badge" class="font-bold scroll-mt-24">
+        Badge
+      </h3>
+      <div class="mt-4 flex flex-wrap items-center gap-2">
+        <span class="badge">Badge</span>
+        <span class="badge badge-primary">Primary</span>
+        <span class="badge badge-outline">Outline</span>
+        <span class="badge badge-soft badge-accent">Soft</span>
+        <span class="badge badge-success">Success</span>
+        <span class="badge badge-error badge-sm">sm</span>
+      </div>
+    </section>
+
+    <section class="mt-8">
+      <h3 id="card" class="font-bold scroll-mt-24">
+        Card
+      </h3>
+      <div class="mt-4">
+        <div class="card card-border bg-base-100 w-80">
+          <figure>
+            <Image
+              src={ImgD}
+              width={320}
+              height={180}
+              alt=""
+              class="h-44 w-full object-cover"
+            />
+          </figure>
+          <div class="card-body">
+            <h4 class="card-title">Card title</h4>
+            <p>A card groups related content into one surface.</p>
+            <div class="card-actions justify-end">
+              <button class="btn btn-primary btn-sm">Action</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="mt-8">
+      <h3 id="carousel" class="font-bold scroll-mt-24">
+        Carousel
+      </h3>
+      <div class="carousel mt-4 w-full max-w-sm rounded-box">
+        {[ImgA, ImgB, ImgC].map((src) => (
+          <div class="carousel-item w-full">
+            <Image
+              src={src}
+              width={512}
+              height={320}
+              alt=""
+              class="h-64 w-full object-cover"
+            />
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <section class="mt-8">
+      <h3 id="chat" class="font-bold scroll-mt-24">
+        Chat bubble
+      </h3>
+      <div class="mt-4 flex flex-col gap-1">
+        <div class="chat chat-start">
+          <div class="chat-image avatar">
+            <div class="w-10 rounded-full">
+              <Image
+                src={ImgA}
+                width={40}
+                height={40}
+                alt=""
+                class="h-full w-full object-cover"
+              />
+            </div>
+          </div>
+          <div class="chat-header">
+            Mizuki
+            <time class="data ms-1">12:00</time>
+          </div>
+          <div class="chat-bubble">The first message.</div>
+        </div>
+        <div class="chat chat-end">
+          <div class="chat-bubble chat-bubble-primary">And the reply.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="mt-8">
+      <h3 id="collapse" class="font-bold scroll-mt-24">
+        Collapse
+      </h3>
+      <div class="border-base-300 collapse collapse-plus mt-4 border">
+        <input type="checkbox" />
+        <div class="collapse-title font-semibold">Click to open</div>
+        <div class="collapse-content text-sm">
+          Content revealed by a single collapse.
+        </div>
+      </div>
+    </section>
+
+    <section class="mt-8">
+      <h3 id="countdown" class="font-bold scroll-mt-24">
+        Countdown
+      </h3>
+      <div class="mt-4">
+        <span class="countdown text-4xl" aria-live="polite" aria-label="42">
+          <span style="--value:42;">42</span>
+        </span>
+      </div>
+    </section>
+
+    <section class="mt-8">
+      <h3 id="diff" class="font-bold scroll-mt-24">
+        Diff
+      </h3>
+      <figure class="diff rounded-box aspect-16/9 mt-4 max-w-lg">
+        <div class="diff-item-1">
+          <Image
+            src={ImgA}
+            width={768}
+            height={432}
+            alt=""
+            class="h-full w-full object-cover"
+          />
+        </div>
+        <div class="diff-item-2">
+          <Image
+            src={ImgB}
+            width={768}
+            height={432}
+            alt=""
+            class="h-full w-full object-cover"
+          />
+        </div>
+        <div class="diff-resizer"></div>
+      </figure>
+    </section>
+
+    <section class="mt-8">
+      <h3 id="hover-3d" class="font-bold scroll-mt-24">
+        Hover 3D Card
+      </h3>
+      <div class="hover-3d mt-4 max-w-80">
+        <figure class="rounded-box">
+          <Image
+            src={ImgD}
+            width={320}
+            height={200}
+            alt=""
+            class="h-full w-full object-cover"
+          />
+        </figure>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+      </div>
+    </section>
+
+    <section class="mt-8">
+      <h3 id="hover-gallery" class="font-bold scroll-mt-24">
+        Hover Gallery
+      </h3>
+      <figure class="hover-gallery mt-4 max-w-60">
+        <Image
+          src={ImgA}
+          width={240}
+          height={240}
+          alt=""
+          class="h-60 w-60 object-cover"
+        />
+        <Image
+          src={ImgC}
+          width={240}
+          height={240}
+          alt=""
+          class="h-60 w-60 object-cover"
+        />
+        <Image
+          src={ImgD}
+          width={240}
+          height={240}
+          alt=""
+          class="h-60 w-60 object-cover"
+        />
+      </figure>
+    </section>
+
+    <section class="mt-8">
+      <h3 id="kbd" class="font-bold scroll-mt-24">
+        Kbd
+      </h3>
+      <div class="mt-4 flex items-center gap-2">
+        <kbd class="kbd">Ctrl</kbd>
+        <span>+</span>
+        <kbd class="kbd kbd-sm">B</kbd>
+        <kbd class="kbd kbd-lg">Enter</kbd>
+      </div>
+    </section>
+
+    <section class="mt-8">
+      <h3 id="list" class="font-bold scroll-mt-24">
+        List
+      </h3>
+      <ul class="list bg-base-100 rounded-box mt-4 max-w-md">
+        <li class="list-row">
+          <div>
+            <Image
+              src={ImgA}
+              width={40}
+              height={40}
+              alt=""
+              class="size-10 rounded-box object-cover"
+            />
+          </div>
+          <div>
+            <div class="font-semibold">List item</div>
+            <div class="data">Secondary text</div>
+          </div>
+          <button class="btn btn-square btn-ghost btn-sm" aria-label="More">
+            …
+          </button>
+        </li>
+        <li class="list-row">
+          <div>
+            <Image
+              src={ImgC}
+              width={40}
+              height={40}
+              alt=""
+              class="size-10 rounded-box object-cover"
+            />
+          </div>
+          <div>
+            <div class="font-semibold">Another item</div>
+            <div class="data">Secondary text</div>
+          </div>
+          <button class="btn btn-square btn-ghost btn-sm" aria-label="More">
+            …
+          </button>
+        </li>
+      </ul>
+    </section>
+
+    <section class="mt-8">
+      <h3 id="stat" class="font-bold scroll-mt-24">
+        Stat
+      </h3>
+      <div class="stats border-base-300 mt-4 border">
+        <div class="stat">
+          <div class="stat-title">Posts</div>
+          <div class="stat-value">42</div>
+          <div class="stat-desc">Across three categories</div>
+        </div>
+        <div class="stat">
+          <div class="stat-title">Palettes</div>
+          <div class="stat-value">2</div>
+          <div class="stat-desc">藍 and 朱</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="mt-8">
+      <h3 id="status" class="font-bold scroll-mt-24">
+        Status
+      </h3>
+      <div class="mt-4 flex items-center gap-4">
+        <span class="status status-success" aria-label="Online"></span>
+        <span
+          class="status status-warning status-lg"
+          aria-label="Warning"
+        ></span>
+        <span class="status status-error status-xl" aria-label="Error"></span>
+      </div>
+    </section>
+
+    <section class="mt-8">
+      <h3 id="table" class="font-bold scroll-mt-24">
+        Table
+      </h3>
+      <div class="mt-4 overflow-x-auto">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Name</th>
+              <th>Category</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>1</td>
+              <td>First row</td>
+              <td>技術</td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td>Second row</td>
+              <td>生活</td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td>Third row</td>
+              <td>雑記</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="mt-8">
+      <h3 id="text-rotate" class="font-bold scroll-mt-24">
+        Text Rotate
+      </h3>
+      <div class="mt-4">
+        <span class="text-rotate text-2xl font-bold">
+          <span>
+            <span>DESIGN</span>
+            <span>DEVELOP</span>
+            <span>DEPLOY</span>
+          </span>
+        </span>
+      </div>
+    </section>
+
+    <section class="mt-8">
+      <h3 id="timeline" class="font-bold scroll-mt-24">
+        Timeline
+      </h3>
+      <ul class="timeline timeline-vertical mt-4 max-w-md">
+        <li>
+          <div class="timeline-start">2024</div>
+          <div class="timeline-middle">
+            <span class="status status-primary"></span>
+          </div>
+          <div class="timeline-end timeline-box">First event</div>
+          <hr />
+        </li>
+        <li>
+          <div class="timeline-start">2026</div>
+          <div class="timeline-middle">
+            <span class="status status-primary"></span>
+          </div>
+          <div class="timeline-end timeline-box">Second event</div>
+          <hr />
+        </li>
+      </ul>
+    </section>
+
+    <!-- Navigation -->
+    <h2
+      id="navigation"
+      class="section-title border-base-300 mt-16 border-b pb-3 scroll-mt-24"
+    >
+      Navigation
+    </h2>
+
+    <section class="mt-8">
+      <h3 id="breadcrumbs" class="font-bold scroll-mt-24">
+        Breadcrumbs
+      </h3>
+      <div class="breadcrumbs mt-4 text-sm">
+        <ul>
+          <li>
+            <a href="/">Home</a>
+          </li>
+          <li>
+            <a href="/posts">Posts</a>
+          </li>
+          <li>Article</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="mt-8">
+      <h3 id="dock" class="font-bold scroll-mt-24">
+        Dock
+      </h3>
+      <div class="mt-4">
+        <!--
+          A dock is pinned to the bottom of the viewport. Shown `static` and
+          `w-fit` so it sits in the flow as a specimen.
+        -->
+        <div class="dock dock-sm border-base-300 rounded-box static w-fit border">
+          <button class="dock-active">
+            <span class="icon" aria-hidden="true">
+              menu
+            </span>
+            <span class="dock-label">Home</span>
+          </button>
+          <button>
+            <span class="icon" aria-hidden="true">
+              arrow_forward
+            </span>
+            <span class="dock-label">Posts</span>
+          </button>
+          <button>
+            <span class="icon" aria-hidden="true">
+              close
+            </span>
+            <span class="dock-label">Close</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <section class="mt-8">
+      <h3 id="link" class="font-bold scroll-mt-24">
+        Link
+      </h3>
+      <div class="mt-4 flex flex-col items-start gap-2">
+        <a class="link" href="#link">
+          Default link
+        </a>
+        <a class="link link-primary" href="#link">
+          Primary link
+        </a>
+        <a class="link link-hover" href="#link">
+          Hover underline only
+        </a>
+      </div>
+    </section>
+
+    <section class="mt-8">
+      <h3 id="megamenu" class="font-bold scroll-mt-24">
+        Megamenu
+      </h3>
+      <div class="mt-4">
+        <button class="btn" popovertarget="sg-megamenu">
+          Open megamenu
+        </button>
+        <div
+          class="megamenu border-base-300 mt-2 w-fit border p-2"
+          id="sg-megamenu"
+          popover
+        >
+          <span class="megamenu-active"></span>
+          <button popovertarget="sg-mm-1">Products</button>
+          <div id="sg-mm-1" popover>
+            <ul class="menu">
+              <li>
+                <a href="#megamenu">First item</a>
+              </li>
+              <li>
+                <a href="#megamenu">Second item</a>
+              </li>
+            </ul>
+          </div>
+          <button popovertarget="sg-mm-2">Company</button>
+          <div id="sg-mm-2" popover>
+            <ul class="menu">
+              <li>
+                <a href="#megamenu">About</a>
+              </li>
+              <li>
+                <a href="#megamenu">Contact</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="mt-8">
+      <h3 id="menu" class="font-bold scroll-mt-24">
+        Menu
+      </h3>
+      <ul class="menu bg-base-100 border-base-300 rounded-box mt-4 w-56 border">
+        <li class="menu-title">Group</li>
+        <li>
+          <a href="#menu">Item one</a>
+        </li>
+        <li>
+          <a href="#menu">Item two</a>
+          <ul>
+            <li>
+              <a href="#menu">Sub item</a>
+            </li>
+          </ul>
+        </li>
+      </ul>
+    </section>
+
+    <section class="mt-8">
+      <h3 id="navbar" class="font-bold scroll-mt-24">
+        Navbar
+      </h3>
+      <div class="navbar bg-base-200 rounded-box mt-4">
+        <div class="navbar-start">
+          <a class="btn btn-ghost text-lg" href="#navbar">
+            Site
+          </a>
+        </div>
+        <div class="navbar-center hidden sm:flex">
+          <ul class="menu menu-horizontal px-1">
+            <li>
+              <a href="#navbar">Home</a>
+            </li>
+            <li>
+              <a href="#navbar">Posts</a>
+            </li>
+          </ul>
+        </div>
+        <div class="navbar-end">
+          <a class="btn" href="#navbar">
+            Sign in
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <section class="mt-8">
+      <h3 id="pagination" class="font-bold scroll-mt-24">
+        Pagination
+      </h3>
+      <div class="join mt-4">
+        <button class="join-item btn" aria-label="Previous">
+          «
+        </button>
+        <button class="join-item btn btn-active">1</button>
+        <button class="join-item btn">2</button>
+        <button class="join-item btn">3</button>
+        <button class="join-item btn" aria-label="Next">
+          »
+        </button>
+      </div>
+    </section>
+
+    <section class="mt-8">
+      <h3 id="steps" class="font-bold scroll-mt-24">
+        Steps
+      </h3>
+      <ul class="steps mt-4">
+        <li class="step step-primary">Register</li>
+        <li class="step step-primary">Choose</li>
+        <li class="step">Pay</li>
+      </ul>
+    </section>
+
+    <section class="mt-8">
+      <h3 id="tab" class="font-bold scroll-mt-24">
+        Tabs
+      </h3>
+      <div class="tabs tabs-box mt-4 w-fit">
+        <input
+          type="radio"
+          name="sg-tabs"
+          class="tab"
+          aria-label="Tab one"
+          checked
+        />
+        <input type="radio" name="sg-tabs" class="tab" aria-label="Tab two" />
+        <input type="radio" name="sg-tabs" class="tab" aria-label="Tab three" />
+      </div>
+    </section>
+
+    <!-- Feedback -->
+    <h2
+      id="feedback"
+      class="section-title border-base-300 mt-16 border-b pb-3 scroll-mt-24"
+    >
+      Feedback
+    </h2>
+
+    <section class="mt-8">
+      <h3 id="alert" class="font-bold scroll-mt-24">
+        Alert
+      </h3>
+      <div class="mt-4 flex flex-col gap-2">
+        <div role="alert" class="alert alert-info">
+          Information
+        </div>
+        <div role="alert" class="alert alert-success">
+          Success
+        </div>
+        <div role="alert" class="alert alert-warning">
+          Warning
+        </div>
+        <div role="alert" class="alert alert-error">
+          Error
+        </div>
+      </div>
+    </section>
+
+    <section class="mt-8">
+      <h3 id="loading" class="font-bold scroll-mt-24">
+        Loading
+      </h3>
+      <div class="mt-4 flex items-center gap-4 text-primary">
+        <span class="loading loading-spinner"></span>
+        <span class="loading loading-dots"></span>
+        <span class="loading loading-ring"></span>
+        <span class="loading loading-ball"></span>
+        <span class="loading loading-bars"></span>
+        <span class="loading loading-infinity"></span>
+      </div>
+    </section>
+
+    <section class="mt-8">
+      <h3 id="progress" class="font-bold scroll-mt-24">
+        Progress
+      </h3>
+      <div class="mt-4 flex flex-col gap-3">
+        <progress class="progress w-56" value="40" max="100"></progress>
+        <progress
+          class="progress progress-primary w-56"
+          value="70"
+          max="100"
+        ></progress>
+      </div>
+    </section>
+
+    <section class="mt-8">
+      <h3 id="radial-progress" class="font-bold scroll-mt-24">
+        Radial Progress
+      </h3>
+      <div class="mt-4">
+        <div
+          class="radial-progress text-primary"
+          style="--value:70;"
+          aria-valuenow="70"
+          role="progressbar"
+        >
+          70%
+        </div>
+      </div>
+    </section>
+
+    <section class="mt-8">
+      <h3 id="skeleton" class="font-bold scroll-mt-24">
+        Skeleton
+      </h3>
+      <div class="mt-4 flex items-center gap-4">
+        <div class="skeleton size-12 rounded-full"></div>
+        <div class="space-y-2">
+          <div class="skeleton h-4 w-40"></div>
+          <div class="skeleton h-4 w-24"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="mt-8">
+      <h3 id="toast" class="font-bold scroll-mt-24">
+        Toast
+      </h3>
+      <div class="mt-4">
+        <!-- Normally pinned to a corner; shown `static` here. -->
+        <div class="toast static">
+          <div class="alert alert-success">Saved</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="mt-8">
+      <h3 id="tooltip" class="font-bold scroll-mt-24">
+        Tooltip
+      </h3>
+      <div class="mt-4 flex gap-4">
+        <div class="tooltip" data-tip="Tooltip text">
+          <button class="btn">Hover me</button>
+        </div>
+        <div class="tooltip tooltip-bottom" data-tip="Below">
+          <button class="btn btn-outline">Below</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Data input -->
+    <h2
+      id="data-input"
+      class="section-title border-base-300 mt-16 border-b pb-3 scroll-mt-24"
+    >
+      Data input
+    </h2>
+
+    <section class="mt-8">
+      <h3 id="calendar" class="font-bold scroll-mt-24">
+        Calendar
+      </h3>
+      <p class="page-lead mt-4">
+        daisyUI's calendar styles the markup of Cally, React Day Picker or
+        Vanilla Calendar Pro. None of those is installed here, so this one has
+        no live example on the page.
+      </p>
+    </section>
+
+    <section class="mt-8">
+      <h3 id="checkbox" class="font-bold scroll-mt-24">
+        Checkbox
+      </h3>
+      <div class="mt-4 flex items-center gap-4">
+        <input type="checkbox" class="checkbox" checked aria-label="Default" />
+        <input
+          type="checkbox"
+          class="checkbox checkbox-primary"
+          checked
+          aria-label="Primary"
+        />
+        <input
+          type="checkbox"
+          class="checkbox checkbox-success checkbox-lg"
+          aria-label="Large"
+        />
+      </div>
+    </section>
+
+    <section class="mt-8">
+      <h3 id="fieldset" class="font-bold scroll-mt-24">
+        Fieldset
+      </h3>
+      <fieldset class="fieldset mt-4 max-w-sm">
+        <legend class="fieldset-legend">Account</legend>
+        <input type="text" class="input" placeholder="Name" />
+        <p class="label">Helper text beside the field</p>
+      </fieldset>
+    </section>
+
+    <section class="mt-8">
+      <h3 id="file-input" class="font-bold scroll-mt-24">
+        File Input
+      </h3>
+      <div class="mt-4">
+        <input type="file" class="file-input" aria-label="Upload a file" />
+      </div>
+    </section>
+
+    <section class="mt-8">
+      <h3 id="filter" class="font-bold scroll-mt-24">
+        Filter
+      </h3>
+      <form class="filter mt-4">
+        <input
+          class="btn btn-square"
+          type="reset"
+          value="×"
+          aria-label="Clear filter"
+        />
+        <input class="btn" type="radio" name="sg-filter" aria-label="All" />
+        <input class="btn" type="radio" name="sg-filter" aria-label="技術" />
+        <input class="btn" type="radio" name="sg-filter" aria-label="生活" />
+      </form>
+    </section>
+
+    <section class="mt-8">
+      <h3 id="label" class="font-bold scroll-mt-24">
+        Label
+      </h3>
+      <div class="mt-4 flex max-w-sm flex-col gap-4">
+        <label class="label">Plain label</label>
+        <label class="floating-label">
+          <input type="text" placeholder=" " class="input" />
+          <span>Floating label</span>
+        </label>
+      </div>
+    </section>
+
+    <section class="mt-8">
+      <h3 id="radio" class="font-bold scroll-mt-24">
+        Radio
+      </h3>
+      <div class="mt-4 flex items-center gap-4">
+        <input
+          type="radio"
+          name="sg-radio"
+          class="radio"
+          checked
+          aria-label="Default"
+        />
+        <input
+          type="radio"
+          name="sg-radio"
+          class="radio radio-primary"
+          aria-label="Primary"
+        />
+        <input
+          type="radio"
+          name="sg-radio"
+          class="radio radio-success radio-lg"
+          aria-label="Large"
+        />
+      </div>
+    </section>
+
+    <section class="mt-8">
+      <h3 id="range" class="font-bold scroll-mt-24">
+        Range
+      </h3>
+      <div class="mt-4 flex items-center gap-4">
+        <input
+          type="range"
+          min="0"
+          max="100"
+          value="40"
+          class="range"
+          aria-label="Range"
+        />
+        <input
+          type="range"
+          min="0"
+          max="100"
+          value="70"
+          class="range range-primary range-sm"
+          aria-label="Small range"
+        />
+      </div>
+    </section>
+
+    <section class="mt-8">
+      <h3 id="rating" class="font-bold scroll-mt-24">
+        Rating
+      </h3>
+      <div class="rating mt-4">
+        <input
+          type="radio"
+          name="sg-rating"
+          class="mask mask-star"
+          aria-label="1 star"
+        />
+        <input
+          type="radio"
+          name="sg-rating"
+          class="mask mask-star"
+          aria-label="2 stars"
+        />
+        <input
+          type="radio"
+          name="sg-rating"
+          class="mask mask-star"
+          aria-label="3 stars"
+          checked
+        />
+        <input
+          type="radio"
+          name="sg-rating"
+          class="mask mask-star"
+          aria-label="4 stars"
+        />
+        <input
+          type="radio"
+          name="sg-rating"
+          class="mask mask-star"
+          aria-label="5 stars"
+        />
+      </div>
+    </section>
+
+    <section class="mt-8">
+      <h3 id="select" class="font-bold scroll-mt-24">
+        Select
+      </h3>
+      <select class="select mt-4" aria-label="Select an option">
+        <option>Option one</option>
+        <option>Option two</option>
+        <option>Option three</option>
+      </select>
+    </section>
+
+    <section class="mt-8">
+      <h3 id="input" class="font-bold scroll-mt-24">
+        Input
+      </h3>
+      <div class="mt-4 flex max-w-sm flex-col gap-3">
+        <input
+          type="text"
+          placeholder="Type here"
+          class="input"
+          aria-label="Text input"
+        />
+        <input
+          type="text"
+          placeholder="Primary"
+          class="input input-primary"
+          aria-label="Primary input"
+        />
+        <input
+          type="text"
+          placeholder="Ghost"
+          class="input input-ghost"
+          aria-label="Ghost input"
+        />
+      </div>
+    </section>
+
+    <section class="mt-8">
+      <h3 id="textarea" class="font-bold scroll-mt-24">
+        Textarea
+      </h3>
+      <textarea
+        class="textarea mt-4 max-w-sm"
+        placeholder="Bio"
+        aria-label="Bio"
+      ></textarea>
+    </section>
+
+    <section class="mt-8">
+      <h3 id="toggle" class="font-bold scroll-mt-24">
+        Toggle
+      </h3>
+      <div class="mt-4 flex items-center gap-4">
+        <input
+          type="checkbox"
+          class="toggle"
+          checked
+          aria-label="Default toggle"
+        />
+        <input
+          type="checkbox"
+          class="toggle toggle-primary"
+          aria-label="Primary toggle"
+        />
+        <input
+          type="checkbox"
+          class="toggle toggle-success toggle-lg"
+          checked
+          aria-label="Large toggle"
+        />
+      </div>
+    </section>
+
+    <section class="mt-8">
+      <h3 id="validator" class="font-bold scroll-mt-24">
+        Validator
+      </h3>
+      <div class="mt-4 max-w-sm">
+        <input
+          type="email"
+          class="input validator"
+          placeholder="mail@example.com"
+          required
+        />
+        <p class="validator-hint">Enter a valid email address</p>
+      </div>
+    </section>
+
+    <section class="mt-8">
+      <h3 id="otp" class="font-bold scroll-mt-24">
+        OTP
+      </h3>
+      <label class="otp mt-4">
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <input
+          type="text"
+          autocomplete="one-time-code"
+          inputmode="numeric"
+          maxlength="6"
+          pattern="[0-9]{6}"
+          required
+        />
+      </label>
+    </section>
+
+    <!-- Layout -->
+    <h2
+      id="layout"
+      class="section-title border-base-300 mt-16 border-b pb-3 scroll-mt-24"
+    >
+      Layout
+    </h2>
+
+    <section class="mt-8">
+      <h3 id="hero" class="font-bold scroll-mt-24">
+        Hero
+      </h3>
+      <div class="hero bg-base-200 rounded-box mt-4">
+        <div class="hero-content py-10 text-center">
+          <div class="max-w-md">
+            <h4 class="text-2xl font-bold">Hero title</h4>
+            <p class="py-4">A large box for a title and a description.</p>
+            <button class="btn btn-primary">Get started</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="mt-8">
+      <h3 id="indicator" class="font-bold scroll-mt-24">
+        Indicator
+      </h3>
+      <div class="mt-4 flex gap-6">
+        <div class="indicator">
+          <span class="indicator-item badge badge-primary">New</span>
+          <button class="btn">Inbox</button>
+        </div>
+        <div class="indicator">
+          <span class="indicator-item status status-success"></span>
+          <div class="bg-base-300 grid place-items-center rounded-box p-4">
+            Online
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="mt-8">
+      <h3 id="join" class="font-bold scroll-mt-24">
+        Join
+      </h3>
+      <div class="join mt-4">
+        <button class="join-item btn">Left</button>
+        <button class="join-item btn">Middle</button>
+        <button class="join-item btn">Right</button>
+      </div>
+    </section>
+
+    <section class="mt-8">
+      <h3 id="mask" class="font-bold scroll-mt-24">
+        Mask
+      </h3>
+      <div class="mt-4 flex flex-wrap items-center gap-3">
+        <Image
+          src={ImgA}
+          width={80}
+          height={80}
+          alt=""
+          class="mask mask-squircle"
+        />
+        <Image
+          src={ImgA}
+          width={80}
+          height={80}
+          alt=""
+          class="mask mask-hexagon"
+        />
+        <Image
+          src={ImgA}
+          width={80}
+          height={80}
+          alt=""
+          class="mask mask-star"
+        />
+        <Image
+          src={ImgA}
+          width={80}
+          height={80}
+          alt=""
+          class="mask mask-circle"
+        />
+        <Image
+          src={ImgA}
+          width={80}
+          height={80}
+          alt=""
+          class="mask mask-triangle"
+        />
+      </div>
+    </section>
+
+    <section class="mt-8">
+      <h3 id="stack" class="font-bold scroll-mt-24">
+        Stack
+      </h3>
+      <div class="stack h-40 w-60 mt-4">
+        <div class="bg-base-200 border-base-300 rounded-box grid place-items-center border">
+          1
+        </div>
+        <div class="bg-base-300 border-base-300 rounded-box grid place-items-center border">
+          2
+        </div>
+        <div class="bg-base-100 border-base-300 rounded-box grid place-items-center border">
+          3
+        </div>
+      </div>
+    </section>
+
+    <!-- Mockup -->
+    <h2
+      id="mockup"
+      class="section-title border-base-300 mt-16 border-b pb-3 scroll-mt-24"
+    >
+      Mockup
+    </h2>
+
+    <section class="mt-8">
+      <h3 id="mockup-browser" class="font-bold scroll-mt-24">
+        Browser
+      </h3>
+      <div class="mockup-browser border-base-300 mt-4 w-full max-w-md border">
+        <div class="mockup-browser-toolbar">
+          <div class="input">https://amia.work</div>
+        </div>
+        <div class="bg-base-200 grid place-items-center px-4 py-10">
+          Page content
+        </div>
+      </div>
+    </section>
+
+    <section class="mt-8">
+      <h3 id="mockup-code" class="font-bold scroll-mt-24">
+        Code
+      </h3>
+      <div class="mockup-code mt-4 w-full max-w-md">
+        <pre data-prefix="$"><code>pnpm install</code></pre>
+        <pre data-prefix=">" class="text-success"><code>done</code></pre>
+      </div>
+    </section>
+
+    <section class="mt-8">
+      <h3 id="mockup-phone" class="font-bold scroll-mt-24">
+        Phone
+      </h3>
+      <div class="mockup-phone mt-4">
+        <div class="mockup-phone-camera"></div>
+        <div class="mockup-phone-display">
+          <Image
+            src={ImgD}
+            width={390}
+            height={844}
+            alt=""
+            class="h-full w-full object-cover"
+          />
+        </div>
+      </div>
+    </section>
+
+    <section class="mt-8">
+      <h3 id="mockup-window" class="font-bold scroll-mt-24">
+        Window
+      </h3>
+      <div class="mockup-window border-base-300 mt-4 w-full max-w-md border">
+        <div class="bg-base-200 grid place-items-center px-4 py-10">
+          Window content
+        </div>
+      </div>
+    </section>
+  </div>
+</BaseLayout>
