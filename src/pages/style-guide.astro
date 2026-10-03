@@ -1097,10 +1097,33 @@ const groups = [
         Calendar
       </h3>
       <p class="page-lead mt-4">
-        daisyUI's calendar styles the markup of Cally, React Day Picker or
-        Vanilla Calendar Pro. None of those is installed here, so this one has
-        no live example on the page.
+        daisyUI styles the markup of Cally, React Day Picker or Vanilla Calendar
+        Pro. Cally is installed, and its <code>calendar-date</code> is rendered
+        through the theme's <code>.cally</code> rules:
       </p>
+      <div class="mt-4">
+        <calendar-date class="cally" locale="ja-JP">
+          <button
+            slot="previous"
+            class="btn btn-circle btn-ghost btn-sm"
+            aria-label="前の月"
+          >
+            <span class="icon rotate-180" aria-hidden="true">
+              arrow_forward
+            </span>
+          </button>
+          <button
+            slot="next"
+            class="btn btn-circle btn-ghost btn-sm"
+            aria-label="次の月"
+          >
+            <span class="icon" aria-hidden="true">
+              arrow_forward
+            </span>
+          </button>
+          <calendar-month></calendar-month>
+        </calendar-date>
+      </div>
     </section>
 
     <section class="mt-8">
@@ -1546,4 +1569,10 @@ const groups = [
       </div>
     </section>
   </div>
+
+  <script>
+    import { enhanceCalendar } from "../scripts/calendar";
+
+    enhanceCalendar();
+  </script>
 </BaseLayout>
