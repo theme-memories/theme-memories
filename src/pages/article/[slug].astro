@@ -30,19 +30,6 @@ const position = archive.findIndex(
 const next = position > 0 ? archive[position - 1] : undefined;
 const prev = position >= 0 ? archive[position + 1] : undefined;
 
-/*
- * Related posts are the same category, newest first, and drawn from the public
- * archive only: a public article that linked to a vault post would hand the
- * reader a URL that redirects to the unlock page instead of the article.
- */
-const related = archive
-  .filter(
-    (entry) =>
-      entry.data.slug !== post.data.slug &&
-      entry.data.category === post.data.category,
-  )
-  .slice(0, 3);
-
 const toNav = (entry: (typeof archive)[number] | undefined) =>
   entry === undefined
     ? undefined
@@ -58,11 +45,6 @@ const toNav = (entry: (typeof archive)[number] | undefined) =>
   minutesRead={remarkPluginFrontmatter.minutesRead}
   prev={toNav(prev)}
   next={toNav(next)}
-  related={related.map((entry) => ({
-    href: `/${entry.collection}/${entry.data.slug}`,
-    title: entry.data.title,
-    date: entry.data.pubDate,
-  }))}
 >
   <Content />
 </BlogPost>

@@ -3,8 +3,8 @@
  *
  * Everything here is built from the same three primitives the rest of the page
  * is (a container, a hairline and a monospaced label), so the new furniture —
- * 見出し, タグ, 前後の記事, 関連記事, シェア, ページトップへ — reads as part of
- * the page rather than as widgets dropped onto it.
+ * 見出し, タグ, 前後の記事, シェア, ページトップへ — reads as part of the page
+ * rather than as widgets dropped onto it.
  *
  * Two rules hold across the file. Depth is still carried by space and hairlines,
  * never by a shadow: a card and a rule answer the same question about where one
@@ -18,7 +18,7 @@
  * 肩 — the eyebrow.
  *
  * A small tracked line that sits above a heading and says what kind of thing
- * follows (最新, カテゴリー, 関連記事). It takes the muted tier so it ranks under
+ * follows (最新, カテゴリー, 記事一覧). It takes the muted tier so it ranks under
  * the heading it introduces, and the leading rule is what makes it read as a
  * label rather than as a short sentence: the rule is the same one the h2 in the
  * prose wears, so a section head on a page and a heading in an article are the
@@ -215,65 +215,6 @@
 }
 
 /*
- * 関連記事.
- *
- * Related posts are read as a set of headlines, not opened one at a time, so they
- * are ruled rows rather than cards: a card around each headline would add a box
- * to a page that already has the article's own frame, and the rule does the same
- * separating work for one line of ink.
- */
-.related-list {
-  display: grid;
-  gap: 0;
-}
-
-.related-item {
-  display: grid;
-  grid-template-columns: 2rem minmax(0, 1fr) auto;
-  align-items: baseline;
-  gap: 0.75rem;
-  padding-block: 1rem;
-  border-bottom: 1px solid var(--color-base-300);
-  transition-property: color;
-  transition-duration: var(--motion-state);
-  transition-timing-function: var(--ease-out-quint);
-}
-
-.related-item:first-child {
-  border-top: 1px solid var(--color-base-300);
-}
-
-.related-index {
-  font-family: var(--font-mono);
-  font-size: var(--step-xs);
-  font-variant-numeric: tabular-nums;
-  color: var(--ink-mark);
-}
-
-.related-title {
-  font-weight: 700;
-  line-height: 1.55;
-  letter-spacing: 0.01em;
-  text-wrap: balance;
-  transition-property: color;
-  transition-duration: var(--motion-state);
-  transition-timing-function: var(--ease-out-quint);
-}
-
-.related-item:hover .related-title,
-.related-item:focus-visible .related-title {
-  color: var(--ink-accent);
-}
-
-.related-date {
-  font-family: var(--font-mono);
-  font-size: var(--step-xs);
-  font-variant-numeric: tabular-nums;
-  color: var(--ink-muted);
-  white-space: nowrap;
-}
-
-/*
  * シェア.
  *
  * The share row is a set of plain links, not buttons: each opens a third-party
@@ -418,54 +359,10 @@
 }
 
 /*
- * The masthead nameplate.
- *
- * The home page leads with the character art, so the nameplate is what names the
- * site under it: the wordmark at the display size and the tagline as the line
- * under it. The nameplate shares a left edge with the rest of the page through
- * `.site-container`, so the art can run full bleed without the words following
- * it off the measure.
- */
-.masthead {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 1rem 2rem;
-  padding-top: 1.75rem;
-  border-top: 2px solid var(--color-base-content);
-}
-
-.masthead-line {
-  max-width: 22ch;
-  font-size: var(--step-3xl);
-  font-weight: 800;
-  line-height: 1.08;
-  letter-spacing: -0.01em;
-  text-wrap: balance;
-}
-
-/*
- * The English wordmark under the Japanese tagline. It is the site's name rather
- * than its slogan, so it is set as a tracked label rather than as a second
- * headline: at this size a Latin name next to a Japanese line would compete with
- * it, and the tagline is the line the reader is meant to read.
- */
-.masthead-name {
-  display: block;
-  margin-top: 1rem;
-  font-size: var(--step-xs);
-  font-weight: 600;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: var(--ink-muted);
-}
-
-/*
  * The archive line. The count of posts and the year the archive reaches back to,
- * as a small mono pair. It sits in the index's side rail rather than in the
- * masthead: the figures describe the whole archive, and the rail is where the
- * archive's own navigation (カテゴリー) already lives.
+ * as a small mono pair. It sits in the index's side rail, directly above the
+ * category navigation: the figures describe the whole archive, and the rail is
+ * where the archive's own navigation (カテゴリー) already lives.
  */
 .archive-meta {
   display: flex;

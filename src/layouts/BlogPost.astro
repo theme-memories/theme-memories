@@ -5,7 +5,6 @@ import type { CollectionEntry } from "astro:content";
 import BackToTop from "../components/BackToTop.astro";
 import FormattedDate from "../components/FormattedDate.astro";
 import PostNav from "../components/PostNav.astro";
-import RelatedPosts from "../components/RelatedPosts.astro";
 import ShareLinks from "../components/ShareLinks.astro";
 import TableOfContents from "../components/TableOfContents.astro";
 import TagList from "../components/TagList.astro";
@@ -13,7 +12,6 @@ import BaseLayout from "./BaseLayout.astro";
 import { categories } from "../data/categories";
 
 type NavItem = { href: string; title: string };
-type RelatedItem = { href: string; title: string; date: Date };
 
 type Props = CollectionEntry<"article">["data"] & {
   headings: MarkdownHeading[];
@@ -21,7 +19,6 @@ type Props = CollectionEntry<"article">["data"] & {
   noindex?: boolean;
   prev?: NavItem;
   next?: NavItem;
-  related?: RelatedItem[];
 };
 type Crumb = { href?: string; label: string };
 
@@ -37,7 +34,6 @@ const {
   noindex = false,
   prev,
   next,
-  related = [],
 } = Astro.props;
 
 const crumbs: Crumb[] = Astro.url.pathname.startsWith("/article")
@@ -176,8 +172,6 @@ const canShare = !noindex;
 
       <TableOfContents headings={headings} />
     </div>
-
-    {related.length > 0 && <RelatedPosts posts={related} />}
   </article>
 
   <BackToTop />

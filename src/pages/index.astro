@@ -37,10 +37,10 @@ const since =
     : Math.min(...archive.map((post) => post.data.pubDate.getFullYear()));
 
 /*
- * The category rail. It counts the whole archive for the same reason the
- * masthead does, and it links into the index's own filter, so the home page can
- * hand a reader to 技術 without a second mechanism beside the one `/posts`
- * already owns.
+ * The category rail. It counts the whole archive for the same reason the archive
+ * line does, and it links into the index's own filter, so the home page can hand
+ * a reader to 技術 without a second mechanism beside the one `/posts` already
+ * owns.
  */
 const categoryCounts = categoryKeys.map((key) => ({
   key,
@@ -61,23 +61,28 @@ const heroPcSrcset = await toSrcset(HeroPc, PC_WIDTHS);
 
 <BaseLayout title={SITE_TITLE} description={SITE_DESCRIPTION}>
   <!--
-    The masthead.
+    The running head names the site on every page, and the home page still has to
+    open its own outline with that name. It is set off screen so the name is not
+    said a second time as a visible plate under the art.
+  -->
+  <h1 class="sr-only">{SITE_TITLE}</h1>
 
-    The art carries the block and the nameplate sits under it on the page
-    surface. The description was briefly set on top of the art behind a dark
-    scrim, and the scrim is gone because the two are the same decision: every band
-    of both frames contains near-black pixels (line-art outlines, dark clothing,
-    the buildings), so measured against either the lightest or the darkest text
-    colour there is no band wide enough to hold a headline. The choice was a scrim
-    or the page surface, and the art is the reason this block exists.
+  <!--
+    The masthead art.
+
+    The art carries the block on its own: the running head already sets the site
+    name and its tagline on every page, so repeating the pair below the art would
+    say the same thing twice. The description was briefly set on top of the art
+    behind a dark scrim, and the scrim is gone because the two are the same
+    decision: every band of both frames contains near-black pixels (line-art
+    outlines, dark clothing, the buildings), so measured against either the
+    lightest or the darkest text colour there is no band wide enough to hold a
+    headline. The choice was a scrim or the page surface, and the art is the
+    reason this block exists.
 
     The last of the image still dissolves into the page rather than ending on a
     hard seam. That is a mask, not a colour, so it lands on whatever the page
     surface is in either theme.
-
-    The nameplate is set after the art rather than over it: the wordmark names
-    the site, and the tagline is the `h1` the first viewport is read by. The rule
-    above the pair is the heavy one a masthead carries.
   -->
   <section class="bg-base-100">
     <picture>
@@ -97,15 +102,6 @@ const heroPcSrcset = await toSrcset(HeroPc, PC_WIDTHS);
         class="mask-b-from-92% block max-h-[70svh] w-full object-cover lg:h-[min(59.375vw,70svh)] lg:max-h-none"
       />
     </picture>
-
-    <div class="site-container pb-10">
-      <div class="masthead">
-        <div>
-          <h1 class="masthead-line">{SITE_DESCRIPTION}</h1>
-          <span class="masthead-name">{SITE_TITLE}</span>
-        </div>
-      </div>
-    </div>
   </section>
 
   {lead && (
