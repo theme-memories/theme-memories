@@ -1,5 +1,6 @@
 ---
 import { Image } from "astro:assets";
+import ArchiveWidget from "../components/ArchiveWidget.astro";
 import CategoryBadge from "../components/CategoryBadge.astro";
 import FormattedDate from "../components/FormattedDate.astro";
 import Icon from "../components/Icon.astro";
@@ -7,7 +8,6 @@ import PostEntry from "../components/PostEntry.astro";
 import WeatherWidget from "../components/WeatherWidget.astro";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { SITE_DESCRIPTION, SITE_TITLE } from "../consts";
-import { categories, categoryKeys } from "../data/categories";
 import { byPinnedThenDate, getArticles, getVaultEntries } from "../utils/posts";
 import { toSrcset } from "../utils/srcset";
 /*
@@ -24,29 +24,12 @@ const [lead, ...rest] = articles;
 const index = rest.slice(0, 5);
 
 /*
- * The count and the year describe the whole archive rather than the articles
- * this page happens to list: the vault entries are posts too, and they reach
- * further back than any article, so a figure taken from the articles alone
- * would understate both.
+ * The rail's figures and categories describe the whole archive rather than the
+ * articles this page happens to list, so the vault entries are gathered too:
+ * they are posts as well, and they reach further back than any article.
  */
 const vaultEntries = await getVaultEntries();
 const archive = [...articles, ...vaultEntries];
-const since =
-  archive.length === 0
-    ? undefined
-    : Math.min(...archive.map((post) => post.data.pubDate.getFullYear()));
-
-/*
- * The category rail. It counts the whole archive for the same reason the archive
- * line does, and it links into the index's own filter, so the home page can hand
- * a reader to 技術 without a second mechanism beside the one `/posts` already
- * owns.
- */
-const categoryCounts = categoryKeys.map((key) => ({
-  key,
-  ...categories[key],
-  count: archive.filter((post) => post.data.category === key).length,
-}));
 
 /*
  * The `md` breakpoint. The portrait frame is drawn for a phone, so past this
@@ -177,43 +160,7 @@ const heroPcSrcset = await toSrcset(HeroPc, PC_WIDTHS);
       <div class="flex flex-col gap-12">
         <WeatherWidget />
 
-        <p class="archive-meta">
-          <span>{archive.length} 件の記事</span>
-          {since !== undefined && <span>{since}年以降</span>}
-        </p>
-
-        <!--
-          The category rail. It is a second way into the archive beside the
-          index, so it is set as a small tracked list rather than as a block of
-          buttons: the counts are the useful part, and a count belongs to a line
-          of type, not to a chip.
-        -->
-        <nav class="self-start" aria-label="カテゴリー">
-          <h2 class="eyebrow mb-4">カテゴリー</h2>
-          <ul class="flex flex-col">
-            {categoryCounts.map((category) => (
-              <li>
-                <a
-                  class="group border-base-300 hover:border-base-content flex items-center gap-3 border-b py-3 transition-colors"
-                  href={`/posts?category=${category.key}`}
-                >
-                  <span
-                    class:list={["tag-mark", category.dot]}
-                    aria-hidden="true"
-                  />
-                  <span class="group-hover:text-base-content text-base-content/90 font-medium">
-                    {category.name}
-                  </span>
-                  <span class="data ms-auto">{category.count}</span>
-                  <Icon
-                    name="arrow"
-                    class="text-[1rem] text-[color:var(--ink-mark)]"
-                  />
-                </a>
-              </li>
-            ))}
-          </ul>
-        </nav>
+        <ArchiveWidget posts={archive} />
       </div>
     </div>
   </section>

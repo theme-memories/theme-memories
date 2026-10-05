@@ -21,14 +21,13 @@ const { location = "根室市" } = Astro.props;
   daisyUI's `stat-title` and `stat-desc` ship at 60% ink, which is under this
   site's AA floor, so both carry the named `--ink-muted` tier instead.
 
-  The card is `self-start` rather than stretched to the index column's height,
-  which is what a grid item does by default. It holds a reading, and when the
-  crawl has not come back the only honest height is the height of the sentence
-  that says so; stretched, a failed request left a 427px bordered box holding
-  16px of text.
+  The card spans the rail's width, as the archive card beneath it does, and its
+  height is the height of its content: it holds a reading, and when the crawl has
+  not come back the only honest height is the height of the sentence that says
+  so, rather than a bordered void stretched to the column.
 -->
 <section
-  class="card border-base-300 self-start border"
+  class="card border-base-300 border"
   data-weather
   tabindex="-1"
   aria-labelledby="weather-heading"

@@ -1,0 +1,94 @@
+---
+import type { CollectionEntry } from "astro:content";
+import Icon from "./Icon.astro";
+import { categories, categoryKeys } from "../data/categories";
+
+interface Props {
+  /*
+   * The whole archive, articles and vault entries alike. The figures describe
+   * the archive rather than the articles this page happens to list: a vault
+   * post is a post too, and they reach further back than any article, so a
+   * count taken from the articles alone would understate both.
+   */
+  posts: (CollectionEntry<"article"> | CollectionEntry<"vault">)[];
+}
+
+const { posts } = Astro.props;
+
+const count = posts.length;
+const since =
+  count === 0
+    ? undefined
+    : Math.min(...posts.map((post) => post.data.pubDate.getFullYear()));
+
+/*
+ * The category counts describe the whole archive for the same reason the figures
+ * do, and each one links into the index's own filter, so the home page can hand a
+ * reader to 技術 without a second mechanism beside the one `/posts` already owns.
+ */
+const categoryCounts = categoryKeys.map((key) => ({
+  key,
+  ...categories[key],
+  count: posts.filter((post) => post.data.category === key).length,
+}));
+---
+
+<!--
+  The archive widget: the two figures a reader wants before they start browsing
+  (how much is here, and how far back it goes) over the way in (the categories),
+  as one daisyUI card so the rail reads as a pair of plates rather than as three
+  loose fragments.
+
+  The figures are daisyUI's `stat`, which is the shape for a number and what it
+  means, and the value is kept at the site's own display size rather than the
+  library's, because the home page is a reading surface and an oversized figure
+  would out-shout the writing it is describing. The category rows are the
+  library's `list`, the same one the weather card's readings use.
+-->
+<section class="card border-base-300 border" aria-labelledby="archive-heading">
+  <div class="card-body gap-0 p-0">
+    <h2 id="archive-heading" class="label border-base-300 border-b px-5 py-3">
+      アーカイブ
+    </h2>
+
+    <div class="stat px-5 py-4">
+      <div class="stat-value text-2xl" data-archive-count>
+        {count}
+      </div>
+      <div class="stat-desc text-[color:var(--ink-muted)]">件の記事</div>
+      {since !== undefined && (
+        <div class="stat-desc text-[color:var(--ink-muted)]">{since}年以降</div>
+      )}
+    </div>
+
+    <nav
+      class="border-base-300 border-t px-5 py-4"
+      aria-labelledby="archive-categories-heading"
+    >
+      <h3 id="archive-categories-heading" class="label mb-2">
+        カテゴリー
+      </h3>
+      <ul class="list">
+        {categoryCounts.map((category) => (
+          <li>
+            <a
+              class="list-row items-center px-0! py-3! transition-colors hover:bg-base-200/70 focus-visible:bg-base-200/70"
+              href={`/posts?category=${category.key}`}
+            >
+              <span
+                class:list={["tag-mark", category.dot]}
+                aria-hidden="true"
+              />
+              <span class="font-medium">{category.name}</span>
+              <span class="data">{category.count}</span>
+              <Icon
+                name="arrow"
+                class="text-[1rem] text-[color:var(--ink-mark)]"
+              />
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  </div>
+</section>
