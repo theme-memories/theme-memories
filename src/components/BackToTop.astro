@@ -14,6 +14,7 @@ import Icon from "./Icon.astro";
 
 <script>
   const control = document.querySelector<HTMLElement>("[data-back-to-top]");
+  const footer = document.querySelector<HTMLElement>(".colophon");
 
   if (control) {
     /*
@@ -23,9 +24,25 @@ import Icon from "./Icon.astro";
      */
     const threshold = () => window.innerHeight * 1.5;
 
+    /*
+     * The control floats over the bottom-right of the viewport, where the
+     * colophon's RSS and sitemap links sit on the last line of the page, so it
+     * steps aside as soon as the footer is on screen rather than covering them:
+     * at the foot of the page there is nothing left to go back to.
+     */
+    let footerVisible = false;
+
     const sync = () => {
-      control.hidden = window.scrollY < threshold();
+      control.hidden = footerVisible || window.scrollY < threshold();
     };
+
+    if (footer) {
+      const observer = new IntersectionObserver((entries) => {
+        footerVisible = entries.some((entry) => entry.isIntersecting);
+        sync();
+      });
+      observer.observe(footer);
+    }
 
     window.addEventListener("scroll", sync, { passive: true });
     window.addEventListener("resize", sync);

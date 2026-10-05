@@ -146,10 +146,15 @@ const canShare = !noindex;
 
         <!--
           The reading furniture. It closes the article rather than framing it:
-          the tags say what it is filed under, the share row hands it on, the two
-          steps move along the archive, and the related list offers a way back in.
-          All of it stays inside the body's measure, so the column the reader has
-          been reading down is the column the furniture is ruled to.
+          the tags say what it is filed under and the share row hands it on. It
+          stays inside the body's measure, so the column the reader has been
+          reading down is the column the furniture is ruled to.
+
+          The share row and the two steps both move along the public archive, so
+          a gated post carries neither: its URL redirects to the unlock page, and
+          a share or a public neighbour would hand the reader a link that asks
+          for a password. The tag stays, because the category is what the post is
+          filed under wherever it is read.
         -->
         <footer class="mt-16 flex flex-col gap-10">
           <div class="flex flex-wrap items-center justify-between gap-x-8 gap-y-6">
@@ -165,7 +170,7 @@ const canShare = !noindex;
             {canShare && <ShareLinks url={Astro.url.href} title={title} />}
           </div>
 
-          <PostNav prev={prev} next={next} />
+          {canShare && <PostNav prev={prev} next={next} />}
         </footer>
       </div>
 

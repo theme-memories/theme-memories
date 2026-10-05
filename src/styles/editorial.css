@@ -119,11 +119,11 @@
 /*
  * 前後の記事 — the previous and next post.
  *
- * Two links on one hairline, the earlier one aligned start and the later one end,
- * so the pair reads as a step in either direction rather than as a list of two.
- * The direction word is the eyebrow; the title is the heading level for that
- * step. Each link takes the full width of its half so the whole half is the hit
- * area rather than the title alone.
+ * Two links on one hairline, the newer one aligned start and the older one end,
+ * so the pair reads as a step back through the archive rather than as a list of
+ * two. The direction word is the eyebrow; the title is the heading level for
+ * that step. Each link takes the full width of its half so the whole half is the
+ * hit area rather than the title alone.
  */
 .post-nav {
   display: grid;
@@ -151,7 +151,7 @@
   transition-timing-function: var(--ease-out-quint);
 }
 
-.post-nav-link-next {
+.post-nav-link-end {
   text-align: end;
 }
 
@@ -165,7 +165,7 @@
   color: var(--ink-muted);
 }
 
-.post-nav-link-next .post-nav-label {
+.post-nav-link-end .post-nav-label {
   justify-content: flex-end;
 }
 
@@ -421,10 +421,10 @@
  * The masthead nameplate.
  *
  * The home page leads with the character art, so the nameplate is what names the
- * site under it: the wordmark at the display size, the tagline as the line under
- * it, and the archive count at the end of the rule. The nameplate and the
- * tagline share a left edge with the rest of the page through `.site-container`,
- * so the art can run full bleed without the words following it off the measure.
+ * site under it: the wordmark at the display size and the tagline as the line
+ * under it. The nameplate shares a left edge with the rest of the page through
+ * `.site-container`, so the art can run full bleed without the words following
+ * it off the measure.
  */
 .masthead {
   display: flex;
@@ -461,7 +461,13 @@
   color: var(--ink-muted);
 }
 
-.masthead-meta {
+/*
+ * The archive line. The count of posts and the year the archive reaches back to,
+ * as a small mono pair. It sits in the index's side rail rather than in the
+ * masthead: the figures describe the whole archive, and the rail is where the
+ * archive's own navigation (カテゴリー) already lives.
+ */
+.archive-meta {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -472,19 +478,14 @@
   color: var(--ink-muted);
 }
 
-@media (width >= 40rem) {
-  .masthead-meta {
-    align-items: flex-end;
-    text-align: end;
-  }
-}
-
 /*
  * The footer.
  *
- * A heavy top rule, the site line, and the two machine-facing links (RSS,
- * sitemap) as a small tracked row. It is a colophon rather than a navigation
- * block, so the links are quiet and the site line carries the weight.
+ * A heavy top rule, the copyright on the left and the two machine-facing links
+ * (RSS, sitemap) on the right, on one row. It is a colophon rather than a
+ * navigation block, so the links are quiet and the note sits in the muted tier.
+ * The row also carries `.site-container`, so the bar keeps running the full
+ * width of the viewport while the words keep the page's measure.
  */
 .colophon {
   margin-top: auto;
@@ -499,12 +500,6 @@
   justify-content: space-between;
   gap: 0.75rem 2rem;
   padding-block: 2rem;
-}
-
-.colophon-site {
-  font-size: var(--step-sm);
-  font-weight: 700;
-  letter-spacing: 0.01em;
 }
 
 .colophon-note {

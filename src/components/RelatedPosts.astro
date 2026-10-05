@@ -18,6 +18,12 @@ const { posts } = Astro.props;
   関連記事. A short ruled list of headlines, newest first, drawn from the same
   category as the article it closes. The number is decorative and pinned to two
   digits so the titles align down the list.
+
+  `related-heading` is a hand-written literal, not a generated id: the section
+  and its `<h2>` name each other through the one string, and because this
+  component renders at most once per page that string is unique in the document.
+  No library is involved — `aria-labelledby` is plain ARIA, and the id is what it
+  points at.
 -->
 {posts.length > 0 && (
   <section class="mt-16" aria-labelledby="related-heading">

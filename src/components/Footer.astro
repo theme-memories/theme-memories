@@ -1,35 +1,32 @@
 ---
-import { SITE_DESCRIPTION, SITE_TITLE } from "../consts";
+import { SITE_TITLE } from "../consts";
 
 const today = new Date();
 ---
 
 <!--
-  The colophon. A heavy top rule, the site line on the left and the two
-  machine-facing links on the right, so the foot of the page reads as the end of
-  a publication rather than as a second navigation block.
+  The colophon. A heavy top rule, the copyright on the left and the two
+  machine-facing links on the right, on a single row, so the foot of the page
+  reads as the end of a publication rather than as a second navigation block.
+
+  The row carries the page container itself instead of sitting inside a
+  `.site-container` wrapper: the bar still runs the full width of the viewport,
+  and the words keep the page's measure from the one container rule rather than
+  from a copy of its padding.
 -->
 <footer class="colophon">
-  <div class="site-container">
-    <div class="colophon-inner">
-      <p class="colophon-site">
-        {SITE_TITLE}
-        <span class="colophon-note ms-2">{SITE_DESCRIPTION}</span>
-      </p>
-
-      <nav class="colophon-links" aria-label="購読とサイト案内">
-        <a class="link-quiet" href="/rss.xml">
-          RSS
-        </a>
-        <a class="link-quiet" href="/sitemap-index.xml">
-          SITEMAP
-        </a>
-      </nav>
-    </div>
-
-    <p class="colophon-note pb-6">
-      &copy; {today.getFullYear()}
-      {SITE_TITLE}. All rights reserved.
+  <div class="colophon-inner site-container">
+    <p class="colophon-note">
+      {`© ${today.getFullYear()} ${SITE_TITLE}. All rights reserved.`}
     </p>
+
+    <nav class="colophon-links" aria-label="購読とサイト案内">
+      <a class="link-quiet" href="/rss.xml">
+        RSS
+      </a>
+      <a class="link-quiet" href="/sitemap-index.xml">
+        SITEMAP
+      </a>
+    </nav>
   </div>
 </footer>

@@ -5,7 +5,7 @@ import { render } from "astro:content";
 import { env } from "cloudflare:workers";
 import BlogPost from "../../layouts/BlogPost.astro";
 import { NO_STORE, noStore } from "../../utils/http";
-import { getVaultEntries, getVaultEntry } from "../../utils/posts";
+import { getVaultEntry } from "../../utils/posts";
 import { isUnlocked } from "../../utils/vault-auth";
 
 /*
@@ -35,28 +35,6 @@ if (
 }
 
 const { Content, headings, remarkPluginFrontmatter } = await render(post);
-
-/*
- * The two steps move within the gated archive rather than the public one, so a
- * vault post does not link a reader who is already holding the password out to
- * the open half of the site and back.
- */
-const archive = (await getVaultEntries()).sort(
-  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
-);
-const position = archive.findIndex(
-  (entry) => entry.data.slug === post.data.slug,
-);
-const next = position > 0 ? archive[position - 1] : undefined;
-const prev = position >= 0 ? archive[position + 1] : undefined;
-
-const toNav = (entry: (typeof archive)[number] | undefined) =>
-  entry === undefined
-    ? undefined
-    : {
-        href: `/${entry.collection}/${entry.data.slug}`,
-        title: entry.data.title,
-      };
 ---
 
 <BlogPost
@@ -64,8 +42,6 @@ const toNav = (entry: (typeof archive)[number] | undefined) =>
   headings={headings}
   minutesRead={remarkPluginFrontmatter.minutesRead}
   noindex
-  prev={toNav(prev)}
-  next={toNav(next)}
 >
   <Content />
 </BlogPost>

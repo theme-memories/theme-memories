@@ -77,8 +77,7 @@ const heroPcSrcset = await toSrcset(HeroPc, PC_WIDTHS);
 
     The nameplate is set after the art rather than over it: the wordmark names
     the site, and the tagline is the `h1` the first viewport is read by. The rule
-    above the pair is the heavy one a masthead carries, and the archive count
-    sits at the end of it as the publication's own colophon line.
+    above the pair is the heavy one a masthead carries.
   -->
   <section class="bg-base-100">
     <picture>
@@ -105,11 +104,6 @@ const heroPcSrcset = await toSrcset(HeroPc, PC_WIDTHS);
           <h1 class="masthead-line">{SITE_DESCRIPTION}</h1>
           <span class="masthead-name">{SITE_TITLE}</span>
         </div>
-
-        <p class="masthead-meta">
-          <span>{archive.length} 件の記事</span>
-          {since !== undefined && <span>{since}年以降</span>}
-        </p>
       </div>
     </div>
   </section>
@@ -186,6 +180,11 @@ const heroPcSrcset = await toSrcset(HeroPc, PC_WIDTHS);
 
       <div class="flex flex-col gap-12">
         <WeatherWidget />
+
+        <p class="archive-meta">
+          <span>{archive.length} 件の記事</span>
+          {since !== undefined && <span>{since}年以降</span>}
+        </p>
 
         <!--
           The category rail. It is a second way into the archive beside the
