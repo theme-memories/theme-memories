@@ -72,6 +72,15 @@ export default defineEcConfig({
      * title the content happens to use today.
      */
     frames: {
+      /*
+       * No shadow. The plugin lifts the frame off the page with its own
+       * `0.1rem 0.1rem 0.2rem` drop shadow, the last decorative default to
+       * survive the remap: the rest of the chrome is flat, the brief refuses
+       * shadows outright ("nothing casts a shadow"), and the frame already
+       * separates itself by its `base-200` panel and its header bar. Removing it
+       * is what makes a code block sit in the page rather than float over it.
+       */
+      frameBoxShadowCssValue: "none",
       editorTabBarBackground: "var(--color-base-300)",
       editorActiveTabBackground: "var(--color-base-300)",
       editorActiveTabForeground: "var(--color-base-content)",
