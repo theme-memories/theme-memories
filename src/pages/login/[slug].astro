@@ -107,13 +107,11 @@ const passwordHint = `${PASSWORD_MIN_LENGTH}〜${PASSWORD_MAX_LENGTH}文字。�
         ></div>
 
         <!--
-          The button below stays live.
-
-          It used to be disabled until the challenge answered, which meant a
-          widget that never called back left the page's only action dead with
-          nothing on screen to explain it and nothing to act on. The requirement
-          is stated here instead, and pressing 解除 without it is answered where
-          the reader is already looking.
+          The requirement is stated above the button, which stays out of play
+          until the challenge is solved. A live button answered with a toast
+          asked the reader to spend a press before being told what the page
+          already knew; disabled, there is nothing to press until there is
+          something to do, and the note is what says so.
         -->
         <p id="unlock-challenge-note" class="unlock-hint text-pretty">
           上の認証を完了すると解除できます。
@@ -123,6 +121,7 @@ const passwordHint = `${PASSWORD_MIN_LENGTH}〜${PASSWORD_MAX_LENGTH}文字。�
           id="unlock-submit"
           type="submit"
           class="btn btn-primary min-h-11"
+          disabled
         >
           解除
         </button>
@@ -230,12 +229,13 @@ const passwordHint = `${PASSWORD_MIN_LENGTH}〜${PASSWORD_MAX_LENGTH}文字。�
   password?.addEventListener("input", () => setFieldError());
 
   /*
-   * The button is live from the first paint. Only an in-flight request takes it
-   * out of play, and the note above it says what the challenge still needs, so
-   * its state is never a mystery.
+   * The button is out of play until the challenge is solved, so its state is
+   * never a mystery: the note above it says what is still needed, and there is
+   * nothing to press until there is something to do. Only the challenge and an
+   * in-flight request can hold it.
    */
   const syncSubmit = () => {
-    submit.disabled = submitting;
+    submit.disabled = !challengeSolved || submitting;
     submit.textContent = submitting ? "確認中…" : "解除";
     if (challengeNote) {
       challengeNote.hidden = submitting || challengeSolved;
