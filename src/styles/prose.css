@@ -345,8 +345,18 @@
 /*
  * Tables are ink rules, not boxes. The header carries a stronger line than the
  * rows beneath it so the table can be scanned from the top down.
+ *
+ * A table is the one block in the prose that cannot wrap: its columns take their
+ * min-content width, so a three-column sheet is wider than a phone and used to
+ * push the whole document sideways at 320px. `display: block` with
+ * `overflow-x: auto` gives the table its own scroll box, the way a fenced block
+ * already scrolls inside its `<pre>`: the columns keep their widths and the
+ * reader pans the sheet instead of the page.
  */
 .prose :where(table) {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
   font-size: 0.9375rem;
 }
 
