@@ -1,8 +1,5 @@
 ---
 import { Image } from "astro:assets";
-import PostNav from "@components/PostNav.astro";
-import RelatedPosts from "@components/RelatedPosts.astro";
-import ShareLinks from "@components/ShareLinks.astro";
 import TagList from "@components/TagList.astro";
 import BaseLayout from "@layouts/BaseLayout.astro";
 import ImgA from "../assets/mizuki-gallery/003.webp";
@@ -11,24 +8,31 @@ import ImgC from "../assets/mizuki-gallery/055.webp";
 import ImgD from "../assets/mizuki-gallery/056.webp";
 
 /*
- * A live index of the daisyUI components this theme styles, grouped the way the
- * daisyUI documentation groups them. The three Layout components the blog
- * already renders — Divider, Drawer and Footer — are deliberately absent; the
- * note below says why.
+ * The page covers three things, in order: the article body (本文), the site's
+ * own editorial furniture (エディトリアル), and then every daisyUI component
+ * these themes style, grouped the way the daisyUI documentation groups them.
  *
- * The index and the sections below are both driven from this list, so a
- * component cannot be linked to without being shown.
+ * The three Layout components the blog already renders — Divider, Drawer and
+ * Footer — are deliberately absent from the gallery; the note below says why.
+ *
+ * The index and the sections below are both driven from this list, so a section
+ * cannot be linked to without being shown.
  */
 const groups = [
   {
+    name: "本文",
+    items: [
+      { id: "prose-heading", label: "見出し" },
+      { id: "prose-inline", label: "強調と意味づけ" },
+      { id: "prose-quote", label: "引用" },
+      { id: "prose-indent", label: "字下げ" },
+    ],
+  },
+  {
     name: "エディトリアル",
     items: [
-      { id: "jp-typography", label: "日本語組版" },
       { id: "editorial-heading", label: "見出し" },
       { id: "editorial-tags", label: "タグ" },
-      { id: "editorial-nav", label: "前後の記事" },
-      { id: "editorial-related", label: "関連記事" },
-      { id: "editorial-share", label: "シェア" },
     ],
   },
   {
@@ -135,15 +139,15 @@ const groups = [
 ---
 
 <BaseLayout
-  title="daisyUI Style Guide"
-  description="Every daisyUI component this theme styles, rendered live in the site's own palettes."
+  title="スタイルガイド"
+  description="このサイトの本文組版・エディトリアルの部品・daisyUI コンポーネントを、実際のテーマで確認できるリファレンス。"
 >
   <header class="site-container pt-14 pb-8 sm:pt-20">
-    <h1 class="page-title">daisyUI Style Guide</h1>
+    <h1 class="page-title">スタイルガイド</h1>
     <p class="page-lead mt-5">
-      A live reference for how daisyUI renders in this site's authored themes.
-      Switch palette and light/dark in the header to check every component in 藍
-      (ai / kon) and 朱 (kinari / sumi).
+      このサイトの見た目を実際のテーマで確認するためのリファレンス。記事本文の組版（本文）、記事の外側で使う部品（エディトリアル）、daisyUI
+      のコンポーネントの三つをまとめています。ヘッダーのスイッチで藍（ai /
+      kon）と朱（kinari / sumi）を切り替えられます。
     </p>
   </header>
 
@@ -155,7 +159,7 @@ const groups = [
     -->
     <div role="alert" class="alert alert-info alert-soft">
       <span>
-        <strong>Divider</strong>, <strong>Drawer</strong> and
+        <strong>Divider</strong>, <strong>Drawer</strong> and{" "}
         <strong>Footer</strong> are the three Layout components this blog
         already uses — the post hero divider, the mobile navigation drawer and
         the site footer. They are omitted here; see the running page for how
@@ -184,29 +188,39 @@ const groups = [
       </div>
     </nav>
 
-    <!-- エディトリアル -->
+    <!-- 本文（prose） -->
     <h2
-      id="editorial"
+      id="prose"
       class="section-title border-base-300 mt-16 border-b pb-3 scroll-mt-24"
     >
-      エディトリアル
+      本文（prose）
     </h2>
+    <p class="page-lead mt-4 max-w-2xl">
+      記事本文（<code>.prose</code>）の組版。Markdown
+      から生成される見出し・強調・引用などの見え方をまとめます。色はすべて
+      daisyUI のトークンから取ります。
+    </p>
 
     <section class="mt-8">
-      <h3 id="jp-typography" class="font-bold scroll-mt-24">
-        日本語組版
+      <h3 id="prose-heading" class="font-bold scroll-mt-24">
+        見出し
       </h3>
-      <p class="page-lead mt-4">
-        記事本文（<code>.prose</code>）が使う日本語の組版。色はすべて daisyUI
-        のトークンから取ります。
-      </p>
-      <div class="prose mt-6 max-w-2xl">
+      <div class="prose mt-4 max-w-2xl">
         <h2>見出しレベル2</h2>
         <p>
           h2
           は上に長い罫線を伴います。日本語は字面が大きいので、見出しは欧文より広めの余白を取ります。
         </p>
         <h3>見出しレベル3</h3>
+        <p>h3 は h2 の一段下の見出しです。</p>
+      </div>
+    </section>
+
+    <section class="mt-8">
+      <h3 id="prose-inline" class="font-bold scroll-mt-24">
+        強調と意味づけ
+      </h3>
+      <div class="prose mt-4 max-w-2xl">
         <p>
           強調は圏点（<em>強調</em>）で示します。日本語には斜体がないため、
           <strong>太字</strong>と圏点で書き分けます。略語は
@@ -218,19 +232,45 @@ const groups = [
           </ruby>{" "}
           のように親文字の上に載ります。
         </p>
+      </div>
+    </section>
+
+    <section class="mt-8">
+      <h3 id="prose-quote" class="font-bold scroll-mt-24">
+        引用
+      </h3>
+      <div class="prose mt-4 max-w-2xl">
         <blockquote>
           <p>引用は左の罫線と出典で示します。</p>
           <footer>— 出典</footer>
         </blockquote>
       </div>
-      <p class="label mt-8">
-        字下げ（<code>.prose-indent</code>）
+    </section>
+
+    <section class="mt-8">
+      <h3 id="prose-indent" class="font-bold scroll-mt-24">
+        字下げ
+      </h3>
+      <p class="page-lead mt-4 max-w-2xl">
+        字下げ（<code>.prose-indent</code>
+        ）を有効にすると、段落の一行目が一字下がります。
       </p>
-      <div class="prose prose-indent mt-3 max-w-2xl">
+      <div class="prose prose-indent mt-4 max-w-2xl">
         <p>字下げを有効にすると、段落の一行目が一字下がります。</p>
         <p>段落の間隔は詰まり、字下げが段落の切れ目を示します。</p>
       </div>
     </section>
+
+    <!-- エディトリアル -->
+    <h2
+      id="editorial"
+      class="section-title border-base-300 mt-16 border-b pb-3 scroll-mt-24"
+    >
+      エディトリアル
+    </h2>
+    <p class="page-lead mt-4 max-w-2xl">
+      記事の外側で使う部品。見出しに添えるラベルと、記事の分類を示すタグです。
+    </p>
 
     <section class="mt-8">
       <h3 id="editorial-heading" class="font-bold scroll-mt-24">
@@ -265,55 +305,6 @@ const groups = [
             { label: "雑記", href: "#editorial-tags", category: "notes" },
           ]}
         />
-      </div>
-    </section>
-
-    <section class="mt-8">
-      <h3 id="editorial-nav" class="font-bold scroll-mt-24">
-        前後の記事
-      </h3>
-      <div class="mt-4">
-        <PostNav
-          prev={{
-            href: "#editorial-nav",
-            title: "前の記事のタイトルが入ります",
-          }}
-          next={{
-            href: "#editorial-nav",
-            title: "次の記事のタイトルが入ります",
-          }}
-        />
-      </div>
-    </section>
-
-    <section class="mt-8">
-      <h3 id="editorial-related" class="font-bold scroll-mt-24">
-        関連記事
-      </h3>
-      <div class="mt-4">
-        <RelatedPosts
-          posts={[
-            {
-              href: "#editorial-related",
-              title: "関連する記事のタイトル",
-              date: new Date("2026-01-05"),
-            },
-            {
-              href: "#editorial-related",
-              title: "もう一つの関連する記事",
-              date: new Date("2025-12-24"),
-            },
-          ]}
-        />
-      </div>
-    </section>
-
-    <section class="mt-8">
-      <h3 id="editorial-share" class="font-bold scroll-mt-24">
-        シェア
-      </h3>
-      <div class="mt-4">
-        <ShareLinks url="https://amia.work" title="Theme Memories" />
       </div>
     </section>
 
