@@ -10,34 +10,38 @@ const { location = "根室市" } = Astro.props;
 ---
 
 <!--
-  A reading, not a dashboard. It sits in the margin of the index as a bordered
-  plate, so it is only ever as wide as its column and never competes with the
-  writing. The essentials come first; the full set of readings follows the hairline
-  for the reader who wants them. The snapshot is crawled every ten minutes and
-  served from object storage, so it is filled in by `enhanceWeatherWidget`
-  rather than at build time.
+  A reading, not a dashboard. It sits in the margin of the index as a daisyUI
+  `card`, so it is only ever as wide as its column and never competes with the
+  writing. The reading is the library's `stat`, which is the shape for a number
+  and what it means; the essentials come first and the full set of readings
+  follows the hairline for the reader who wants them. The snapshot is crawled
+  every ten minutes and served from object storage, so it is filled in by
+  `enhanceWeatherWidget` rather than at build time.
 
-  The plate is `self-start` rather than stretched to the index column's height,
+  daisyUI's `stat-title` and `stat-desc` ship at 60% ink, which is under this
+  site's AA floor, so both carry the named `--ink-muted` tier instead.
+
+  The card is `self-start` rather than stretched to the index column's height,
   which is what a grid item does by default. It holds a reading, and when the
   crawl has not come back the only honest height is the height of the sentence
   that says so; stretched, a failed request left a 427px bordered box holding
   16px of text.
 -->
 <section
-  class="plate self-start"
+  class="card border-base-300 self-start border"
   data-weather
   tabindex="-1"
   aria-labelledby="weather-heading"
 >
-  <div class="plate-head">
-    <h2 id="weather-heading" class="label">
-      天気
-    </h2>
-    <span class="data">{location}</span>
-  </div>
+  <div class="card-body gap-0 p-0">
+    <div class="border-base-300 flex items-baseline justify-between gap-4 border-b px-5 py-3">
+      <h2 id="weather-heading" class="label">
+        天気
+      </h2>
+      <span class="data">{location}</span>
+    </div>
 
-  <div class="plate-body">
-    <div aria-live="polite" data-weather-live>
+    <div class="px-5 py-5" aria-live="polite" data-weather-live>
       <!--
         The skeleton belongs to the script, not to the page. It used to be drawn
         from the first paint and hidden by the script once the crawl answered,
@@ -58,26 +62,25 @@ const { location = "根室市" } = Astro.props;
       <p class="data" data-weather-error hidden></p>
 
       <div data-weather-content hidden>
-        <div class="flex items-start gap-4">
-          <div
-            class="flex size-10 shrink-0 items-center justify-center"
-            data-weather-icon
-          ></div>
-          <div class="min-w-0">
-            <p class="text-3xl leading-none font-bold tracking-tight">
-              <span data-weather-temp>{WEATHER_PLACEHOLDER}</span>
-            </p>
-            <p
-              class="text-[color:var(--ink-muted)] mt-2 text-sm text-pretty"
-              data-weather-description
-            >
-              {WEATHER_PLACEHOLDER}
-            </p>
-            <p class="data mt-2" data-weather-feels-like hidden></p>
+        <div class="stat p-0">
+          <div class="stat-figure size-10" data-weather-icon></div>
+          <div class="stat-value text-3xl" data-weather-temp>
+            {WEATHER_PLACEHOLDER}
           </div>
+          <div
+            class="stat-desc text-[color:var(--ink-muted)]"
+            data-weather-description
+          >
+            {WEATHER_PLACEHOLDER}
+          </div>
+          <div
+            class="stat-desc text-[color:var(--ink-muted)]"
+            data-weather-feels-like
+            hidden
+          ></div>
         </div>
 
-        <p class="data mt-5" hidden data-weather-updated>
+        <p class="data mt-4" hidden data-weather-updated>
           更新 <time data-weather-observed></time>
         </p>
       </div>
@@ -87,10 +90,10 @@ const { location = "根室市" } = Astro.props;
       What a reader without scripting gets. The reading is fetched from the
       crawler's object at request time and cannot be baked into the page, so the
       honest thing to say is that it is not there rather than to leave an empty
-      plate.
+      card.
     -->
     <noscript>
-      <p class="data text-pretty">
+      <p class="data px-5 text-pretty">
         天気は JavaScript を有効にすると表示されます。
       </p>
     </noscript>
@@ -105,7 +108,7 @@ const { location = "根室市" } = Astro.props;
     -->
     <button
       type="button"
-      class="btn btn-sm mt-4 min-h-11"
+      class="btn btn-sm mx-5 mb-5 min-h-11 self-start"
       data-weather-retry
       hidden
     >
@@ -113,18 +116,23 @@ const { location = "根室市" } = Astro.props;
     </button>
   </div>
 
-  <div class="weather-report">
+  <!--
+    The full reading is a large-screen affordance, so the wrapper hides it below
+    the break the way the `hidden` attribute hides an empty one, and the two do
+    not fight: the attribute is on the reading, the breakpoint is on the wrapper.
+  -->
+  <div class="hidden lg:block">
     <div class="border-base-300 border-t px-5 py-4" data-weather-report hidden>
       <h3 class="label mb-3">詳細</h3>
-      <dl class="space-y-2" data-weather-details></dl>
+      <dl class="list gap-1 p-0" data-weather-details></dl>
     </div>
   </div>
 
   <template data-weather-detail-template>
-    <div class="flex items-baseline justify-between gap-4 text-sm">
-      <dt class="text-[color:var(--ink-muted)]"></dt>
+    <div class="list-row p-0">
+      <dt class="text-[color:var(--ink-muted)] text-sm"></dt>
       <dd
-        class="text-right font-medium"
+        class="text-right text-sm font-medium"
         style="font-variant-numeric: tabular-nums"
       ></dd>
     </div>

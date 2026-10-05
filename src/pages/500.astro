@@ -19,5 +19,7 @@ const message =
   image={ServerErrorImage}
   alt="開いたパソコンの筐体の中で寝ている猫"
 >
-  {message && <p class="plate data mt-6 px-4 py-3 break-words">{message}</p>}
+  {message && (
+    <p class="alert alert-error alert-soft data mt-6 break-words">{message}</p>
+  )}
 </ErrorPage>
