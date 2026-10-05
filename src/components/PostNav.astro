@@ -1,0 +1,52 @@
+---
+import Icon from "./Icon.astro";
+
+interface NavItem {
+  href: string;
+  title: string;
+}
+
+interface Props {
+  /* The older post, if there is one. */
+  prev?: NavItem;
+  /* The newer post, if there is one. */
+  next?: NavItem;
+}
+
+const { prev, next } = Astro.props;
+---
+
+<!--
+  The two steps out of an article, newest first: the fresher post takes the left
+  half and the older post the right, so reading left to right walks back through
+  the archive. Each arrow points outward, in the direction its half leads.
+
+  Each half is one link, so the whole half is the hit area, and the half with no
+  post behind it says so rather than being dropped: a single half left alone
+  would sit off to one side and read as a mistake.
+-->
+<nav class="post-nav" aria-label="前後の記事">
+  {next ? (
+    <a class="post-nav-link" href={next.href} rel="next">
+      <span class="post-nav-label">
+        <Icon name="back" class="text-[1rem]" />
+        新しい記事
+      </span>
+      <span class="post-nav-title">{next.title}</span>
+    </a>
+  ) : (
+    <span class="post-nav-empty">これより新しい記事はありません</span>
+  )}
+
+  {prev ? (
+    <a class="post-nav-link post-nav-link-end" href={prev.href} rel="prev">
+      <span class="post-nav-label">
+        古い記事
+        <Icon name="arrow" class="text-[1rem]" />
+      </span>
+      <span class="post-nav-title">{prev.title}</span>
+    </a>
+  ) : (
+    <span class="post-nav-empty">これより古い記事はありません</span>
+  )}
+</nav>

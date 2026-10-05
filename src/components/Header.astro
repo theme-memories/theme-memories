@@ -1,5 +1,5 @@
 ---
-import { NAV_ITEMS, SITE_TITLE } from "../consts";
+import { NAV_ITEMS, SITE_DESCRIPTION, SITE_TITLE } from "../consts";
 import HeaderLink from "./HeaderLink.astro";
 import Icon from "./Icon.astro";
 import PaletteSwitch from "./PaletteSwitch.astro";
@@ -20,8 +20,13 @@ import ThemeToggle from "./ThemeToggle.astro";
         <Icon name="menu" class="text-[1.25rem]" />
       </button>
 
-      <a href="/" class="wordmark">
-        {SITE_TITLE}
+      <!--
+        The running head: the nameplate with the tagline under it, so the header
+        says both what the site is called and what it is about.
+      -->
+      <a href="/" class="wordmark-group">
+        <span class="wordmark">{SITE_TITLE}</span>
+        <span class="wordmark-tagline">{SITE_DESCRIPTION}</span>
       </a>
 
       <nav class="ms-auto hidden lg:block" aria-label="メインナビゲーション">

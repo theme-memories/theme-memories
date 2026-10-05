@@ -2,15 +2,23 @@
 import type { MarkdownHeading } from "astro";
 import { Image } from "astro:assets";
 import type { CollectionEntry } from "astro:content";
+import BackToTop from "../components/BackToTop.astro";
 import FormattedDate from "../components/FormattedDate.astro";
+import PostNav from "../components/PostNav.astro";
+import ShareLinks from "../components/ShareLinks.astro";
 import TableOfContents from "../components/TableOfContents.astro";
+import TagList from "../components/TagList.astro";
 import BaseLayout from "./BaseLayout.astro";
 import { categories } from "../data/categories";
+
+type NavItem = { href: string; title: string };
 
 type Props = CollectionEntry<"article">["data"] & {
   headings: MarkdownHeading[];
   minutesRead?: string;
   noindex?: boolean;
+  prev?: NavItem;
+  next?: NavItem;
 };
 type Crumb = { href?: string; label: string };
 
@@ -24,6 +32,8 @@ const {
   headings,
   minutesRead,
   noindex = false,
+  prev,
+  next,
 } = Astro.props;
 
 const crumbs: Crumb[] = Astro.url.pathname.startsWith("/article")
@@ -33,6 +43,13 @@ const crumbs: Crumb[] = Astro.url.pathname.startsWith("/article")
       { label: title },
     ]
   : [{ href: "/", label: "ホーム" }, { label: title }];
+
+/*
+ * The share row is offered only for a public post. A gated post is `noindex` and
+ * its URL redirects a reader to the unlock page, so inviting a share would hand
+ * the reader a link that asks for a password rather than the article.
+ */
+const canShare = !noindex;
 ---
 
 <BaseLayout
@@ -71,10 +88,6 @@ const crumbs: Crumb[] = Astro.url.pathname.startsWith("/article")
 
       <dl class="article-meta">
         <div>
-          <dt>カテゴリー</dt>
-          <dd>{categories[category].name}</dd>
-        </div>
-        <div>
           <dt>公開</dt>
           <dd>
             <FormattedDate date={pubDate} />
@@ -98,7 +111,8 @@ const crumbs: Crumb[] = Astro.url.pathname.startsWith("/article")
 
       <div class="article-body">
         <header>
-          <h1 class="display-title">{title}</h1>
+          <span class="eyebrow">{categories[category].name}</span>
+          <h1 class="display-title mt-4">{title}</h1>
           <p class="page-lead mt-5">{description}</p>
         </header>
 
@@ -125,11 +139,42 @@ const crumbs: Crumb[] = Astro.url.pathname.startsWith("/article")
         <div class="prose mt-10">
           <slot />
         </div>
+
+        <!--
+          The reading furniture. It closes the article rather than framing it:
+          the tags say what it is filed under and the share row hands it on. It
+          stays inside the body's measure, so the column the reader has been
+          reading down is the column the furniture is ruled to.
+
+          The share row and the two steps both move along the public archive, so
+          a gated post carries neither: its URL redirects to the unlock page, and
+          a share or a public neighbour would hand the reader a link that asks
+          for a password. The tag stays, because the category is what the post is
+          filed under wherever it is read.
+        -->
+        <footer class="mt-16 flex flex-col gap-10">
+          <div class="flex flex-wrap items-center justify-between gap-x-8 gap-y-6">
+            <TagList
+              tags={[
+                {
+                  label: categories[category].name,
+                  href: `/posts?category=${category}`,
+                  category,
+                },
+              ]}
+            />
+            {canShare && <ShareLinks url={Astro.url.href} title={title} />}
+          </div>
+
+          {canShare && <PostNav prev={prev} next={next} />}
+        </footer>
       </div>
 
       <TableOfContents headings={headings} />
     </div>
   </article>
+
+  <BackToTop />
 </BaseLayout>
 
 <script>

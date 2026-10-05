@@ -14,12 +14,37 @@ type Props = CollectionEntry<"article">;
 
 const post = Astro.props;
 const { Content, headings, remarkPluginFrontmatter } = await render(post);
+
+/*
+ * The archive in reading order. `byPinnedThenDate` is right for a listing, where
+ * a pinned post belongs at the top, but wrong for the two steps either side of
+ * an article: a pinned post would drop a year between an article and its
+ * neighbour. Sorting by date alone keeps the pair chronological.
+ */
+const archive = (await getArticles()).sort(
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+);
+const position = archive.findIndex(
+  (entry) => entry.data.slug === post.data.slug,
+);
+const next = position > 0 ? archive[position - 1] : undefined;
+const prev = position >= 0 ? archive[position + 1] : undefined;
+
+const toNav = (entry: (typeof archive)[number] | undefined) =>
+  entry === undefined
+    ? undefined
+    : {
+        href: `/${entry.collection}/${entry.data.slug}`,
+        title: entry.data.title,
+      };
 ---
 
 <BlogPost
   {...post.data}
   headings={headings}
   minutesRead={remarkPluginFrontmatter.minutesRead}
+  prev={toNav(prev)}
+  next={toNav(next)}
 >
   <Content />
 </BlogPost>

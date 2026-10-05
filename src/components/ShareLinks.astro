@@ -1,0 +1,88 @@
+---
+import Icon from "./Icon.astro";
+
+interface Props {
+  url: string;
+  title: string;
+}
+
+const { url, title } = Astro.props;
+
+/* Both intents take the text they are handed already encoded. */
+const x = `https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}`;
+const bluesky = `https://bsky.app/intent/compose?text=${encodeURIComponent(`${title} ${url}`)}`;
+---
+
+<!--
+  The share row. Each network link opens a page on that network, which is
+  navigation, so each is a real `<a>` and says so to the keyboard; the copy
+  control is an action and is a `<button>`. The label is always visible beside
+  the mark, so the row is legible without the icon font.
+-->
+<div class="share">
+  <span class="eyebrow">シェア</span>
+
+  <a class="share-link" href={x} target="_blank" rel="noopener noreferrer">
+    <Icon name="share" class="text-[1rem]" />X
+  </a>
+
+  <a
+    class="share-link"
+    href={bluesky}
+    target="_blank"
+    rel="noopener noreferrer"
+  >
+    <Icon name="share" class="text-[1rem]" />
+    Bluesky
+  </a>
+
+  <button
+    type="button"
+    class="share-link"
+    data-share-copy
+    data-share-url={url}
+    data-share-label="リンクをコピー"
+    data-share-copied="コピーしました"
+  >
+    <Icon name="copy" class="text-[1rem]" />
+    <span data-share-copy-label>リンクをコピー</span>
+  </button>
+</div>
+
+<script>
+  /*
+   * Copy-to-clipboard, with the fallback the platform still needs: `navigator
+   * .clipboard` is unavailable on an insecure origin, so the control would be a
+   * button that silently does nothing. The label is the feedback rather than a
+   * toast, because the button is where the reader is already looking.
+   */
+  const buttons =
+    document.querySelectorAll<HTMLButtonElement>("[data-share-copy]");
+
+  for (const button of buttons) {
+    const label = button.querySelector<HTMLElement>("[data-share-copy-label]");
+    const copied = button.dataset.shareCopied ?? "コピーしました";
+    const original = button.dataset.shareLabel ?? label?.textContent ?? "";
+
+    button.addEventListener("click", async () => {
+      const url = button.dataset.shareUrl;
+      if (!url) return;
+
+      try {
+        await navigator.clipboard.writeText(url);
+      } catch {
+        button.setAttribute("aria-live", "polite");
+        if (label) label.textContent = "コピーできませんでした";
+        window.setTimeout(() => {
+          if (label) label.textContent = original;
+        }, 4000);
+        return;
+      }
+
+      if (label) label.textContent = copied;
+      window.setTimeout(() => {
+        if (label) label.textContent = original;
+      }, 2000);
+    });
+  }
+</script>

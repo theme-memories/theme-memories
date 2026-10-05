@@ -5,23 +5,28 @@ const today = new Date();
 ---
 
 <!--
-  Two lines of small print do not need a 40px frame. daisyUI's own default row
-  gap is 2.5rem, which is most of the height this footer used to carry, so both
-  the gap and the padding come down together.
--->
-<footer class="footer footer-horizontal footer-center bg-base-200 text-base-content mt-auto gap-x-6 gap-y-3 px-6 py-6">
-  <nav class="grid grid-flow-col gap-4" aria-label="購読とサイト案内">
-    <a class="link link-hover" href="/rss.xml">
-      RSS
-    </a>
-    <a class="link link-hover" href="/sitemap-index.xml">
-      SITEMAP
-    </a>
-  </nav>
+  The colophon. A heavy top rule, the copyright on the left and the two
+  machine-facing links on the right, on a single row, so the foot of the page
+  reads as the end of a publication rather than as a second navigation block.
 
-  <aside>
-    <p class="text-[color:var(--ink-muted)]">
-      &copy; {today.getFullYear()} {SITE_TITLE}. All rights reserved.
+  The row carries the page container itself instead of sitting inside a
+  `.site-container` wrapper: the bar still runs the full width of the viewport,
+  and the words keep the page's measure from the one container rule rather than
+  from a copy of its padding.
+-->
+<footer class="colophon">
+  <div class="colophon-inner site-container">
+    <p class="colophon-note">
+      {`© ${today.getFullYear()} ${SITE_TITLE}. All rights reserved.`}
     </p>
-  </aside>
+
+    <nav class="colophon-links" aria-label="購読とサイト案内">
+      <a class="link-quiet" href="/rss.xml">
+        RSS
+      </a>
+      <a class="link-quiet" href="/sitemap-index.xml">
+        SITEMAP
+      </a>
+    </nav>
+  </div>
 </footer>

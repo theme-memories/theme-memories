@@ -69,10 +69,6 @@
     @apply mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8;
   }
 
-  .rule-ink {
-    @apply border-base-content/75 border-t;
-  }
-
   /*
    * The skip link. It is the first thing in the tab order and the only way past
    * the chrome: every page carries the wordmark, three nav links and the theme
@@ -113,33 +109,52 @@
    * One typeface, so the scale and the weight both have to carry the hierarchy.
    * A display title steps up to 800 and the section title stays at 700, which is
    * the only structural contrast left now that the family contrast is gone.
+   *
+   * The sizes come from the fluid ladder in theme.css rather than from fixed
+   * utilities, so the rank between a display title and a section title is the
+   * same on a phone and on a wide monitor. Weight and the fluid step are the two
+   * levers; there is no third.
    */
   .display-title {
-    @apply text-3xl leading-tight font-extrabold tracking-tight text-balance sm:text-4xl lg:text-[2.75rem];
+    @apply leading-[1.1] font-extrabold tracking-tight text-balance;
+
+    font-size: var(--step-3xl);
   }
 
   .page-title {
-    @apply text-3xl leading-tight font-bold tracking-tight text-balance sm:text-4xl;
+    @apply leading-tight font-bold tracking-tight text-balance;
+
+    font-size: var(--step-2xl);
   }
 
   .section-title {
-    @apply text-xl font-bold tracking-tight sm:text-2xl;
+    @apply font-bold tracking-tight;
+
+    font-size: var(--step-lg);
   }
 
   .page-lead {
-    @apply max-w-prose text-base text-pretty sm:text-lg;
+    @apply max-w-prose text-pretty;
 
+    font-size: var(--step-md);
+    line-height: 1.8;
     color: var(--ink-muted);
   }
 
   /*
-   * The index row. Every listing on the site is this one shape: the metadata
-   * takes a fixed column so dates line up down the page, the title takes the
-   * rest of the line, and a marker sits in the margin. No thumbnail, no box,
-   * no shadow — an index is scanned, not browsed.
+   * The index row.
    *
-   * Below the first break the metadata drops under the title, so the title
-   * keeps the full measure instead of competing with it.
+   * Every listing on the site is this one shape, and it is a ruled row rather
+   * than a card: an index is scanned, not browsed. Three columns — a numbered
+   * gutter, the body, and a marker in the margin — with the title, the metadata
+   * and a one-line excerpt stacked in the body. A card around each entry would
+   * add a box to a page of boxes and buy nothing the rule does not already buy.
+   *
+   * The number in the gutter is what makes the row read as a magazine index
+   * rather than as a list of links. It is drawn from a counter rather than from
+   * a prop, so a row added to the markup renumbers the rows below it without a
+   * line of script, and it is not announced to a screen reader because the
+   * reading order is already the order.
    *
    * Its three transitions are declared on three elements because they animate
    * three different properties, but they share one duration and one curve: the
@@ -147,18 +162,48 @@
    * they have to land together rather than in three tempos.
    */
   .post-row {
-    @apply border-base-300 grid items-baseline gap-x-6 gap-y-1 border-b py-5;
+    @apply border-base-300 grid items-start gap-x-5 gap-y-1.5 border-b py-6;
 
     transition-property: background-color;
     transition-duration: var(--motion-state);
     transition-timing-function: var(--ease-out-quint);
-    grid-template-columns: minmax(0, 1fr) 1.25rem;
+    grid-template-columns: 2.25rem minmax(0, 1fr) 1.25rem;
     grid-template-areas:
-      "title mark"
-      "meta  mark";
+      "index title mark"
+      "index meta  mark"
+      "index text  mark";
+  }
+
+  .post-row-index {
+    grid-area: index;
+    padding-top: 0.35em;
+    font-family: var(--font-mono);
+    font-size: var(--step-xs);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.04em;
+    color: var(--ink-mark);
+  }
+
+  /*
+   * The number itself. A CSS counter rather than a value passed in: the row is
+   * rendered by a map with no index, and a counter renumbers the visible rows
+   * for free when the filter hides some of them, which is the numbering a
+   * magazine index actually uses. The span that carries it is `aria-hidden`, so
+   * the number is decoration and the screen reader hears the title, not "zero
+   * one" before it.
+   */
+  .post-grid {
+    counter-reset: post-row;
+  }
+
+  .post-row-index::before {
+    counter-increment: post-row;
+    content: counter(post-row, decimal-leading-zero);
   }
 
   .post-row-meta {
+    @apply flex flex-wrap items-baseline gap-x-3 gap-y-1;
+
     grid-area: meta;
   }
 
@@ -176,12 +221,28 @@
   }
 
   .post-row-title {
-    @apply text-lg leading-snug font-bold tracking-tight text-balance sm:text-xl;
+    @apply leading-snug font-bold tracking-tight text-balance;
 
+    font-size: var(--step-md);
     transition-property: color;
     transition-duration: var(--motion-state);
     transition-timing-function: var(--ease-out-quint);
     grid-area: title;
+  }
+
+  /*
+   * The excerpt. It is clamped to two lines so a long description cannot turn a
+   * scannable index into a wall of prose; the full text is one click away and
+   * the row is a link. The muted tier is the same one the rest of the secondary
+   * text wears, so the excerpt ranks under the title it follows.
+   */
+  .post-row-excerpt {
+    @apply line-clamp-2 text-pretty;
+
+    font-size: var(--step-sm);
+    line-height: 1.7;
+    color: var(--ink-muted);
+    grid-area: text;
   }
 
   .post-row-mark {
@@ -196,8 +257,9 @@
 
   /*
    * The row answers a keyboard the way it answers a pointer: the surface tints,
-   * the title and the marker take the accent, and the marker steps in. A focus
-   * ring on its own says where the reader is without saying what the row does.
+   * the title, the marker and the number take the accent, and the marker steps
+   * in. A focus ring on its own says where the reader is without saying what the
+   * row does.
    */
   .post-row:hover,
   .post-row:focus-visible {
@@ -206,8 +268,10 @@
 
   .post-row:hover .post-row-title,
   .post-row:hover .post-row-mark,
+  .post-row:hover .post-row-index,
   .post-row:focus-visible .post-row-title,
-  .post-row:focus-visible .post-row-mark {
+  .post-row:focus-visible .post-row-mark,
+  .post-row:focus-visible .post-row-index {
     color: var(--ink-accent);
   }
 
@@ -237,13 +301,6 @@
    */
   [data-post]:not([hidden]) {
     animation: reveal-rise var(--motion-reveal) var(--ease-out-quint) backwards;
-  }
-
-  @media (width >= 40rem) {
-    .post-row {
-      grid-template-columns: 15rem minmax(0, 1fr) 1.25rem;
-      grid-template-areas: "meta title mark";
-    }
   }
 
   /*
@@ -748,9 +805,16 @@
     @apply bg-primary absolute start-0 -bottom-0.5 h-px w-full content-[''];
   }
 
-  /* The site name, in the header and at the head of the drawer. */
+  /*
+   * The site name, in the header and at the head of the drawer, set as a
+   * nameplate rather than as a heading: tracked, uppercase and heavy, so it reads
+   * as the masthead of a publication while every real heading on the page stays
+   * inside the content.
+   */
   .wordmark {
-    @apply text-lg font-bold tracking-tight;
+    @apply font-extrabold tracking-[0.08em] uppercase;
+
+    font-size: var(--step-sm);
   }
 
   /*

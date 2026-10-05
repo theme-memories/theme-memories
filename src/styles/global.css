@@ -12,6 +12,7 @@
 @import "./plyr.css";
 @import "./swiper.css";
 @import "./components.css";
+@import "./editorial.css";
 
 @plugin "@tailwindcss/typography";
 

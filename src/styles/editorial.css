@@ -1,0 +1,419 @@
+/*
+ * The editorial vocabulary.
+ *
+ * Everything here is built from the same three primitives the rest of the page
+ * is (a container, a hairline and a monospaced label), so the new furniture —
+ * 見出し, タグ, 前後の記事, シェア, ページトップへ — reads as part of the page
+ * rather than as widgets dropped onto it.
+ *
+ * Two rules hold across the file. Depth is still carried by space and hairlines,
+ * never by a shadow: a card and a rule answer the same question about where one
+ * thing ends and the next begins, and the rule is the one that keeps a reading
+ * surface quiet. And the accent is spent only where it carries a word or marks
+ * the reader's place (the current TOC entry, the row under the pointer), never
+ * on decoration.
+ */
+
+/*
+ * 肩 — the eyebrow.
+ *
+ * A small tracked line that sits above a heading and says what kind of thing
+ * follows (最新, カテゴリー, 記事一覧). It takes the muted tier so it ranks under
+ * the heading it introduces, and the leading rule is what makes it read as a
+ * label rather than as a short sentence: the rule is the same one the h2 in the
+ * prose wears, so a section head on a page and a heading in an article are the
+ * same object.
+ */
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: var(--step-xs);
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: var(--ink-muted);
+}
+
+.eyebrow::before {
+  content: "";
+  width: 1.75rem;
+  height: 2px;
+  background-color: currentcolor;
+}
+
+/*
+ * The section head. A heading with a rule under it, and optionally a link at the
+ * far end of the same baseline. It is used for every in-page section so the
+ * rhythm down a page is the same on the index, the about sheet and an article.
+ */
+.section-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 0.75rem 1.5rem;
+  padding-bottom: 0.85rem;
+  border-bottom: 1px solid var(--color-base-content);
+}
+
+.section-head .section-title {
+  margin: 0;
+}
+
+/*
+ * タグ.
+ *
+ * A tag is a link to the filtered index, so it is a real control and carries a
+ * hover and focus state of its own. It is a hairline box rather than a filled
+ * chip: a page can easily show a dozen tags, and a dozen filled chips would be a
+ * dozen blocks of colour competing with the writing.
+ *
+ * The radius is the field radius, which is the tight step of the theme scale,
+ * not a pill: a pill would round a two-character Japanese tag into a lozenge and
+ * make the row look like buttons rather than like a taxonomy.
+ */
+.tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.tag {
+  display: inline-flex;
+  min-height: 2rem;
+  align-items: center;
+  gap: 0.4rem;
+  padding-inline: 0.65rem;
+  border: 1px solid var(--color-base-300);
+  border-radius: var(--radius-field);
+  font-size: var(--step-xs);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--ink-muted);
+  transition-property: color, border-color, background-color;
+  transition-duration: var(--motion-exit);
+  transition-timing-function: var(--ease-out-quint);
+}
+
+@media (hover: hover) {
+  .tag:hover {
+    border-color: var(--color-base-content);
+    background-color: var(--color-base-200);
+    color: var(--color-base-content);
+  }
+}
+
+.tag:focus-visible {
+  border-color: var(--color-base-content);
+  color: var(--color-base-content);
+}
+
+/* The category mark, carried in the same 0.4rem square the filter chips use. */
+.tag-mark {
+  width: 0.45rem;
+  height: 0.45rem;
+  flex: none;
+  border-radius: 1px;
+}
+
+/*
+ * 前後の記事 — the previous and next post.
+ *
+ * Two links on one hairline, the newer one aligned start and the older one end,
+ * so the pair reads as a step back through the archive rather than as a list of
+ * two. The direction word is the eyebrow; the title is the heading level for
+ * that step. Each link takes the full width of its half so the whole half is the
+ * hit area rather than the title alone.
+ */
+.post-nav {
+  display: grid;
+  gap: 1px;
+  grid-template-columns: minmax(0, 1fr);
+  background-color: var(--color-base-300);
+  border: 1px solid var(--color-base-300);
+}
+
+@media (width >= 40rem) {
+  .post-nav {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+}
+
+.post-nav-link {
+  display: flex;
+  min-height: 5.5rem;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem 1.25rem;
+  background-color: var(--color-base-100);
+  transition-property: background-color;
+  transition-duration: var(--motion-state);
+  transition-timing-function: var(--ease-out-quint);
+}
+
+.post-nav-link-end {
+  text-align: end;
+}
+
+.post-nav-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: var(--step-xs);
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  color: var(--ink-muted);
+}
+
+.post-nav-link-end .post-nav-label {
+  justify-content: flex-end;
+}
+
+.post-nav-title {
+  font-size: var(--step-md);
+  font-weight: 700;
+  line-height: 1.5;
+  letter-spacing: 0.01em;
+  text-wrap: balance;
+  transition-property: color;
+  transition-duration: var(--motion-state);
+  transition-timing-function: var(--ease-out-quint);
+}
+
+.post-nav-link:hover,
+.post-nav-link:focus-visible {
+  background-color: var(--color-base-200);
+}
+
+.post-nav-link:hover .post-nav-title,
+.post-nav-link:focus-visible .post-nav-title {
+  color: var(--ink-accent);
+}
+
+/*
+ * The empty half. When an article is the first or last of the archive there is
+ * no post on that side, and the box says so in the quietest voice rather than
+ * collapsing the hairline and making the remaining half look centred.
+ *
+ * The tier is the muted one, not the glyph one: this is a sentence, and a
+ * sentence answers to 4.5:1 even when it is the quietest thing on the page.
+ */
+.post-nav-empty {
+  display: none;
+  min-height: 5.5rem;
+  align-items: center;
+  padding: 1rem 1.25rem;
+  background-color: var(--color-base-100);
+  font-size: var(--step-xs);
+  color: var(--ink-muted);
+}
+
+@media (width >= 40rem) {
+  .post-nav-empty {
+    display: flex;
+  }
+}
+
+/*
+ * シェア.
+ *
+ * The share row is a set of plain links, not buttons: each opens a third-party
+ * page, which is navigation, and a link says so to the browser and the keyboard.
+ * They are hairline boxes like a tag, so the row reads as the same family of
+ * small controls, and each clears the 44px touch floor on a coarse pointer.
+ */
+.share {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.share-link {
+  display: inline-flex;
+  min-height: 2.25rem;
+  align-items: center;
+  gap: 0.4rem;
+  padding-inline: 0.7rem;
+  border: 1px solid var(--color-base-300);
+  border-radius: var(--radius-field);
+  background-color: transparent;
+  font: inherit;
+  font-size: var(--step-xs);
+  font-weight: 500;
+  color: var(--ink-muted);
+  cursor: pointer;
+  transition-property: color, border-color, background-color;
+  transition-duration: var(--motion-exit);
+  transition-timing-function: var(--ease-out-quint);
+}
+
+@media (hover: hover) {
+  .share-link:hover {
+    border-color: var(--color-base-content);
+    background-color: var(--color-base-200);
+    color: var(--color-base-content);
+  }
+}
+
+.share-link:focus-visible {
+  border-color: var(--color-base-content);
+  color: var(--color-base-content);
+}
+
+@media (pointer: coarse) {
+  .share-link {
+    min-height: 2.75rem;
+  }
+}
+
+/*
+ * ページトップへ.
+ *
+ * Pinned to the bottom of the viewport and shown only once the reader has
+ * scrolled past the article's opening. It is a real link to `#main`, so it takes
+ * the browser's own smooth scroll, which the base stylesheet already reduces to
+ * an instant jump when motion is not wanted.
+ *
+ * It is `hidden` in the markup rather than revealed from the start: a back-to-top
+ * control floating over the top of a page is a control with nothing to do, and
+ * the enhancement script is what decides there is something to go back to. With
+ * scripting off the control is simply absent, which is the honest failure for a
+ * convenience that only matters after a long scroll.
+ */
+.back-to-top {
+  position: fixed;
+  inset-block-end: 1.5rem;
+  inset-inline-end: 1.25rem;
+  z-index: 30;
+  display: inline-flex;
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding-inline: 0.85rem;
+  border: 1px solid var(--color-base-300);
+  border-radius: var(--radius-selector);
+  background-color: color-mix(in oklab, var(--color-base-100) 88%, transparent);
+  backdrop-filter: blur(0.25rem);
+  font-size: var(--step-xs);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--ink-muted);
+  transition-property: color, border-color, background-color, opacity;
+  transition-duration: var(--motion-state);
+  transition-timing-function: var(--ease-out-quint);
+}
+
+@media (hover: hover) {
+  .back-to-top:hover {
+    border-color: var(--color-base-content);
+    background-color: var(--color-base-100);
+    color: var(--color-base-content);
+  }
+}
+
+.back-to-top:focus-visible {
+  border-color: var(--color-base-content);
+  color: var(--color-base-content);
+}
+
+/*
+ * The control is `hidden` until the reader has scrolled. That has to win over
+ * the `display` above whatever the base layer does with `[hidden]`, so it is
+ * restated here at one step more specific rather than left to the platform.
+ */
+.back-to-top[hidden] {
+  display: none;
+}
+
+/*
+ * The running head.
+ *
+ * The wordmark and the tagline sit together at the left, the tagline as a second
+ * line under the name rather than beside it: on one line the tracked Latin
+ * nameplate and the Japanese tagline fight for the same baseline, and the
+ * tagline is the line that says what the site is. It is dropped below the tablet
+ * break, where the header has to spend its width on the controls.
+ */
+.wordmark-group {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  line-height: 1.1;
+}
+
+.wordmark-tagline {
+  display: none;
+  font-size: var(--step-xs);
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: var(--ink-muted);
+}
+
+@media (width >= 48rem) {
+  .wordmark-tagline {
+    display: block;
+  }
+}
+
+/*
+ * The archive line. The count of posts and the year the archive reaches back to,
+ * as a small mono pair. It sits in the index's side rail, directly above the
+ * category navigation: the figures describe the whole archive, and the rail is
+ * where the archive's own navigation (カテゴリー) already lives.
+ */
+.archive-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.35rem;
+  font-family: var(--font-mono);
+  font-size: var(--step-xs);
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-muted);
+}
+
+/*
+ * The footer.
+ *
+ * A heavy top rule, the copyright on the left and the two machine-facing links
+ * (RSS, sitemap) on the right, on one row. It is a colophon rather than a
+ * navigation block, so the links are quiet and the note sits in the muted tier.
+ * The row also carries `.site-container`, so the bar keeps running the full
+ * width of the viewport while the words keep the page's measure.
+ */
+.colophon {
+  margin-top: auto;
+  border-top: 1px solid var(--color-base-content);
+  background-color: var(--color-base-200);
+}
+
+.colophon-inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem 2rem;
+  padding-block: 2rem;
+}
+
+.colophon-note {
+  font-size: var(--step-xs);
+  color: var(--ink-muted);
+}
+
+.colophon-links {
+  display: flex;
+  gap: 1.25rem;
+  font-family: var(--font-mono);
+  font-size: var(--step-xs);
+  letter-spacing: 0.12em;
+}
+
+@media (pointer: coarse) {
+  .colophon-links a {
+    padding-block: 0.75rem;
+  }
+}

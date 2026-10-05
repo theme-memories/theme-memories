@@ -17,7 +17,7 @@ interface Props {
 
 const { post, level = 2 } = Astro.props;
 const Heading = `h${level}` as "h2" | "h3";
-const { title, pubDate, category } = post.data;
+const { title, description, pubDate, category } = post.data;
 const href = `/${post.collection}/${post.data.slug}`;
 ---
 
@@ -28,12 +28,19 @@ const href = `/${post.collection}/${post.data.slug}`;
   data-category={category}
   data-year={pubDate.getFullYear()}
 >
+  <!--
+    The number is decoration: it is drawn by a CSS counter (see `.post-grid` in
+    components.css) and kept out of the accessibility tree, so the title is what
+    a screen reader reads rather than "zero one".
+  -->
+  <span class="post-row-index" aria-hidden="true"></span>
   <Heading class="post-row-title">{title}</Heading>
-  <p class="post-row-meta flex flex-wrap items-baseline gap-x-3 gap-y-1">
+  <p class="post-row-meta">
     <span class="data post-row-date">
       <FormattedDate date={pubDate} />
     </span>
     <CategoryBadge category={category} />
   </p>
+  <p class="post-row-excerpt">{description}</p>
   <Icon name="arrow" class="post-row-mark text-[1.125rem]" />
 </a>

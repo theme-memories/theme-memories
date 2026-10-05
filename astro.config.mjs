@@ -79,7 +79,17 @@ export default defineConfig({
        */
       options: {
         experimental: {
-          glyphs: ["menu", "close", "light_mode", "dark_mode", "arrow_forward"],
+          glyphs: [
+            "menu",
+            "close",
+            "light_mode",
+            "dark_mode",
+            "arrow_forward",
+            "arrow_back",
+            "arrow_upward",
+            "share",
+            "content_copy",
+          ],
         },
       },
       display: "block",

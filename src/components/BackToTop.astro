@@ -1,0 +1,58 @@
+---
+import Icon from "./Icon.astro";
+---
+
+<!--
+  ページトップへ. `hidden` until the script decides the reader has scrolled far
+  enough to want it, so a browser without scripting never shows a control that
+  would have nothing to do.
+-->
+<a class="back-to-top" href="#main" data-back-to-top hidden>
+  <Icon name="up" class="text-[1.125rem]" />
+  ページトップへ
+</a>
+
+<script>
+  const control = document.querySelector<HTMLElement>("[data-back-to-top]");
+  const footer = document.querySelector<HTMLElement>(".colophon");
+
+  if (control) {
+    /*
+     * The threshold is a screen and a half: below it the top of the article is
+     * still one flick away and the control is noise, above it the reader has
+     * scrolled past the point where it starts to be useful.
+     */
+    const threshold = () => window.innerHeight * 1.5;
+
+    /*
+     * The control floats over the bottom-right of the viewport, where the
+     * colophon's RSS and sitemap links sit on the last line of the page, so it
+     * steps aside as soon as the footer is on screen rather than covering them:
+     * at the foot of the page there is nothing left to go back to.
+     */
+    let footerVisible = false;
+
+    const sync = () => {
+      control.hidden = footerVisible || window.scrollY < threshold();
+    };
+
+    if (footer) {
+      const observer = new IntersectionObserver((entries) => {
+        footerVisible = entries.some((entry) => entry.isIntersecting);
+        sync();
+      });
+      observer.observe(footer);
+    }
+
+    window.addEventListener("scroll", sync, { passive: true });
+    window.addEventListener("resize", sync);
+
+    /* Jumping to `#main` does not fire a scroll event on every engine, so the
+       link's own press re-syncs the control rather than leaving it up. */
+    control.addEventListener("click", () => {
+      window.setTimeout(sync, 0);
+    });
+
+    sync();
+  }
+</script>
