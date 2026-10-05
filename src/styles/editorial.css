@@ -359,23 +359,6 @@
 }
 
 /*
- * The archive line. The count of posts and the year the archive reaches back to,
- * as a small mono pair. It sits in the index's side rail, directly above the
- * category navigation: the figures describe the whole archive, and the rail is
- * where the archive's own navigation (カテゴリー) already lives.
- */
-.archive-meta {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.35rem;
-  font-family: var(--font-mono);
-  font-size: var(--step-xs);
-  font-variant-numeric: tabular-nums;
-  color: var(--ink-muted);
-}
-
-/*
  * The footer.
  *
  * A heavy top rule, the copyright on the left and the two machine-facing links
