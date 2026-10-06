@@ -371,6 +371,17 @@
 }
 
 /*
+ * Zebra striping for content tables. It is drawn here rather than through
+ * daisyUI's `table-zebra` so it holds for both the tables Sätteri builds and the
+ * extended-table HTML the wrapper emits as raw HTML, and so it sits on top of
+ * the bespoke ink-rule table above rather than replacing it with daisyUI's. The
+ * row carries the wash; the cells stay transparent so it reads through them.
+ */
+.prose :where(table) tbody tr:nth-child(even) {
+  background-color: var(--color-base-200);
+}
+
+/*
  * A figure caption is set like a printed plate caption: small, monospaced, and
  * hung off a hairline rather than sitting loose under the image.
  */
