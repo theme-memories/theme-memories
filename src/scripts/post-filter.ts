@@ -62,7 +62,7 @@ export const enhancePostFilter = () => {
    * is kept in step on every change so the state can be copied out of the
    * address bar. `replaceState` rather than `pushState`: a filter is a change to
    * the same page, not a new page to go back to, and a back button that stepped
-   * through every chip would bury the page the reader arrived from.
+   * through every press would bury the page the reader arrived from.
    */
   const syncUrl = (filter: PostFilter) => {
     const url = new URL(window.location.href);
@@ -107,12 +107,26 @@ export const enhancePostFilter = () => {
       for (const input of container.querySelectorAll<HTMLInputElement>(
         "input[data-filter-group]",
       )) {
-        input.checked = input.value === FILTER_ALL;
+        input.checked = false;
       }
 
       apply();
       grid.querySelector<HTMLElement>(CARD_SELECTOR)?.focus();
     });
+
+  /*
+   * daisyUI's filter reset is a `type="reset"` inside the form. A `reset` event
+   * does not bubble, so it is caught in the capture phase, and the form's own
+   * values are restored only after the handler runs, so the re-read is deferred
+   * one tick.
+   */
+  container.addEventListener(
+    "reset",
+    () => {
+      window.setTimeout(apply, 0);
+    },
+    true,
+  );
 
   /*
    * The state the URL asks for, applied before the first `apply` so the list

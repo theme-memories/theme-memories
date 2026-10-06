@@ -291,7 +291,7 @@
 
   /*
    * A filtered row arrives rather than appearing. The list is recomposed under
-   * the reader's hands on every chip, and a row that blinks into place says
+   * the reader's hands on every change, and a row that blinks into place says
    * nothing about whether it was there a moment ago; fading up says it just
    * came back. Rows that were already on screen hold still, so only the change
    * moves.
@@ -386,59 +386,10 @@
   }
 
   /*
-   * A filter chip is a real radio inside its own label. The visible box is the
-   * label, so the whole chip is the hit area and it clears the touch minimum
-   * without a pointer-specific rule.
-   *
-   * Selection is carried by three things at once: the surface inverts to ink, a
-   * marker fills in, and the border strengthens. Hue does none of the work, so
-   * the state survives grayscale.
-   *
-   * All four of those changes settle on the shared curve at the same duration,
-   * which is the one place a press and a state change can share a number: at
-   * this size the two are the same event. The press is a scale rather than a
-   * colour, because a control this small should feel like it moved under the
-   * finger before the list underneath it changes.
-   */
-  .filter-chip {
-    @apply label border-base-300 hover:border-base-content/40 hover:text-base-content inline-flex min-h-11 cursor-pointer items-center border px-3;
-
-    transition-property: color, background-color, border-color, scale;
-    transition-duration: var(--motion-exit);
-    transition-timing-function: var(--ease-out-quint);
-  }
-
-  .filter-chip:active {
-    scale: 0.97;
-  }
-
-  .filter-chip span::before {
-    @apply me-2 inline-block align-middle content-[''];
-
-    transition: background-color var(--motion-exit) var(--ease-out-quint);
-    width: 0.4rem;
-    height: 0.4rem;
-    border: 1px solid currentcolor;
-  }
-
-  .filter-chip:has(input:checked) {
-    @apply border-base-content bg-base-content text-base-100;
-  }
-
-  .filter-chip:has(input:checked) span::before {
-    background-color: currentcolor;
-  }
-
-  .filter-chip:has(input:focus-visible) {
-    outline: 2px solid var(--color-primary);
-    outline-offset: 2px;
-  }
-
-  /*
    * The palette switch: the two pigments as a bordered pair of labels, mirroring
    * the theme toggle beside it — the same 2.5rem height, the same square corner,
-   * the same hairline. Selection inverts to ink the way a filter chip does, so
-   * the choice survives grayscale and spends no accent, and the resting label
+   * the same hairline. Selection inverts to ink, so the choice survives grayscale
+   * and spends no accent, and the resting label
    * takes the muted tier, which clears AA on every surface. The input is
    * visually hidden, so the focus ring is drawn on the label the reader sees.
    */
@@ -487,7 +438,7 @@
    * them, which would force the bar and the panels into one box: two small
    * labels at the left end of a full-width grey track. Because the bar has to
    * hug its labels while the panels keep the full measure, the panels key off
-   * the radios instead, the same way the chips above do.
+   * the radios instead, the same way the palette switch above does.
    *
    * The past panel is off in the base rule rather than by exception, so a
    * browser without `:has()` shows the current era and nothing else, which is
@@ -585,7 +536,7 @@
   }
 
   /*
-   * The selected era, filled the way a selected chip is.
+   * The selected era, filled the way the palette switch is.
    *
    * daisyUI gives the checked tab the same surface as the box it sits in, so
    * selection was being carried by the label's opacity alone: a 50% label
@@ -599,8 +550,8 @@
 
   /*
    * daisyUI draws the focus ring on the tab that is already selected, so tabbing
-   * to the other one shows nothing at all. This is the same ring the filter
-   * chips use, and it goes on the label because the input is invisible.
+   * to the other one shows nothing at all. This is the same ring the palette
+   * switch uses, and it goes on the label because the input is invisible.
    */
   .era .tab:has(input:focus-visible) {
     outline: 2px solid var(--color-primary);
@@ -1052,7 +1003,7 @@
 }
 
 /*
- * The selected era, filled the way a selected chip is.
+ * The selected era, filled the way the palette switch is.
  *
  * daisyUI's `tabs-box` paints the checked tab with `--tab-bg`, which for a box
  * sitting on `base-100` is `base-100` again. The toggle's own markup sets the
@@ -1062,9 +1013,9 @@
  * surface. On a control whose entire job is to say which era you are looking at,
  * that is too quiet to read, and it spends no accent either way.
  *
- * Inverting to ink is what the filter chips do, and the toggle is the same kind
- * of thing, a radio group: the state survives grayscale and does not spend the
- * accent on something that is not an action.
+ * Inverting to ink is what the palette switch does, and the toggle is the same
+ * kind of thing, a radio group: the state survives grayscale and does not spend
+ * the accent on something that is not an action.
  *
  * Unlayered for the reason above: daisyUI emits its tab rules into its own layer,
  * which outranks the components layer whatever the specificity, so a layered

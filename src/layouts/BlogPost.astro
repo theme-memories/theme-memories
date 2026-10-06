@@ -60,22 +60,20 @@ const canShare = !noindex;
 >
   <article class="site-container py-10 sm:py-14">
     <div class="article-grid">
-      <nav class="article-crumbs" aria-label="パンくずリスト">
-        <ol class="data flex flex-wrap items-center gap-x-2 gap-y-1">
-          {crumbs.map((crumb, position) => (
-            <li class="flex min-w-0 items-center gap-2">
-              {position > 0 && (
-                <span class="text-[color:var(--ink-mark)]" aria-hidden="true">
-                  /
-                </span>
-              )}
+      <nav
+        class="article-crumbs breadcrumbs text-sm"
+        aria-label="パンくずリスト"
+      >
+        <ul>
+          {crumbs.map((crumb) => (
+            <li>
               {crumb.href ? (
                 <a href={crumb.href} class="link-quiet">
                   {crumb.label}
                 </a>
               ) : (
                 <span
-                  class="text-[color:var(--ink-muted)] max-w-[18rem] truncate"
+                  class="max-w-[18rem] truncate text-[color:var(--ink-muted)]"
                   aria-current="page"
                 >
                   {crumb.label}
@@ -83,7 +81,7 @@ const canShare = !noindex;
               )}
             </li>
           ))}
-        </ol>
+        </ul>
       </nav>
 
       <dl class="article-meta">

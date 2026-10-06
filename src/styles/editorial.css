@@ -65,8 +65,8 @@
  *
  * A tag is a link to the filtered index, so it is a real control and carries a
  * hover and focus state of its own. It is a hairline box rather than a filled
- * chip: a page can easily show a dozen tags, and a dozen filled chips would be a
- * dozen blocks of colour competing with the writing.
+ * shape: a page can easily show a dozen tags, and a dozen filled shapes would be
+ * a dozen blocks of colour competing with the writing.
  *
  * The radius is the field radius, which is the tight step of the theme scale,
  * not a pill: a pill would round a two-character Japanese tag into a lozenge and
@@ -108,7 +108,7 @@
   color: var(--color-base-content);
 }
 
-/* The category mark, carried in the same 0.4rem square the filter chips use. */
+/* The category mark: a filled square in the category's own colour. */
 .tag-mark {
   width: 0.45rem;
   height: 0.45rem;
