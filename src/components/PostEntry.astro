@@ -17,7 +17,7 @@ interface Props {
 
 const { post, level = 2 } = Astro.props;
 const Heading = `h${level}` as "h2" | "h3";
-const { title, description, pubDate, category } = post.data;
+const { title, description, pubDate, category, pinned } = post.data;
 const href = `/${post.collection}/${post.data.slug}`;
 ---
 
@@ -40,6 +40,11 @@ const href = `/${post.collection}/${post.data.slug}`;
       <FormattedDate date={pubDate} />
     </span>
     <CategoryBadge category={category} />
+    {pinned && (
+      <span class="badge badge-primary badge-sm" aria-label="固定">
+        固定
+      </span>
+    )}
   </p>
   <p class="post-row-excerpt">{description}</p>
   <Icon name="arrow" class="post-row-mark text-[1.125rem]" />
