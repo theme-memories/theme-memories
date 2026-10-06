@@ -19,7 +19,6 @@
 /** Elements that survive sanitisation. Anything else is unwrapped. */
 export const TAG_NAMES: readonly string[] = [
   "a",
-  "b",
   "blockquote",
   "br",
   "code",
@@ -36,11 +35,7 @@ export const TAG_NAMES: readonly string[] = [
   "h4",
   "h5",
   "h6",
-  "hr",
-  "i",
   "img",
-  "ins",
-  "kbd",
   "li",
   "ol",
   "p",
@@ -50,12 +45,9 @@ export const TAG_NAMES: readonly string[] = [
   "rp",
   "rt",
   "ruby",
-  "s",
-  "samp",
   "section",
   "source",
   "span",
-  "strike",
   "strong",
   "sub",
   "summary",
@@ -67,9 +59,7 @@ export const TAG_NAMES: readonly string[] = [
   "th",
   "thead",
   "tr",
-  "tt",
   "ul",
-  "var",
 ];
 
 /**
@@ -98,7 +88,6 @@ export const ATTRIBUTES: Readonly<Record<string, readonly string[]>> = {
   pre: ["className"],
   span: ["className"],
   del: ["cite"],
-  ins: ["cite"],
   q: ["cite"],
   blockquote: ["cite"],
 };

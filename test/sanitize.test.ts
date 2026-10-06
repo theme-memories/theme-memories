@@ -100,7 +100,7 @@ describe("sanitizeHtml", () => {
   it("keeps the media the site authors as plain HTML", () => {
     /*
      * A boolean attribute comes back with an empty value, which is how HTML5
-     * writes it and what the browser and Plyr both read as "present".
+     * writes it and what the browser and Video.js both read as "present".
      */
     expect(
       sanitizeHtml(
@@ -119,16 +119,56 @@ describe("sanitizeHtml", () => {
     );
   });
 
-  it("keeps the inline prose elements authors write by hand", () => {
-    // The Markdown guide documents both, so a raw `<abbr>` keeps its `title`
-    // and a `<mark>` keeps wrapping its run rather than being unwrapped.
+  it("keeps the declarative player around the media", () => {
+    /*
+     * A player is authored as the Video.js elements around the native media.
+     * The media keeps its `controls` for the no-JS fallback and the script takes
+     * them off once the skin has upgraded, so all of it has to survive.
+     */
+    expect(
+      sanitizeHtml(
+        '<media-i18n lang="ja"><video-player><video-neutral-skin>' +
+          '<video controls preload="metadata" src="https://object.amia.work/assets/refrain.mp4"></video>' +
+          "</video-neutral-skin></video-player></media-i18n>",
+      ),
+    ).toBe(
+      '<media-i18n lang="ja"><video-player><video-neutral-skin>' +
+        '<video controls="" preload="metadata" src="https://object.amia.work/assets/refrain.mp4"></video>' +
+        "</video-neutral-skin></video-player></media-i18n>",
+    );
+  });
+
+  it("keeps the player poster but refuses a handler or a bad protocol", () => {
+    expect(
+      sanitizeHtml(
+        '<video-player poster="https://object.amia.work/assets/poster.jpg" onclick="alert(1)"></video-player>',
+      ),
+    ).toBe(
+      '<video-player poster="https://object.amia.work/assets/poster.jpg"></video-player>',
+    );
+
+    expect(
+      sanitizeHtml(
+        '<video-player poster="javascript:alert(1)"></video-player>',
+      ),
+    ).toBe("<video-player></video-player>");
+  });
+
+  it("unwraps the elements the allowlist no longer carries", () => {
+    /*
+     * Markdown has its own syntax for emphasis, strikethrough and code, so the
+     * raw-HTML aliases and the presentation-only tags are not kept: the tag goes
+     * and its text stays.
+     */
     expect(
       sanitizeHtml(
         '<abbr title="Graphics Interchange Format">GIF</abbr> is <mark>legacy</mark>.',
       ),
-    ).toBe(
-      '<abbr title="Graphics Interchange Format">GIF</abbr> is <mark>legacy</mark>.',
-    );
+    ).toBe("GIF is legacy.");
+    expect(sanitizeHtml("<kbd>Ctrl</kbd>")).toBe("Ctrl");
+    expect(sanitizeHtml("<b>x</b><i>y</i><s>z</s>")).toBe("xyz");
+    expect(sanitizeHtml("<ins>added</ins>")).toBe("added");
+    expect(sanitizeHtml("<hr>")).toBe("");
   });
 
   /*
