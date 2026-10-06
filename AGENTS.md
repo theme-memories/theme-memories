@@ -32,7 +32,7 @@ Husky + lint-staged run eslint/prettier and stylelint/prettier on commit.
 
 _Theme Memories_ (プエラ・モギカ) — a Japanese-language blog about _Project SEKAI_ and the character 暁山 瑞希. Astro 7 + TypeScript, deployed as a Cloudflare Worker at https://amia.work.
 
-- **All user-facing text is Japanese** — page copy, component labels, `aria-label`s, and the chrome of third-party widgets (Plyr, Swiper, PhotoSwipe, Turnstile).
+- **All user-facing text is Japanese** — page copy, component labels, `aria-label`s, and the chrome of third-party widgets (Video.js, Swiper, PhotoSwipe, Turnstile).
 - **No trailing slashes**: `trailingSlash: "never"` with `html_handling: "drop-trailing-slash"`, so hyphenated paths are served directly rather than redirected.
 - Public pages are prerendered; only the gated routes are server-rendered (`login/[slug]`, `vault/[slug]`, `api/auth`).
 
@@ -70,6 +70,7 @@ Rules:
 
 - The layout owns the page `h1`; body content uses **`h2`–`h6` only**.
 - Body is **GFM**. Per-post assets are co-located in `src/content/assets/<collection>/<slug>/`.
+- Media is a declarative Video.js player: a `media-i18n lang="ja"` provider around `video-player` / `audio-player`, a neutral skin, and the native `<video>` / `<audio>` with `controls` as the no-JS fallback. The elements are registered client-side by `src/scripts/media-player.ts`; see the Markdown style guide.
 - `slug` is explicit in frontmatter and meaningful (ASCII/romaji), not derived from the filename.
 - `draft: true` entries must stay excluded **everywhere** — listings, RSS, sitemap, and generated routes.
 - A vault `passwordHash` must be an argon2id hash matching `VAULT_ARGON2_OPTIONS`; the schema rejects anything else. Generate one with `pnpm hash:vault`.
@@ -92,7 +93,7 @@ Rules:
 - Pure helpers belong in `src/utils/` with a Vitest test under `test/`.
 - Client-side behaviour lives in `src/scripts/` as one `enhanceX()` per effect, mounted by the component that needs it and guarding on its own target element. Any library it needs is pulled in with a dynamic `import()` from inside, so a page that never shows the effect never downloads it.
 - Decorative motion is dropped, not shortened, under `prefers-reduced-motion: reduce`: the loader's animation and the click burst (`src/scripts/fireworks.ts`) both decline to attach at all.
-- Front-end third-party assets are self-hosted (e.g. `public/plyr.svg`); rendered pages must not request third-party CDNs.
+- Front-end third-party assets are self-hosted — the Video.js skins ship their styles inline in `@videojs/html` — so rendered pages never request a third-party CDN.
 - Raw HTML is sanitized by the vendored sanitizer in `src/hast/sanitize/` (MIT, from `satteri-sanitize`).
 
 ## Sibling projects

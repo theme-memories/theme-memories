@@ -256,9 +256,10 @@ const canShare = !noindex;
 <script>
   import { enhanceMediaPlayers } from "../scripts/media-player";
 
-  // Markdown emits raw <audio>/<video> elements, so Plyr is wired up in the
-  // browser, only on pages that actually contain media.
-  enhanceMediaPlayers(".prose audio, .prose video");
+  // Markdown authors a declarative Video.js player around plain <audio>/<video>
+  // elements, so the elements are registered in the browser, only on pages that
+  // actually contain a player.
+  enhanceMediaPlayers(".prose video-player, .prose audio-player");
 </script>
 
 <script>

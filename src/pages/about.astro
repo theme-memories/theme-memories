@@ -318,19 +318,24 @@ const columns = Math.max(...rows.map((row) => row.length)) * 2;
                   </div>
 
                   <!--
-                    The film. `preload="metadata"` keeps a video nobody has
-                    pressed play on from costing a full download.
+                    The film, authored as a declarative Video.js player around a
+                    plain native video element. That element is the no-JS
+                    fallback and the skin takes its place once the elements are
+                    registered in the browser; `preload="metadata"` keeps a video
+                    nobody has pressed play on from costing a full download.
                   -->
                   <h2 class="section-title mt-10">{videoTitle}</h2>
 
                   <figure class="media-frame mt-4" data-media>
-                    <video
-                      class="aspect-video h-auto w-full"
-                      controls
-                      preload="metadata"
-                    >
-                      <source src={eras[era].video.src} />
-                    </video>
+                    <media-i18n lang="ja">
+                      <video-player>
+                        <video-neutral-skin>
+                          <video controls preload="metadata">
+                            <source src={eras[era].video.src} />
+                          </video>
+                        </video-neutral-skin>
+                      </video-player>
+                    </media-i18n>
                   </figure>
                 </div>
               ))}
@@ -355,8 +360,9 @@ const columns = Math.max(...rows.map((row) => row.length)) * 2;
   import { enhanceMediaPlayers } from "../scripts/media-player";
 
   /*
-   * The character film is a plain <video controls>, so it plays with scripting
-   * off and Plyr is fetched only in the browser, on this page.
+   * The character film is a declarative Video.js player around a plain
+   * <video controls>, so it plays with scripting off and the player's modules
+   * are fetched only in the browser, on this page.
    */
-  enhanceMediaPlayers("[data-media] video");
+  enhanceMediaPlayers("[data-media] video-player");
 </script>
