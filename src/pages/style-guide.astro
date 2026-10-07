@@ -751,24 +751,12 @@ const groups = [
       <h3 id="diff" class="font-bold scroll-mt-24">
         Diff
       </h3>
-      <figure class="diff rounded-box aspect-16/9 mt-4 max-w-lg">
+      <figure class="diff rounded-box aspect-16/9 mt-4 max-w-lg" tabindex="0">
         <div class="diff-item-1" role="img" tabindex="0">
-          <Image
-            src={ImgA}
-            width={768}
-            height={432}
-            alt=""
-            class="h-full w-full object-cover"
-          />
+          <Image src={ImgA} width={768} height={432} alt="" />
         </div>
         <div class="diff-item-2" role="img" tabindex="0">
-          <Image
-            src={ImgA}
-            width={768}
-            height={432}
-            alt=""
-            class="h-full w-full object-cover blur-sm"
-          />
+          <Image src={ImgA} width={768} height={432} alt="" class="blur-sm" />
         </div>
         <div class="diff-resizer"></div>
       </figure>
