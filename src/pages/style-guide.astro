@@ -75,7 +75,6 @@ const groups = [
   {
     name: "Navigation",
     items: [
-      { id: "breadcrumbs", label: "Breadcrumbs" },
       { id: "dock", label: "Dock" },
       { id: "link", label: "Link" },
       { id: "megamenu", label: "Megamenu" },
@@ -127,9 +126,7 @@ const groups = [
     name: "Mockup",
     items: [
       { id: "mockup-browser", label: "Browser" },
-      { id: "mockup-code", label: "Code" },
       { id: "mockup-phone", label: "Phone" },
-      { id: "mockup-window", label: "Window" },
     ],
   },
 ];
@@ -241,10 +238,23 @@ const groups = [
           <span class="data">— 天気の読み込みプレースホルダー</span>
         </li>
         <li>
-          <span class="font-medium">Input</span>
+          <span class="font-medium">Input / Validator</span>
           <span class="data">— ログインのパスワード欄</span>
         </li>
+        <li>
+          <span class="font-medium">Filter</span>
+          <span class="data">— 記事一覧のカテゴリー・年の絞り込み</span>
+        </li>
+        <li>
+          <span class="font-medium">Breadcrumbs</span>
+          <span class="data">— 記事ページのパンくずリスト</span>
+        </li>
       </ul>
+      <p class="page-lead mt-6 max-w-2xl">
+        注記: 記事ページの「ページトップへ」（<code>.back-to-top</code>
+        ）は、uBlock Origin などの広告ブロッカーが持つ Annoyances
+        フィルターが同名の要素を隠すため、有効にしていると表示されません。
+      </p>
     </section>
 
     <!-- 本文（prose） -->
@@ -304,10 +314,7 @@ const groups = [
       <div class="prose mt-4 max-w-2xl">
         <p>
           強調は圏点（<em>強調</em>）で示します。日本語には斜体がないため、
-          <strong>太字</strong>と圏点で書き分けます。略語は
-          <abbr title="HyperText Markup Language">HTML</abbr>
-          のように点線の下線で示します。<mark>重要な語</mark>
-          はテーマの警告色から作ったマーカーで塗ります。 ルビは{" "}
+          <strong>太字</strong>と圏点で書き分けます。ルビは{" "}
           <ruby>
             漢字<rt>かんじ</rt>
           </ruby>{" "}
@@ -316,8 +323,7 @@ const groups = [
         <p>
           インラインコードは <code>pnpm build</code>{" "}
           のように本文と同じ面板に載ります。<a href="#prose-inline">リンク</a>
-          は下線を伴い、<del>削除</del> と <ins>挿入</ins>{" "}
-          は差分の色で示します。
+          は下線を伴い、<del>削除</del> は差分の色で示します。
         </p>
       </div>
     </section>
@@ -706,6 +712,18 @@ const groups = [
           Content revealed by a single collapse.
         </div>
       </div>
+      <p class="page-lead mt-6 max-w-2xl">
+        本文の <code>&lt;details&gt;&lt;summary&gt;</code> は、この
+        <code>.collapse</code> に似せた外観になるため、Markdown
+        の折りたたみも同じ見た目になります。
+      </p>
+      <details class="collapse border-base-300 mt-4 border">
+        <summary class="collapse-title font-semibold">クリックで開く</summary>
+        <div class="collapse-content text-sm">
+          本文の <code>&lt;details&gt;&lt;summary&gt;</code>{" "}
+          はこのように表示されます。
+        </div>
+      </details>
     </section>
 
     <section class="mt-8">
@@ -713,34 +731,32 @@ const groups = [
         Countdown
       </h3>
       <div class="mt-4">
-        <span class="countdown text-4xl" aria-live="polite" aria-label="42">
-          <span style="--value:42;">42</span>
+        <span
+          class="countdown text-4xl"
+          aria-live="polite"
+          aria-label="42"
+          data-countdown
+        >
+          <span style="--value:42;" data-countdown-value>
+            42
+          </span>
         </span>
       </div>
+      <p class="data mt-3">
+        スクリプトが値を変えるたびに、数字が桁ごとに回転して切り替わります。
+      </p>
     </section>
 
     <section class="mt-8">
       <h3 id="diff" class="font-bold scroll-mt-24">
         Diff
       </h3>
-      <figure class="diff rounded-box aspect-16/9 mt-4 max-w-lg">
-        <div class="diff-item-1">
-          <Image
-            src={ImgA}
-            width={768}
-            height={432}
-            alt=""
-            class="h-full w-full object-cover"
-          />
+      <figure class="diff rounded-box aspect-16/9 mt-4 max-w-lg" tabindex="0">
+        <div class="diff-item-1" role="img" tabindex="0">
+          <Image src={ImgA} width={768} height={432} alt="" />
         </div>
-        <div class="diff-item-2">
-          <Image
-            src={ImgB}
-            width={768}
-            height={432}
-            alt=""
-            class="h-full w-full object-cover"
-          />
+        <div class="diff-item-2" role="img" tabindex="0">
+          <Image src={ImgA} width={768} height={432} alt="" class="blur-sm" />
         </div>
         <div class="diff-resizer"></div>
       </figure>
@@ -872,23 +888,6 @@ const groups = [
     >
       Navigation
     </h2>
-
-    <section class="mt-8">
-      <h3 id="breadcrumbs" class="font-bold scroll-mt-24">
-        Breadcrumbs
-      </h3>
-      <div class="breadcrumbs mt-4 text-sm">
-        <ul>
-          <li>
-            <a href="/">Home</a>
-          </li>
-          <li>
-            <a href="/posts">Posts</a>
-          </li>
-          <li>Article</li>
-        </ul>
-      </div>
-    </section>
 
     <section class="mt-8">
       <h3 id="dock" class="font-bold scroll-mt-24">
@@ -1526,6 +1525,13 @@ const groups = [
     >
       Mockup
     </h2>
+    <p class="page-lead mt-4 max-w-2xl">
+      ブラウザと端末の枠だけを置いています。コードとウィンドウのモックアップは
+      <a class="link" href="/article/expressive-code-guide">
+        Expressive Code
+      </a>
+      が引き受けるため、ここには載せません。
+    </p>
 
     <section class="mt-8">
       <h3 id="mockup-browser" class="font-bold scroll-mt-24">
@@ -1538,16 +1544,6 @@ const groups = [
         <div class="bg-base-200 grid place-items-center px-4 py-10">
           Page content
         </div>
-      </div>
-    </section>
-
-    <section class="mt-8">
-      <h3 id="mockup-code" class="font-bold scroll-mt-24">
-        Code
-      </h3>
-      <div class="mockup-code mt-4 w-full max-w-md">
-        <pre data-prefix="$"><code>pnpm install</code></pre>
-        <pre data-prefix=">" class="text-success"><code>done</code></pre>
       </div>
     </section>
 
@@ -1568,22 +1564,13 @@ const groups = [
         </div>
       </div>
     </section>
-
-    <section class="mt-8">
-      <h3 id="mockup-window" class="font-bold scroll-mt-24">
-        Window
-      </h3>
-      <div class="mockup-window border-base-300 mt-4 w-full max-w-md border">
-        <div class="bg-base-200 grid place-items-center px-4 py-10">
-          Window content
-        </div>
-      </div>
-    </section>
   </div>
 
   <script>
     import { enhanceCalendar } from "../scripts/calendar";
+    import { enhanceCountdown } from "../scripts/countdown";
 
     enhanceCalendar();
+    enhanceCountdown();
   </script>
 </BaseLayout>

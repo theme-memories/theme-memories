@@ -1,77 +1,55 @@
 /*
- * Plyr media player enhancement.
+ * Video.js media player registration.
  *
- * Markdown emits raw <audio>/<video> elements and the character page renders a
- * plain <video controls>, so both play with scripting off. Plyr is fetched here
- * in the browser, once, and only on a page that actually contains media. The
- * icons are served from this site rather than from Plyr's default CDN.
+ * A player is authored declaratively — a `media-i18n` provider around a
+ * `video-player` or `audio-player`, a skin, and the native media element — so
+ * the markup is inert until the elements are defined here. The media keeps its
+ * `controls` for the no-JS fallback, and they are removed once the skin owns
+ * playback, because Video.js does not remove them on its own.
  *
- * The selector is the only thing that varies between the surfaces, so it is the
- * only thing taken as an argument.
+ * The modules are fetched in the browser, once, and only on a page that
+ * actually contains a player. The selector is the only thing that varies
+ * between the surfaces, so it is the only thing taken as an argument.
  */
-
-/*
- * Plyr's interface, in the site's language. Plyr ships English and carries no
- * locale files, so its own words are set here: the tooltips, the menu, the
- * fullscreen and caption labels, and the live-region text.
- *
- * `{seektime}`, `{currentTime}`, `{duration}` and `{title}` are Plyr's
- * placeholders. The quality badges stay Latin, because they are badges rather
- * than words.
- */
-const I18N = {
-  restart: "最初から再生",
-  rewind: "{seektime}秒戻る",
-  play: "再生",
-  pause: "一時停止",
-  fastForward: "{seektime}秒進む",
-  seek: "シーク",
-  seekLabel: "{currentTime} / {duration}",
-  played: "再生済み",
-  buffered: "読み込み済み",
-  currentTime: "現在の時間",
-  duration: "再生時間",
-  volume: "音量",
-  mute: "ミュート",
-  unmute: "ミュートを解除",
-  enableCaptions: "字幕を表示",
-  disableCaptions: "字幕を非表示",
-  download: "ダウンロード",
-  enterFullscreen: "全画面にする",
-  exitFullscreen: "全画面を終了する",
-  frameTitle: "{title} のプレイヤー",
-  captions: "字幕",
-  settings: "設定",
-  pip: "ピクチャインピクチャ",
-  menuBack: "前のメニューに戻る",
-  speed: "再生速度",
-  normal: "標準",
-  quality: "画質",
-  loop: "ループ",
-  start: "開始",
-  end: "終了",
-  all: "すべて",
-  reset: "リセット",
-  disabled: "無効",
-  enabled: "有効",
-  advertisement: "広告",
-  qualityBadge: {
-    2160: "4K",
-    1440: "HD",
-    1080: "HD",
-    720: "HD",
-    576: "SD",
-    480: "SD",
-  },
-};
-
 export const enhanceMediaPlayers = (selector: string) => {
-  const media = document.querySelectorAll<HTMLMediaElement>(selector);
-  if (media.length === 0) return;
+  const players = [...document.querySelectorAll<HTMLElement>(selector)];
+  if (players.length === 0) return;
 
-  void import("plyr").then(({ default: Plyr }) => {
-    for (const element of media) {
-      new Plyr(element, { iconUrl: "/plyr.svg", i18n: I18N });
+  const tags = new Set(players.map((player) => player.localName));
+
+  void (async () => {
+    /*
+     * Registered before any provider or player is defined, so the first paint
+     * is already in the site's language rather than the lazy default pack
+     * arriving after it. The pack is bundled, so nothing is fetched from a CDN.
+     */
+    await import("@videojs/html/i18n/locales/ja/register");
+
+    const modules: Array<Promise<unknown>> = [import("@videojs/html/i18n")];
+    if (tags.has("video-player")) {
+      modules.push(
+        import("@videojs/html/video/player"),
+        import("@videojs/html/video/neutral-skin"),
+      );
     }
-  });
+    if (tags.has("audio-player")) {
+      modules.push(
+        import("@videojs/html/audio/player"),
+        import("@videojs/html/audio/neutral-skin"),
+      );
+    }
+    await Promise.all(modules);
+
+    /*
+     * The fallback controls come off now that the skin draws its own, or the
+     * browser's bar would sit behind the skin's.
+     */
+    for (const player of players) {
+      for (const media of player.querySelectorAll<HTMLMediaElement>(
+        "video, audio",
+      )) {
+        media.removeAttribute("controls");
+      }
+    }
+  })();
 };

@@ -1,0 +1,87 @@
+/*
+ * Video.js media player theming.
+ *
+ * A player is authored declaratively and its skin styles itself inside a shadow
+ * root, so there is no library stylesheet to import and no class to reach into.
+ * The skin exposes a small set of public custom properties, and they are remapped
+ * onto daisyUI color tokens here, the same way prose.css remaps the typography
+ * plugin, so all four themes (藍 and 朱, light and dark) follow without a
+ * `dark:` variant.
+ *
+ * The element layout lives here too, not in each page: an element the browser
+ * does not know yet is inline, so these rules are what give the no-JS fallback —
+ * a plain native <video>/<audio> — its block box before the skin upgrades.
+ */
+video-player,
+audio-player,
+video-neutral-skin,
+audio-neutral-skin {
+  display: block;
+  width: 100%;
+}
+
+/*
+ * The i18n provider is a layout-neutral wrapper — the player inside it is what
+ * takes the width. Before the elements are defined it would otherwise be a flex
+ * item sized to the media's own default, so it is taken out of the box model.
+ */
+media-i18n:not(:defined) {
+  display: contents;
+}
+
+/*
+ * Until the elements are defined the native media is the fallback, and it has
+ * to fill the box the skin will later own: an undefined custom element is
+ * inline, and a video with no width of its own falls back to 300x150. The
+ * `:defined` guard hands sizing back to the skin — which sizes the media itself
+ * through `::slotted()` — as soon as it upgrades.
+ */
+video-player:not(:defined) video,
+audio-player:not(:defined) audio {
+  display: block;
+  width: 100%;
+}
+
+/*
+ * The skin picks no aspect ratio of its own, and a video with no metadata yet
+ * has no intrinsic height, so the box would collapse before the poster or first
+ * frame arrives. 16/9 is what the film already used.
+ */
+video-neutral-skin {
+  aspect-ratio: 16 / 9;
+}
+
+video-neutral-skin,
+audio-neutral-skin {
+  --media-accent-color: var(--color-primary);
+
+  /*
+   * The readable ink on the accent. The skins derive it with `contrast-color()`,
+   * which is not in every supported browser yet; stating it keeps a custom
+   * accent legible where the function is missing.
+   */
+  --media-accent-text-color: var(--color-primary-content);
+
+  /*
+   * The player draws no outer edge of its own. The film is already ruled by
+   * `.media-frame` and content media by the prose outline, so a border here
+   * would be a second hairline on the same edge.
+   */
+  --media-border-color: transparent;
+  --media-border-radius: var(--radius-box);
+  --media-font-family: var(--font-sans);
+
+  /*
+   * The control box is `--media-scale-unit * --media-scale * 9/4`, so the 16px
+   * default is a 36px control. `1rem` makes it track the document root, and the
+   * coarse-pointer rule below grows it past the 44px floor: 1.25rem x 9/4 = 45px.
+   */
+  --media-scale-unit: 1rem;
+}
+
+@media (pointer: coarse) {
+  video-neutral-skin,
+  audio-neutral-skin {
+    --media-scale-unit: 1.25rem;
+  }
+}

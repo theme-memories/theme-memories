@@ -10,14 +10,15 @@ const { years } = Astro.props;
 ---
 
 <!--
-  Radio groups rather than daisyUI's `filter` component: that one collapses the
-  unselected options, which makes switching between categories a two-step job.
-  Each option is a real radio wrapped in its own label, so the choice keeps its
-  native semantics and the whole chip is the hit area.
+  daisyUI's `filter`: a radio group that collapses to the chosen option plus a
+  reset, so the bar stays a single line as options are added. Nothing is checked
+  to begin with, so the full set is visible and the empty selection is what
+  "すべて" means; choosing an option hides the rest and shows the reset, which is
+  the one way back. Each group is its own `<form>` so its reset restores only its
+  own state, and the `value`/`data` attributes the script reads are on the inputs.
 
-  A selected chip inverts to ink rather than taking the accent, and grows a
-  filled marker, so the state survives grayscale and does not spend the accent
-  on something that is not an action.
+  The separator and the labels are daisyUI's, but the two groups and the count
+  stay in the site's own frame.
 -->
 <div
   class="border-base-300 flex flex-wrap items-center justify-between gap-x-8 gap-y-4 border-y py-4"
@@ -28,35 +29,32 @@ const { years } = Astro.props;
       <span id="post-filter-category-label" class="label">
         カテゴリー
       </span>
-      <div
-        class="flex flex-wrap gap-1.5"
-        role="radiogroup"
-        aria-labelledby="post-filter-category-label"
-      >
-        <label class="filter-chip">
+      <form class="filter" aria-labelledby="post-filter-category-label">
+        <input
+          class="btn btn-square"
+          type="reset"
+          value="×"
+          aria-label="カテゴリーの絞り込みを解除"
+        />
+        <input
+          class="btn"
+          type="radio"
+          name="post-category"
+          value={FILTER_ALL}
+          aria-label="すべて"
+          data-filter-group="category"
+        />
+        {categoryKeys.map((key) => (
           <input
-            class="sr-only"
+            class="btn"
             type="radio"
             name="post-category"
-            value={FILTER_ALL}
+            value={key}
+            aria-label={categories[key].name}
             data-filter-group="category"
-            checked
           />
-          <span>すべて</span>
-        </label>
-        {categoryKeys.map((key) => (
-          <label class="filter-chip">
-            <input
-              class="sr-only"
-              type="radio"
-              name="post-category"
-              value={key}
-              data-filter-group="category"
-            />
-            <span>{categories[key].name}</span>
-          </label>
         ))}
-      </div>
+      </form>
     </div>
 
     {years.length > 1 && (
@@ -64,35 +62,32 @@ const { years } = Astro.props;
         <span id="post-filter-year-label" class="label">
           年
         </span>
-        <div
-          class="flex flex-wrap gap-1.5"
-          role="radiogroup"
-          aria-labelledby="post-filter-year-label"
-        >
-          <label class="filter-chip">
+        <form class="filter" aria-labelledby="post-filter-year-label">
+          <input
+            class="btn btn-square"
+            type="reset"
+            value="×"
+            aria-label="年の絞り込みを解除"
+          />
+          <input
+            class="btn"
+            type="radio"
+            name="post-year"
+            value={FILTER_ALL}
+            aria-label="すべて"
+            data-filter-group="year"
+          />
+          {years.map((year) => (
             <input
-              class="sr-only"
+              class="btn"
               type="radio"
               name="post-year"
-              value={FILTER_ALL}
+              value={year}
+              aria-label={String(year)}
               data-filter-group="year"
-              checked
             />
-            <span>すべて</span>
-          </label>
-          {years.map((year) => (
-            <label class="filter-chip">
-              <input
-                class="sr-only"
-                type="radio"
-                name="post-year"
-                value={year}
-                data-filter-group="year"
-              />
-              <span>{year}</span>
-            </label>
           ))}
-        </div>
+        </form>
       </div>
     )}
   </div>

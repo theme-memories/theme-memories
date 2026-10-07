@@ -371,6 +371,99 @@
 }
 
 /*
+ * Zebra striping for content tables. It is drawn here rather than through
+ * daisyUI's `table-zebra` so it holds for both the tables Sätteri builds and the
+ * extended-table HTML the wrapper emits as raw HTML, and so it sits on top of
+ * the bespoke ink-rule table above rather than replacing it with daisyUI's. The
+ * row carries the wash; the cells stay transparent so it reads through them.
+ */
+.prose :where(table) tbody tr:nth-child(even) {
+  background-color: var(--color-base-200);
+}
+
+/*
+ * Column alignment, in two forms.
+ *
+ * Sätteri writes a plain table's alignment as an inline `text-align` on every
+ * cell, which wins on its own. An extended table arrives as raw HTML whose
+ * cells carry the `align` attribute instead, and Tailwind Typography sets
+ * `text-align: start` on every `th` and `td`, which outranks a presentational
+ * attribute. These unlayered rules give the attribute the weight the inline
+ * style already had, so a right- or centre-aligned column reads as asked in
+ * either kind of table.
+ */
+.prose :where(th, td)[align="left"] {
+  text-align: left;
+}
+
+.prose :where(th, td)[align="center"] {
+  text-align: center;
+}
+
+.prose :where(th, td)[align="right"] {
+  text-align: right;
+}
+
+/*
+ * A content `<details>` is dressed as a daisyUI collapse, so a folded section
+ * reads as the component rather than as the browser's default disclosure
+ * triangle. The pattern is reproduced here rather than applied as daisyUI
+ * classes: a raw `<details>` cannot carry a `class` past the sanitiser, and
+ * `@apply collapse` also collides with Tailwind's own `collapse` utility, so the
+ * bordered panel, the bold summary and the chevron are written directly.
+ */
+.prose :where(details) {
+  border: 1px solid var(--color-base-300);
+  border-radius: var(--radius-box);
+  padding-inline: 1rem;
+  padding-block-end: 1rem;
+}
+
+.prose :where(details) > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-inline: -1rem;
+  padding-block: 1rem;
+  padding-inline: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  list-style: none;
+}
+
+.prose :where(details) > summary::-webkit-details-marker {
+  display: none;
+}
+
+/*
+ * The chevron, drawn with two borders and rotated when the section opens on the
+ * shared curve, so the control acknowledges the press the way the component
+ * does. A reader who asked for less motion keeps the open and closed states and
+ * loses only the turn.
+ */
+.prose :where(details) > summary::after {
+  content: "";
+  width: 0.5rem;
+  height: 0.5rem;
+  flex: none;
+  border-inline-end: 2px solid currentcolor;
+  border-block-end: 2px solid currentcolor;
+  rotate: 45deg;
+  transition: rotate var(--motion-state) var(--ease-out-quint);
+}
+
+.prose :where(details)[open] > summary::after {
+  rotate: 225deg;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .prose :where(details) > summary::after {
+    transition-duration: 0.01ms;
+  }
+}
+
+/*
  * A figure caption is set like a printed plate caption: small, monospaced, and
  * hung off a hairline rather than sitting loose under the image.
  */

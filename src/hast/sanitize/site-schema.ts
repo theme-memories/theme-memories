@@ -9,18 +9,18 @@
 
 export const SITE_TAG_NAMES: readonly string[] = [
   /*
-   * Prose elements an author writes by hand. Both are inert, carry no URL and
-   * take no attribute beyond the global `title` on `<abbr>`; without them the
-   * sanitiser unwraps the element and keeps the bare text.
-   */
-  "mark",
-  "abbr",
-  /*
    * Media is plain HTML in the source, so the browser's own player stays as the
-   * no-JS fallback until Plyr upgrades it.
+   * no-JS fallback. The Video.js player around it is authored declaratively —
+   * an i18n provider, a player, and a skin — and those elements are inert until
+   * the enhancement script registers them in the browser.
    */
   "audio",
   "video",
+  "media-i18n",
+  "video-player",
+  "audio-player",
+  "video-neutral-skin",
+  "audio-neutral-skin",
   /*
    * `mdast-katex` renders TeX through KaTeX, whose output is a MathML tree plus
    * an HTML layout layer, and emits the whole thing as raw HTML. Every element
@@ -71,6 +71,12 @@ export const SITE_TAG_NAMES: readonly string[] = [
  * the same thing.
  */
 export const SITE_ATTRIBUTES: Readonly<Record<string, readonly string[]>> = {
+  /*
+   * The poster belongs to the player, not the media: the skin reads it from the
+   * player element. `media-i18n` needs no entry here — `lang` is allowed on
+   * every element.
+   */
+  "video-player": ["poster"],
   audio: ["src", "controls", "loop", "muted", "preload"],
   video: [
     "src",
